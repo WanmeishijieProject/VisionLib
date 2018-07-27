@@ -54,5 +54,6 @@ namespace JPT_TosaTest.UserCtrl
         }
         public static readonly DependencyProperty HeaderBackgroundProperty = DependencyProperty.Register(HeaderBackgroundPropertyName,typeof(Brush),typeof(TestUnitCtrl));
 
+        
     }
 }

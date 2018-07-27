@@ -16,6 +16,19 @@
             <TextBlock Text="{Binding HeaderName, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type UserControl}}}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="50"/>
         </Grid>
         <ListBox Grid.Row="1" FontSize="20" BorderBrush="Transparent"  Background="Transparent"/>
-        <Grid Grid.Row="2"/>
+        <ListBox Grid.Row="2" FontSize="20" BorderBrush="Transparent"  Background="Transparent" ItemsSource="{Binding TestItem}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid Background="Green" Height="50">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock VerticalAlignment="Center"  Text="{Binding ItemName}" FontSize="20" Foreground="Black" MinWidth="150"/>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center"  Text="{Binding ItemValue}" FontSize="15" Foreground="White" MinWidth="300"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </UserControl>

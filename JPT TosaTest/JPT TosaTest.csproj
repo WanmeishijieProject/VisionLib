@@ -96,16 +96,31 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Classes\FileHelper.cs" />
+    <Compile Include="Classes\LogExcel.cs" />
     <Compile Include="Classes\PSSWraper.cs" />
+    <Compile Include="Config\ConfigMgr.cs" />
+    <Compile Include="Config\HardwareManager\HardwareCfgLevelManager1.cs" />
+    <Compile Include="Config\HardwareManager\HardwareCfgManager.cs" />
+    <Compile Include="Config\SoftwareManager\SoftwareCfgLevelManager1.cs" />
+    <Compile Include="Config\SoftwareManager\SoftwareCfgManager.cs" />
+    <Compile Include="Config\SystemCfgManager\SystemCfgManager.cs" />
+    <Compile Include="Config\SystemCfgManager\SystemParaModel.cs" />
     <Compile Include="Design\DesignDataService.cs" />
+    <Compile Include="Instrument\InstrumentBase.cs" />
+    <Compile Include="Instrument\InstrumentMgr.cs" />
     <Compile Include="Model\DataItem.cs" />
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\IDataService.cs" />
+    <Compile Include="Model\TestItemModel.cs" />
     <Compile Include="UserCtrl\TestUnitCtrl.xaml.cs">
       <DependentUpon>TestUnitCtrl.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Compile Include="WorkFlow\WorkCalib.cs" />
+    <Compile Include="WorkFlow\WorkFlowBase.cs" />
+    <Compile Include="WorkFlow\WorkFlowMgr.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -156,7 +171,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Config\" />
+    <Folder Include="Converter\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

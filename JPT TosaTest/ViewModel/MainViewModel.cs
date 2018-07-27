@@ -1,5 +1,6 @@
 ﻿using GalaSoft.MvvmLight;
 using JPT_TosaTest.Model;
+using System.Collections.ObjectModel;
 
 namespace JPT_TosaTest.ViewModel
 {
@@ -53,13 +54,19 @@ namespace JPT_TosaTest.ViewModel
 
                     WelcomeTitle = item.Title;
                 });
+
+            TestItem = new ObservableCollection<TestItemModel>()
+            {
+                new TestItemModel(){ ItemName="Item1", ItemValue="Value1"},
+                new TestItemModel(){ ItemName="Item2", ItemValue="Value2"},
+                new TestItemModel(){ ItemName="Item3", ItemValue="Value3"}
+            };
         }
 
-        ////public override void Cleanup()
-        ////{
-        ////    // Clean up if needed
-
-        ////    base.Cleanup();
-        ////}
+        public ObservableCollection<TestItemModel> TestItem
+        {
+            get;
+            set;
+        }
     }
 }
