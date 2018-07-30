@@ -4,9 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ignore="http://www.galasoft.ch/ignore"
+        xmlns:useCtrl="clr-namespace:JPT_TosaTest.UserCtrl"
         xmlns:dxr="http://schemas.devexpress.com/winfx/2008/xaml/ribbon"
         xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars"
-        xmlns:useCtrl="clr-namespace:JPT_TosaTest.UserCtrl"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:cls="clr-namespace:JPT_TosaTest.Classes"
         mc:Ignorable="d ignore"
         Height="800"
         Width="800"
@@ -24,9 +26,7 @@
     <Grid x:Name="LayoutRoot">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition/>
-            <RowDefinition Height="3"/>
-            <RowDefinition Height="100"/>
+            <RowDefinition Height="*"/>
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
         <dxr:RibbonControl>
@@ -34,53 +34,65 @@
                 <dxr:RibbonPage x:Name="rpHome" Caption="Home">
                     <dxr:RibbonPageGroup Caption="Menu">
                         <dxb:BarButtonItem 
-                            Content="Home" 
-                            RibbonStyle="Large"/>
+                            Content="Start" 
+                            RibbonStyle="Large" Glyph="Images/start.png"/>
+                        <dxb:BarButtonItem 
+                            Content="Pause" 
+                            RibbonStyle="Large" LargeGlyph="Images/pause.png"/>
+                        <dxb:BarButtonItem 
+                            Content="Stop" 
+                            RibbonStyle="Large" Glyph="Images/stop.png"/>
                         <dxb:BarButtonItem 
                             Content="Home" 
-                            RibbonStyle="Large"/>
+                            RibbonStyle="Large" Glyph="Images/home.png"
+                            Command="{Binding BtnHomeCommand}"/>
                         <dxb:BarButtonItem 
-                            Content="Home" 
-                            RibbonStyle="Large"/>
-                        <dxb:BarButtonItem 
-                            Content="Home" 
-                            RibbonStyle="Large"/>
-                        <dxb:BarButtonItem 
-                            Content="Home" 
-                            RibbonStyle="Large"/>
-
+                            Content="Setting" 
+                            RibbonStyle="Large" Glyph="Images/settings.png"
+                            Command="{Binding BtnSettingCommand}"/>
                     </dxr:RibbonPageGroup>
                 </dxr:RibbonPage>
             </dxr:RibbonDefaultPageCategory>
         </dxr:RibbonControl>
+        <useCtrl:UC_HomeView Grid.Row="1" Level="1" Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=1}"/>
+        <useCtrl:UC_Setting Grid.Row="1" Level="2" Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=2}"/>
 
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <useCtrl:TestUnitCtrl Grid.Column="0" HeaderName="ABC" HeaderBackground="LightGray" Margin="1"/>
-            <useCtrl:TestUnitCtrl Grid.Column="1" HeaderName="L1" HeaderBackground="LightGray" Margin="1"/>
-            <useCtrl:TestUnitCtrl Grid.Column="2" HeaderName="L2" HeaderBackground="LightGray" Margin="1"/>
-            <useCtrl:TestUnitCtrl Grid.Column="3" HeaderName="L3" HeaderBackground="LightGray" Margin="1"/>
-        </Grid>
-
-
-
-        <!--statusBar-->
-        <GridSplitter Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Stretch" Height="3"/>
-        <dxe:ListBoxEdit Grid.Row="3" BorderBrush="Transparent" Background="Transparent"/>
-        <Grid Grid.Row="4" Background="SteelBlue">
+        <!--<materialDesign:Snackbar Grid.Row="1" HorizontalAlignment="Stretch" x:Name="SnackbarFive" IsActive="True">
+            <materialDesign:SnackbarMessage>
+                <Grid>
+                    <TextBlock Text="Error"/>
+                </Grid>
+            </materialDesign:SnackbarMessage>
+        </materialDesign:Snackbar>-->
+        <dxe:ListBoxEdit Grid.Row="1" ItemsSource="{Binding SystemErrorMessageCollection}" IsSynchronizedWithCurrentItem="True" cls:ListBoxBehavior.ScrollOnNewItem="True" 
+                         BorderThickness="0" BorderBrush="Transparent"  MaxHeight="150" Visibility="{Binding BoolShowInfoListBox, Converter={StaticResource Bool2Visibility}}" VerticalAlignment="Bottom">
+            <dxe:ListBoxEdit.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Clear" Command="{Binding ClearMessageCommand}"/>
+                </ContextMenu>
+            </dxe:ListBoxEdit.ContextMenu>
+            <dxe:ListBoxEdit.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Height="30">
+                        <Image Source="{Binding MsgType,Converter={StaticResource MsgType2Image}}" VerticalAlignment="Center" Margin="3"/>
+                        <TextBlock Text="{Binding StrMsg}" VerticalAlignment="Center" FontSize="12" Foreground="{Binding MsgType, Converter={StaticResource MsgType2ForeBrush}}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </DataTemplate>
+            </dxe:ListBoxEdit.ItemTemplate>
+        </dxe:ListBoxEdit>
+        <Grid Grid.Row="2" Background="SteelBlue">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="50"/>
+                <ColumnDefinition Width="160"/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="版本号: V1.0.0" VerticalAlignment="Center" Margin="5" Foreground="White"/>
+            <materialDesign:Badged Grid.Column="4" Badge="{Binding ErrorCount}" BadgeBackground="LightBlue" BadgeForeground="{Binding ErrorCount,Converter={StaticResource Int2BackgroundBrush}}" Width="150">
+                <Button Background="{Binding ErrorCount,Converter={StaticResource Int2BackgroundBrush}}" Width="150" Command="{Binding ShowInfoListCommand}">INFO</Button>
+            </materialDesign:Badged>
         </Grid>
+
     </Grid>
 </Window>

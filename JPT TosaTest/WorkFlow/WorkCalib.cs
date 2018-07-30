@@ -11,8 +11,6 @@ namespace JPT_TosaTest.WorkFlow
 {
     public class WorkCalib : WorkFlowBase
     {
-        private Task task1 = null, task2 = null;
-
         protected override bool UserInit()
         {
             return true;

@@ -55,9 +55,6 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
-        /// <summary>
-        /// Cleans up all the resources.
-        /// </summary>
         public static void Cleanup()
         {
         }

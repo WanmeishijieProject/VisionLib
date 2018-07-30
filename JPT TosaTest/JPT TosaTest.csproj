@@ -52,6 +52,12 @@
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
+    <Reference Include="MaterialDesignColors">
+      <HintPath>ExDll\MaterialDesignColors.dll</HintPath>
+    </Reference>
+    <Reference Include="MaterialDesignThemes.Wpf">
+      <HintPath>ExDll\MaterialDesignThemes.Wpf.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
     </Reference>
@@ -97,6 +103,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Classes\FileHelper.cs" />
+    <Compile Include="Classes\ListBoxBehavior.cs" />
     <Compile Include="Classes\LogExcel.cs" />
     <Compile Include="Classes\PSSWraper.cs" />
     <Compile Include="Config\ConfigMgr.cs" />
@@ -106,15 +113,33 @@
     <Compile Include="Config\SoftwareManager\SoftwareCfgManager.cs" />
     <Compile Include="Config\SystemCfgManager\SystemCfgManager.cs" />
     <Compile Include="Config\SystemCfgManager\SystemParaModel.cs" />
+    <Compile Include="Converter\Bool2Visibility.cs" />
+    <Compile Include="Converter\Int2BackgroundBrush.cs" />
+    <Compile Include="Converter\int2Visibility.cs" />
+    <Compile Include="Converter\MsgType2ForeBrush.cs" />
+    <Compile Include="Converter\MsgType2Image.cs" />
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Instrument\InstrumentBase.cs" />
     <Compile Include="Instrument\InstrumentMgr.cs" />
     <Compile Include="Model\DataItem.cs" />
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\IDataService.cs" />
+    <Compile Include="Model\MessageItem.cs" />
     <Compile Include="Model\TestItemModel.cs" />
     <Compile Include="UserCtrl\TestUnitCtrl.xaml.cs">
       <DependentUpon>TestUnitCtrl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserCtrl\UC_HomeView.xaml.cs">
+      <DependentUpon>UC_HomeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserCtrl\UC_InstrumentSetting.xaml.cs">
+      <DependentUpon>UC_InstrumentSetting.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserCtrl\UC_Setting.xaml.cs">
+      <DependentUpon>UC_Setting.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserCtrl\UC_SystemSetting.xaml.cs">
+      <DependentUpon>UC_SystemSetting.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
@@ -133,11 +158,31 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Resource\MDStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Skins\MainSkin.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UserCtrl\TestUnitCtrl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserCtrl\UC_HomeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserCtrl\UC_InstrumentSetting.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserCtrl\UC_Setting.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserCtrl\UC_SystemSetting.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -171,7 +216,25 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Converter\" />
+    <Resource Include="Images\warning.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\start.png" />
+    <Resource Include="Images\stop.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\pause.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\settings.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\home.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Error24_24.png" />
+    <Resource Include="Images\Info24_24.png" />
+    <Resource Include="Images\Warning24_24.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
