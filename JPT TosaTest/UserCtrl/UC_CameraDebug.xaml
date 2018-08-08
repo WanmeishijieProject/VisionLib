@@ -1,0 +1,170 @@
+﻿<UserControl x:Class="JPT_TosaTest.UserCtrl.UC_CameraDebug"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:halcon="clr-namespace:HalconDotNet;assembly=halcondotnet"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:UserCtrl="clr-namespace:JPT_TosaTest.UserCtrl"
+             xmlns:cmd="http://www.galasoft.ch/mvvmlight"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="352"/>
+            </Grid.ColumnDefinitions>
+            <halcon:HWindowControlWPF Grid.Row="0" Grid.Column="0" Margin="1" x:Name="Cam1"/>
+            <Grid Grid.Row="0" Grid.Column="4" Grid.RowSpan="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="70"/>
+                    <RowDefinition Height="70"/>
+                    <RowDefinition Height="70"/>
+                    <RowDefinition Height="70"/>
+                    <RowDefinition Height="70"/>
+                    <RowDefinition Height="70"/>
+                    <RowDefinition Height="70"/>
+                    <RowDefinition Height="70"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Background="LightGreen" Style="{StaticResource RoundButtonStyle1}" Height="50" ToolTip="单帧采集" Margin="5" 
+                        Command="{Binding SnapOnceCommand}" CommandParameter="{Binding SelectedIndex,ElementName=Cb_Cameras}" IsEnabled="{Binding CamSnapState,ConverterParameter=SnapOnce,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}">
+                    <Button.Content>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="35"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Image Source="/JPT TosaTest;component/Images/GrabOnce.png" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="单帧采集" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
+                        </Grid>
+                    </Button.Content>
+                </Button>
+                <Button Grid.Column="1" Background="LightGreen" Style="{StaticResource RoundButtonStyle1}" Height="50" ToolTip="连续采集" Margin="5" 
+                        Command="{Binding SnapContinuousCommand}" CommandParameter="{Binding SelectedIndex,ElementName=Cb_Cameras}" IsEnabled="{Binding CamSnapState,ConverterParameter=SnapContinuous,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}">
+                    <Button.Content>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="35"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Image Source="/JPT TosaTest;component/Images/GrabRepeat.png" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="连续采集" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
+                        </Grid>
+                    </Button.Content>
+                </Button>
+                <Button Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource RoundButtonStyle1}"  Background="Pink" ToolTip="停止采集" Margin="5" Height="50" Command="{Binding StopSnapCommand}" CommandParameter="{Binding SelectedIndex,ElementName=Cb_Cameras}"
+                        IsEnabled="{Binding CamSnapState,ConverterParameter=StopSnap,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}">
+                    <Button.Content>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="35"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Image Source="/JPT TosaTest;component/Images/StopGrab.png" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="停止采集" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="30,0,0,0"/>
+
+                        </Grid>
+                    </Button.Content>
+                </Button>
+                <Button Name="BtnSaveImage" Grid.Row="2" Grid.Column="1" Style="{StaticResource RoundButtonStyle1}"  Background="LightGreen" ToolTip="保存图像" Margin="5" Height="50" Click="BtnSaveImage_Click" IsEnabled="{Binding CamSnapState,ConverterParameter=SnapOnce,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}">
+                    <Button.Content>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="70"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Vertical" Background="Gray">
+                                <RadioButton Name="RbImage" Content="Image" IsChecked="True"/>
+                                <RadioButton Name="RbWindow" Content="Window"/>
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" Text="保存图像" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
+                        </Grid>
+                    </Button.Content>
+                </Button>
+                <Button Name="BtnOpenImage" Grid.Row="2" Style="{StaticResource RoundButtonStyle1}"  Background="LightGreen" ToolTip="打开图片" Margin="5" Height="50" Click="BtnOpenImage_Click"
+                        IsEnabled="{Binding CamSnapState,ConverterParameter=SnapOnce,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}">
+                    <Button.Content>
+                        <Grid>
+                            <TextBlock Grid.Column="1" Text="打开图片" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
+                        </Grid>
+                    </Button.Content>
+                </Button>
+                <ComboBox Name="Cb_Cameras" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="5,12,5,12" ItemsSource="{Binding CameraCollection}" SelectedIndex="0" IsEnabled="{Binding CamSnapState,ConverterParameter=ComboBoxCameras,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}" SelectionChanged="Cb_Cameras_SelectionChanged">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="SelectionChanged">
+                            <cmd:EventToCommand Command="{Binding UpdateRoiTemplate}" CommandParameter="{Binding SelectedIndex,ElementName=Cb_Cameras}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Image Source="{Binding StrCameraState,Converter={StaticResource Text2CameStateImage}}" Margin="5"/>
+                                <TextBlock Text="{Binding CameraName}" Grid.Column="1" FontSize="20" VerticalAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Rectangle Grid.Row="4" RadiusX="20" RadiusY="20" Margin="0,13,0,13"  StrokeThickness="1"  Stroke="Orange"/>
+                <Button Grid.Row="4" VerticalAlignment="Center" Content="+ROI" FontSize="25" Margin="12,18,94,18" Style="{StaticResource RoundButtonStyle1}" Background="Transparent" BorderThickness="0" Width="70" Command="{Binding NewRoiCommand}" CommandParameter="{Binding SelectedIndex,ElementName=Cb_Cameras}"/>
+                <Button Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Content="+模板" FontSize="25" Margin="90,0,0,0" Style="{StaticResource RoundButtonStyle1}" Background="Transparent" BorderThickness="0" Command="{Binding PreCreateModelCommand}" CommandParameter="{Binding SelectedIndex,ElementName=Cb_Cameras}"/>
+                <Rectangle Grid.Row="4" RadiusX="20" RadiusY="20" Margin="0,13,88,13" Fill="Orange" MouseDown="Rectangle_MouseDown">
+                    <Rectangle.RenderTransform>
+                        <TranslateTransform x:Name="SelectTrans" />
+                    </Rectangle.RenderTransform>
+                </Rectangle>
+                <Grid Grid.Row="4" Grid.Column="1" Margin="10,0,0,0" Visibility="{Binding CurrentSelectRoiTemplate,Converter={StaticResource RoiTemplate2Visibility}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50"/>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <RadioButton Content="+" FontSize="20" VerticalContentAlignment="Center" IsChecked="{Binding RegionOperator, Converter={StaticResource IsChecked2RegionOperator}}"/>
+                        <RadioButton Grid.Row="1" Content="-" FontSize="20" VerticalContentAlignment="Center" />
+                    </Grid>
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <RadioButton  VerticalAlignment="Center" Content="圆形" FontSize="20" VerticalContentAlignment="Center" IsChecked="{Binding RegionType, Converter={StaticResource IsChecked2RegionType}}"/>
+                        <RadioButton Grid.Row="1"  VerticalAlignment="Center" Content="矩形" FontSize="20" VerticalContentAlignment="Center" />
+                    </Grid>
+                    <Button Name="BtnDrawModelRegion" Grid.Column="2" Style="{StaticResource RoundButtonStyle1}" Background="LightGreen" Content="绘制" FontSize="15" Margin="3" Click="BtnDrawModelRegion_Click"/>
+                </Grid>
+                <ListBox x:Name="ListBoxRoiTemplate" Grid.Row="5" Grid.ColumnSpan="2" Grid.RowSpan="3" Margin="5" SelectedIndex="0" ItemsSource="{Binding TemplateCollection}" IsEnabled="{Binding IsEnabled,ElementName=Cb_Cameras}">
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Name="MenueShow" Header="显示" FontSize="20" Click="MenueShow_Click"/>
+                            <MenuItem Name="MenueSelectItem" Header="使用该项" FontSize="20" Click="MenueSelectItem_Click"/>
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <UserCtrl:UC_CameraViewListItem CurCamID="{Binding SelectedIndex,ElementName=Cb_Cameras}"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

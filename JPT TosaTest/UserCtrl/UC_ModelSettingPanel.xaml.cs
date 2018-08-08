@@ -16,13 +16,28 @@ using System.Windows.Shapes;
 namespace JPT_TosaTest.UserCtrl
 {
     /// <summary>
-    /// UC_InstrumentSetting.xaml 的交互逻辑
+    /// UC_ModelSettingPanel.xaml 的交互逻辑
     /// </summary>
-    public partial class UC_InstrumentSetting : UserControl
+    public partial class UC_ModelSettingPanel : UserControl
     {
-        public UC_InstrumentSetting()
+        public UC_ModelSettingPanel()
         {
             InitializeComponent();
+        }
+
+        private void BtnSaveModelPara_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void MaxThreSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+
+        }
+
+        private void MinThreSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+
         }
     }
 }

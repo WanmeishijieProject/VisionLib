@@ -3,25 +3,56 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:useCtrl="clr-namespace:JPT_TosaTest.UserCtrl"
              xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
+             xmlns:UserCtrl="clr-namespace:JPT_TosaTest.UserCtrl"
+             xmlns:halcon="clr-namespace:HalconDotNet;assembly=halcondotnet"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="800" d:DesignWidth="1200">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="3"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="700"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-     
-        <useCtrl:TestUnitCtrl Grid.Column="0" HeaderName="ABC" HeaderBackground="LightGray" Margin="1"/>
-        <useCtrl:TestUnitCtrl Grid.Column="1" HeaderName="L1" HeaderBackground="LightGray" Margin="1"/>
-        <useCtrl:TestUnitCtrl Grid.Column="2" HeaderName="L2" HeaderBackground="LightGray" Margin="1"/>
-        <useCtrl:TestUnitCtrl Grid.Column="3" HeaderName="L3" HeaderBackground="LightGray" Margin="1"/>
+        <halcon:HWindowControlWPF Margin="1"/>
+        <halcon:HWindowControlWPF Grid.Row="1" Margin="1"/>
+        <Grid  Grid.Column="1">
+            <DataGrid Background="Transparent" ItemsSource="{Binding ResultCollection}"/>
+        </Grid>
+        <Grid Grid.Row="1" Grid.Column="1" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <DataGrid Name="DatagridPos" ItemsSource="{Binding TestItemCollection}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Hidden" Cursor="Arrow" Background="Transparent">
+              
+            </DataGrid>
+
+            <materialDesign:PopupBox Grid.Row="1"
+                                     Style="{StaticResource MaterialDesignMultiFloatingActionPopupBox}"
+                                     PlacementMode="LeftAndAlignMiddles"
+                                     UnfurlOrientation="Horizontal"
+                                     ToolTip="Manage items"
+                                     Margin="0 10 10 0"
+                                     HorizontalAlignment="Right" VerticalAlignment="Top"
+                                     IsEnabled="True">
+                <StackPanel Orientation="Horizontal">
+                    <Button ToolTip="Add an item" Command="{Binding AddPreSetCommand}">
+                        <Path Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" Stretch="Uniform" Width="15" Height="15"
+                              Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                    </Button>
+                    <Button ToolTip="Remove selected item"
+                            Command="{Binding RemoveSelectedItemCommand}" CommandParameter="{Binding SelectedIndex, ElementName=DatagridPos}">
+                        <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
+                              Stretch="Uniform"
+                              Width="15" Height="15"
+                              Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                    </Button>
+                </StackPanel>
+            </materialDesign:PopupBox>
+        </Grid>
     </Grid>
 </UserControl>

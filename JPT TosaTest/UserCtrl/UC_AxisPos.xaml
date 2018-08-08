@@ -1,0 +1,34 @@
+﻿<UserControl x:Class="JPT_TosaTest.UserCtrl.UC_AxisPos"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:JPT_TosaTest.UserCtrl"
+             mc:Ignorable="d" 
+             d:DesignHeight="500" d:DesignWidth="500">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="20*"/>
+            <ColumnDefinition Width="80*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Label Margin="1" Content="X:" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding HeaderBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+        <Label Margin="1" Grid.Row="1" Content="Y1:" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding HeaderBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+        <Label Margin="1" Grid.Row="2" Content="Y2:" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding HeaderBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+        <Label Margin="1" Grid.Row="3" Content="Z:" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding HeaderBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+        <Label Margin="1" Grid.Row="4" Content="R:" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding HeaderBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+
+        <Label Margin="1" Grid.Column="1" Content="100" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding LabelPosBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" Foreground="{Binding CtrlFontColor, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+        <Label Margin="1" Grid.Row="1" Grid.Column="1" Content="200" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding LabelPosBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" Foreground="{Binding CtrlFontColor, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+        <Label Margin="1" Grid.Row="2" Grid.Column="1" Content="200" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding LabelPosBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" Foreground="{Binding CtrlFontColor, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+        <Label Margin="1" Grid.Row="3" Grid.Column="1" Content="300" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding LabelPosBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" Foreground="{Binding CtrlFontColor, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+        <Label Margin="1" Grid.Row="4" Content="400" Grid.Column="1" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding LabelPosBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" Foreground="{Binding CtrlFontColor, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+
+    </Grid>
+</UserControl>

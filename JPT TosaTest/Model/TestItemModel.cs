@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GalaSoft.MvvmLight.Command;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -23,18 +24,60 @@ namespace JPT_TosaTest.Model
             get { return _itemName; }
         }
 
-        private string _itemValue;
-        public string ItemValue
+        private double _posX;
+        public double PosX
         {
             set
             {
-                if (_itemValue != value)
+                if (_posX != value)
                 {
-                    _itemValue = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ItemValue"));
+                    _posX = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("PosX"));
                 }
             }
-            get { return _itemValue; }
+            get { return _posX; }
+        }
+
+        private double _posY;
+        public double PosY
+        {
+            set
+            {
+                if (_posY != value)
+                {
+                    _posY = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("PosY"));
+                }
+            }
+            get { return _posY; }
+        }
+
+        private double _posZ;
+        public double PosZ
+        {
+            set
+            {
+                if (_posZ != value)
+                {
+                    _posZ = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("PosZ"));
+                }
+            }
+            get { return _posZ; }
+        }
+
+        private double _posR;
+        public double PosR
+        {
+            set
+            {
+                if (_posR != value)
+                {
+                    _posR = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("PosR"));
+                }
+            }
+            get { return _posR; }
         }
 
         private string _itemColor;
@@ -51,6 +94,16 @@ namespace JPT_TosaTest.Model
             get { return _itemColor; }
         }
 
+        public RelayCommand TeachCommand
+        {
+            get
+            {
+                return new RelayCommand(() =>
+                {
+                    Console.WriteLine("Click");
+                });
+            }
+        }
         public event PropertyChangedEventHandler PropertyChanged;
     }
 }

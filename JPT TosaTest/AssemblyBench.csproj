@@ -37,8 +37,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DevExpress.Data.v17.1, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
-    <Reference Include="DevExpress.Mvvm.v17.1, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.Mvvm.v17.1, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="DevExpress.Printing.v17.1.Core, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
     <Reference Include="DevExpress.Xpf.Core.v17.1, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.Xpf.PropertyGrid.v17.1, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
     <Reference Include="DevExpress.Xpf.Ribbon.v17.1, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
     <Reference Include="GalaSoft.MvvmLight, Version=5.3.0.19026, Culture=neutral, PublicKeyToken=e7570ab207bcb616, processorArchitecture=MSIL">
       <HintPath>..\packages\MvvmLightLibs.5.3.0.0\lib\net45\GalaSoft.MvvmLight.dll</HintPath>
@@ -49,8 +53,15 @@
     <Reference Include="GalaSoft.MvvmLight.Platform, Version=5.3.0.19032, Culture=neutral, PublicKeyToken=5f873c45e98af8a1, processorArchitecture=MSIL">
       <HintPath>..\packages\MvvmLightLibs.5.3.0.0\lib\net45\GalaSoft.MvvmLight.Platform.dll</HintPath>
     </Reference>
+    <Reference Include="halcondotnet, Version=10.0.0.0, Culture=neutral, PublicKeyToken=4973bed59ddbf2b8, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\halcondotnet.dll</HintPath>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="IrixiStepperControllerHelper">
+      <HintPath>bin\Debug\MotionCard\IrixiStepperControllerHelper.dll</HintPath>
     </Reference>
     <Reference Include="MaterialDesignColors">
       <HintPath>ExDll\MaterialDesignColors.dll</HintPath>
@@ -102,6 +113,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Classes\NotifyPropertyChangedExtension.cs" />
     <Compile Include="Classes\FileHelper.cs" />
     <Compile Include="Classes\ListBoxBehavior.cs" />
     <Compile Include="Classes\LogExcel.cs" />
@@ -114,35 +126,67 @@
     <Compile Include="Config\SystemCfgManager\SystemCfgManager.cs" />
     <Compile Include="Config\SystemCfgManager\SystemParaModel.cs" />
     <Compile Include="Converter\Bool2Visibility.cs" />
+    <Compile Include="Converter\EnumCamSnapState2SnapButtonEnable.cs" />
     <Compile Include="Converter\Int2BackgroundBrush.cs" />
     <Compile Include="Converter\int2Visibility.cs" />
+    <Compile Include="Converter\IsChecked2RegionOperator.cs" />
+    <Compile Include="Converter\IsChecked2RegionType.cs" />
     <Compile Include="Converter\MsgType2ForeBrush.cs" />
     <Compile Include="Converter\MsgType2Image.cs" />
+    <Compile Include="Converter\RoiTemplate2Visibility.cs" />
+    <Compile Include="Converter\Text2CameStateImage.cs" />
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Instrument\InstrumentBase.cs" />
     <Compile Include="Instrument\InstrumentMgr.cs" />
+    <Compile Include="IOCards\IOBase.cs" />
+    <Compile Include="IOCards\IOCardMgr.cs" />
     <Compile Include="Model\DataItem.cs" />
     <Compile Include="Model\DataService.cs" />
+    <Compile Include="Model\HardwareParaModel.cs" />
     <Compile Include="Model\IDataService.cs" />
     <Compile Include="Model\MessageItem.cs" />
+    <Compile Include="Model\ResultItem.cs" />
     <Compile Include="Model\TestItemModel.cs" />
-    <Compile Include="UserCtrl\TestUnitCtrl.xaml.cs">
-      <DependentUpon>TestUnitCtrl.xaml</DependentUpon>
+    <Compile Include="MotionCards\MotionBase.cs" />
+    <Compile Include="MotionCards\MotionMgr.cs" />
+    <Compile Include="MotionCards\Motion_IrixiEE0017.cs" />
+    <Compile Include="Rules\NotEmptyValidationRule.cs" />
+    <Compile Include="UserCtrl\UC_AxisPos.xaml.cs">
+      <DependentUpon>UC_AxisPos.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserCtrl\UC_CameraDebug.xaml.cs">
+      <DependentUpon>UC_CameraDebug.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserCtrl\UC_CameraViewListItem.xaml.cs">
+      <DependentUpon>UC_CameraViewListItem.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserCtrl\UC_ErrorInfo.xaml.cs">
+      <DependentUpon>UC_ErrorInfo.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserCtrl\UC_HomeView.xaml.cs">
       <DependentUpon>UC_HomeView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UserCtrl\UC_InstrumentSetting.xaml.cs">
-      <DependentUpon>UC_InstrumentSetting.xaml</DependentUpon>
+    <Compile Include="UserCtrl\UC_ModelSettingPanel.xaml.cs">
+      <DependentUpon>UC_ModelSettingPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserCtrl\UC_Para.xaml.cs">
+      <DependentUpon>UC_Para.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserCtrl\UC_RoiSettingPanel.xaml.cs">
+      <DependentUpon>UC_RoiSettingPanel.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserCtrl\UC_Setting.xaml.cs">
       <DependentUpon>UC_Setting.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UserCtrl\UC_SystemSetting.xaml.cs">
-      <DependentUpon>UC_SystemSetting.xaml</DependentUpon>
+    <Compile Include="UserCtrl\UC_TeachBox.xaml.cs">
+      <DependentUpon>UC_TeachBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserCtrl\Window_TeachBox.xaml.cs">
+      <DependentUpon>Window_TeachBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Compile Include="Vision\HalconVision.cs" />
     <Compile Include="WorkFlow\WorkCalib.cs" />
     <Compile Include="WorkFlow\WorkFlowBase.cs" />
     <Compile Include="WorkFlow\WorkFlowMgr.cs" />
@@ -162,11 +206,27 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resource\StylesResourceDictionary.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Skins\MainSkin.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UserCtrl\TestUnitCtrl.xaml">
+    <Page Include="UserCtrl\UC_AxisPos.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserCtrl\UC_CameraDebug.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserCtrl\UC_CameraViewListItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserCtrl\UC_ErrorInfo.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -174,7 +234,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UserCtrl\UC_InstrumentSetting.xaml">
+    <Page Include="UserCtrl\UC_ModelSettingPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserCtrl\UC_Para.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserCtrl\UC_RoiSettingPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -182,7 +250,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UserCtrl\UC_SystemSetting.xaml">
+    <Page Include="UserCtrl\UC_TeachBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserCtrl\Window_TeachBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -235,6 +307,44 @@
     <Resource Include="Images\Error24_24.png" />
     <Resource Include="Images\Info24_24.png" />
     <Resource Include="Images\Warning24_24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Camera.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Down.png" />
+    <Resource Include="Images\Left.png" />
+    <Resource Include="Images\Right.png" />
+    <Resource Include="Images\Up.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\joypad.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\close_1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ArrowDown.png" />
+    <Resource Include="Images\ArrowUp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ArrowLeft.png" />
+    <Resource Include="Images\ArrowRight.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Delete.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\GrabOnce.png" />
+    <Resource Include="Images\GrabRepeat.png" />
+    <Resource Include="Images\StopGrab.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Connected.png" />
+    <Resource Include="Images\Disconnected.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\User.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

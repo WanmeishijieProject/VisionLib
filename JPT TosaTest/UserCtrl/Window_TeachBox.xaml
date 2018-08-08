@@ -1,0 +1,177 @@
+﻿<Window x:Class="JPT_TosaTest.UserCtrl.Window_TeachBox"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:Rules="clr-namespace:JPT_TosaTest.Rules"
+        xmlns:UserCtrl="clr-namespace:JPT_TosaTest.UserCtrl"
+         WindowStyle="None"
+        Background="Transparent" AllowsTransparency="true" ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"    
+        mc:Ignorable="d"
+        Title="Window_TeachBox" Height="800" Width="600">
+    <Grid MouseDown="Grid_MouseDown">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Border Grid.RowSpan="2" CornerRadius="20" Background="Blue" Opacity="0.3"/>
+        <TextBlock Text="TeachBox" FontSize="25" Margin="10,10,0,0" Foreground="White"/>
+        <Button VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,10,10,0" Background="Transparent" Width="50" Height="40" BorderThickness="0" Click="Button_Click">
+            <Image Source="/JPT TosaTest;component/Images/close_1.png"/>
+        </Button>
+        <Grid Grid.RowSpan="2" Background="White" MouseDown="Grid_MouseDown" Margin="30,60,30,30">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40*"/>
+                <RowDefinition Height="60*"/>
+            </Grid.RowDefinitions>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="350"/>
+                </Grid.ColumnDefinitions>
+                <UserCtrl:UC_AxisPos  CtrlFontSize="20" HeaderBrush="LightSeaGreen" LabelPosBrush="LightBlue"/>
+                <Grid Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0" Margin="1" FontSize="15" materialDesign:HintAssist.Hint="Speed(mm)" Style="{StaticResource MaterialDesignFloatingHintTextBox}"  />
+                    <TextBox Grid.Row="1" Margin="1" FontSize="15" materialDesign:HintAssist.Hint="Speed(mm)" Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
+                    <TextBox Grid.Row="2" Margin="1" FontSize="15" materialDesign:HintAssist.Hint="Speed(mm)" Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
+                    <TextBox Grid.Row="3" Margin="1" FontSize="15" materialDesign:HintAssist.Hint="Speed(mm)" Style="{StaticResource MaterialDesignFloatingHintTextBox}"  />
+                    <TextBox Grid.Row="4" Margin="1" FontSize="15" materialDesign:HintAssist.Hint="Speed(mm)" Style="{StaticResource MaterialDesignFloatingHintTextBox}" />
+
+                    <TextBox Grid.Row="0" Margin="1" FontSize="15" Grid.Column="1" materialDesign:HintAssist.Hint="Pos(mm)" Style="{StaticResource MaterialDesignFloatingHintTextBox}"  />
+                    <TextBox Grid.Row="1" Margin="1" FontSize="15" Grid.Column="1" materialDesign:HintAssist.Hint="Pos(mm)" Style="{StaticResource MaterialDesignFloatingHintTextBox}"  />
+                    <TextBox Grid.Row="2" Margin="1" FontSize="15" Grid.Column="1" materialDesign:HintAssist.Hint="Pos(mm)" Style="{StaticResource MaterialDesignFloatingHintTextBox}"  />
+                    <TextBox Grid.Row="3" Margin="1" FontSize="15" Grid.Column="1" materialDesign:HintAssist.Hint="Pos(mm)" Style="{StaticResource MaterialDesignFloatingHintTextBox}"  />
+                    <TextBox Grid.Row="4" Margin="1" FontSize="15" Grid.Column="1" materialDesign:HintAssist.Hint="Pos(mm)" Style="{StaticResource MaterialDesignFloatingHintTextBox}"  />
+
+                    <Button Grid.Row="0" Grid.Column="2" Background="White" Height="50" Width="50" VerticalAlignment="Center" BorderThickness="0">
+                        <Image Source="/JPT TosaTest;component/Images/start.png"/>
+                    </Button>
+                    <Button Grid.Row="1" Grid.Column="2" Background="White" Height="50" Width="50" VerticalAlignment="Center" BorderThickness="0">
+                        <Image Source="/JPT TosaTest;component/Images/start.png"/>
+                    </Button>
+                    <Button Grid.Row="2" Grid.Column="2" Background="White" Height="50" Width="50" VerticalAlignment="Center" BorderThickness="0">
+                        <Image Source="/JPT TosaTest;component/Images/start.png"/>
+                    </Button>
+                    <Button Grid.Row="3" Grid.Column="2" Background="White" Height="50" Width="50" VerticalAlignment="Center" BorderThickness="0">
+                        <Image Source="/JPT TosaTest;component/Images/start.png"/>
+                    </Button>
+                    <Button Grid.Row="4" Grid.Column="2" Background="White" Height="50" Width="50" VerticalAlignment="Center" BorderThickness="0">
+                        <Image Source="/JPT TosaTest;component/Images/start.png"/>
+                    </Button>
+
+                    <Button Grid.Row="0" Grid.Column="3" Background="White" Height="50" Width="50" VerticalAlignment="Center" BorderThickness="0">
+                        <Image Source="/JPT TosaTest;component/Images/home.png"/>
+                    </Button>
+                    <Button Grid.Row="1" Grid.Column="3" Background="White" Height="50" Width="50" VerticalAlignment="Center" BorderThickness="0">
+                        <Image Source="/JPT TosaTest;component/Images/home.png"/>
+                    </Button>
+                    <Button Grid.Row="2" Grid.Column="3" Background="White" Height="50" Width="50" VerticalAlignment="Center" BorderThickness="0">
+                        <Image Source="/JPT TosaTest;component/Images/home.png"/>
+                    </Button>
+                    <Button Grid.Row="3" Grid.Column="3" Background="White" Height="50" Width="50" VerticalAlignment="Center" BorderThickness="0">
+                        <Image Source="/JPT TosaTest;component/Images/home.png"/>
+                    </Button>
+                    <Button Grid.Row="4" Grid.Column="3" Background="White" Height="50" Width="50" VerticalAlignment="Center" BorderThickness="0">
+                        <Image Source="/JPT TosaTest;component/Images/home.png"/>
+                    </Button>
+                </Grid>
+
+            </Grid>
+
+            <Grid Grid.Row="1" Width="500" Height="500" HorizontalAlignment="Left">
+                <Grid HorizontalAlignment="Left" VerticalAlignment="Top" Margin="50,70" Width="300" Height="300">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Ellipse Grid.Row="0" Grid.RowSpan="3" Grid.ColumnSpan="4" Width="300" Height="300" Fill="LightBlue" Opacity="0.3"/>
+                    <Button Grid.Row="1" Background="Transparent" BorderThickness="0" Width="100" Height="100" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="X" Foreground="Black" HorizontalAlignment="Center" FontSize="20"/>
+                            <Image  Source="/JPT TosaTest;component/Images/Left.png" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Row="2" Grid.Column="1" Background="Transparent" BorderThickness="0" Width="100" Height="100" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="Y1" Foreground="Black" HorizontalAlignment="Center" FontSize="20"/>
+                            <Image  Source="/JPT TosaTest;component/Images/Down.png" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Row="2" Grid.Column="2" Background="Transparent" BorderThickness="0" Width="100" Height="100" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="Y2" Foreground="Black" HorizontalAlignment="Center" FontSize="20"/>
+                            <Image  Source="/JPT TosaTest;component/Images/Down.png" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Column="1" Background="Transparent" BorderThickness="0" Width="100" Height="100" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="Y1" Foreground="Black" HorizontalAlignment="Center" FontSize="20"/>
+                            <Image  Source="/JPT TosaTest;component/Images/Up.png" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Column="2" Background="Transparent" BorderThickness="0" Width="100" Height="100" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="Y2" Foreground="Black" HorizontalAlignment="Center" FontSize="20"/>
+                            <Image  Source="/JPT TosaTest;component/Images/Up.png" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Row="1" Grid.Column="3" Background="Transparent" BorderThickness="0" Width="100" Height="100" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="X" Foreground="Black" HorizontalAlignment="Center" FontSize="20"/>
+                            <Image  Source="/JPT TosaTest;component/Images/Right.png" />
+                        </StackPanel>
+                    </Button>
+                    <TextBox materialDesign:HintAssist.Hint="Step(um)" Text="{Binding Content}" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="2"
+                             VerticalAlignment="Center" HorizontalAlignment="Center"  FontSize="20" materialDesign:HintAssist.FloatingOffset="0,-20" materialDesign:HintAssist.FloatingScale="3"/>
+                </Grid>
+                <Button  Background="White" BorderThickness="0" Width="65" Height="100" Margin="375,247,25,153">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="Z" Foreground="Black" HorizontalAlignment="Center" FontSize="20" Margin="0,10,0,10"/>
+                        <Image  Source="/JPT TosaTest;component/Images/ArrowDown.png" />
+                    </StackPanel>
+                </Button>
+                <Button  BorderThickness="0" Width="65" Height="100" Margin="375,79,25,321" Background="White">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="Z" Foreground="Black" HorizontalAlignment="Center" FontSize="20" Margin="0,10,0,10"/>
+                        <Image  Source="/JPT TosaTest;component/Images/ArrowUp.png" />
+                    </StackPanel>
+                </Button>
+                <Button  BorderThickness="0" Height="Auto" Background="White" Margin="116,20,206,436">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="R轴" Foreground="Black" VerticalAlignment="Center" FontSize="20" Margin="10,0,10,0"/>
+                        <Image  Source="/JPT TosaTest;component/Images/ArrowLeft.png" />
+                    </StackPanel>
+                </Button>
+                <Button  BorderThickness="0" Height="Auto" Background="White" Margin="116,374,206,84">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="R轴" Foreground="Black" VerticalAlignment="Center" FontSize="20" Margin="10,0,10,0"/>
+                        <Image  Source="/JPT TosaTest;component/Images/ArrowRight.png" />
+                    </StackPanel>
+                    
+                </Button>
+            </Grid >
+        </Grid>
+    </Grid>
+</Window>

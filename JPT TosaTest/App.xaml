@@ -19,8 +19,15 @@
             <Convert:MsgType2ForeBrush x:Key="MsgType2ForeBrush"/>
             <Convert:MsgType2Image x:Key="MsgType2Image"/>
             <Convert:Int2BackgroundBrush x:Key="Int2BackgroundBrush"/>
+            <Convert:EnumCamSnapState2SnapButtonEnable x:Key="EnumCamSnapState2SnapButtonEnable"/>
+            <Convert:Text2CameStateImage x:Key="Text2CameStateImage"/>
+            <Convert:RoiTemplate2Visibility x:Key="RoiTemplate2Visibility"/>
+            <Convert:IsChecked2RegionOperator x:Key="IsChecked2RegionOperator"/>
+            <Convert:IsChecked2RegionType x:Key="IsChecked2RegionType"/>
+            
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resource/MDStyle.xaml"/>
+                <ResourceDictionary Source="Resource/StylesResourceDictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

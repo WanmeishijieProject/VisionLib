@@ -14,7 +14,8 @@ namespace JPT_TosaTest
         public MainWindow()
         {
             InitializeComponent();
-            Closing += (s, e) => ViewModelLocator.Cleanup();
+            Closing += (s, e) => ViewModelLocator.Cleanup();  
         }
+       
     }
 }

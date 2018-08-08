@@ -1,73 +1,39 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using JPT_TosaTest.Model;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using JPT_TosaTest.UserCtrl;
+using System.Threading;
+
 namespace JPT_TosaTest.ViewModel
 {
-    /// <summary>
-    /// This class contains properties that the main View can data bind to.
-    /// <para>
-    /// See http://www.mvvmlight.net
-    /// </para>
-    /// </summary>
     public class MainViewModel : ViewModelBase
     {
-        private readonly IDataService _dataService;
         private int _viewIndex = 1;
-        public int _errorCount = 0;
-        public bool _boolShowInfoListBox = false;
-        /// <summary>
-        /// The <see cref="WelcomeTitle" /> property's name.
-        /// </summary>
-        public const string WelcomeTitlePropertyName = "WelcomeTitle";
+        private int _errorCount = 0;
+        private bool _boolShowInfoListBox = false;
+        private AutoResetEvent OpenedEvent = new AutoResetEvent(true);
+       
 
-        private string _welcomeTitle = string.Empty;
 
-        /// <summary>
-        /// Gets the WelcomeTitle property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string WelcomeTitle
-        {
-            get
-            {
-                return _welcomeTitle;
-            }
-            set
-            {
-                Set(ref _welcomeTitle, value);
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the MainViewModel class.
-        /// </summary>
         public MainViewModel(IDataService dataService)
         {
-            _dataService = dataService;
-            _dataService.GetData(
-                (item, error) =>
-                {
-                    if (error != null)
-                    {
-                        // Report error here
-                        return;
-                    }
-
-                    WelcomeTitle = item.Title;
-                });
-
-            TestItem = new ObservableCollection<TestItemModel>()
+            TestItemCollection = new ObservableCollection<TestItemModel>()
             {
-                new TestItemModel(){ ItemName="Item1", ItemValue="Value1"},
-                new TestItemModel(){ ItemName="Item2", ItemValue="Value2"},
-                new TestItemModel(){ ItemName="Item3", ItemValue="Value3"}
+                new TestItemModel(){ ItemName="Item1", PosX=19.876, PosY=22.987, ItemColor="Green"},
+                new TestItemModel(){ ItemName="Item1", PosX=19.876, PosY=22.987, ItemColor="Green"},
+                new TestItemModel(){ ItemName="Item1", PosX=19.876, PosY=22.987, ItemColor="Green"},
+                new TestItemModel(){ ItemName="Item1", PosX=19.876, PosY=22.987, ItemColor="Green"},
+            };
+            ResultCollection = new ObservableCollection<ResultItem>()
+            {
+              new ResultItem(){ Index=1, HSG_X=1, HSG_Y=2, HSG_R=3, PLC_X=5, PLC_Y=6, PLC_R=7 }
             };
             SystemErrorMessageCollection = new ObservableCollection<MessageItem>();
             SystemErrorMessageCollection.CollectionChanged += SystemErrorMessageCollection_CollectionChanged;
         }
-
         private void SystemErrorMessageCollection_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             var colls = from item in SystemErrorMessageCollection where item.MsgType == EnumMessageType.Error select item;
@@ -88,7 +54,12 @@ namespace JPT_TosaTest.ViewModel
                 }
             }
         }
-        public ObservableCollection<TestItemModel> TestItem
+        public ObservableCollection<TestItemModel> TestItemCollection
+        {
+            get;
+            set;
+        }
+        public ObservableCollection<ResultItem> ResultCollection
         {
             get;
             set;
@@ -137,11 +108,14 @@ namespace JPT_TosaTest.ViewModel
         }
         public RelayCommand ShowInfoListCommand
         {
-            get { return new RelayCommand(() =>
+            get
             {
-                SystemErrorMessageCollection.Add(new MessageItem() { MsgType = EnumMessageType.Error, StrMsg = "Error message" });
-                BoolShowInfoListBox = !BoolShowInfoListBox;
-            }); }
+                return new RelayCommand(() =>
+                      {
+                          SystemErrorMessageCollection.Add(new MessageItem() { MsgType = EnumMessageType.Error, StrMsg = "Error message" });
+                          ViewIndex = 3;
+                      });
+            }
         }
         public RelayCommand ClearMessageCommand
         {
@@ -153,7 +127,55 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
+        public RelayCommand AddPreSetCommand
+        {
+            get
+            {
+                return new RelayCommand(() =>
+                {
+                    TestItemCollection.Add(new TestItemModel() { ItemName = "Item1", PosX = 19.876, PosY = 22.987, ItemColor = "Green" });
+                });
+            }
+        }
+        public RelayCommand<int> RemoveSelectedItemCommand
+        {
+            get
+            {
+                return new RelayCommand<int>(nIndex =>
+                {
+                    if (nIndex >= 0)
+                        TestItemCollection.RemoveAt(nIndex);
+                });
+            }
+        }
+        public RelayCommand BtnTeachCommand
+        {
+            get
+            {
+                return new RelayCommand(() =>
+               {
 
+                   if (OpenedEvent.WaitOne(200))
+                   {
+                       Window_TeachBox dlg = new Window_TeachBox(ref OpenedEvent);
+                       dlg.Show();
+                   }
+               });
+            }
+        }
+
+        public RelayCommand BtnCameraCommand
+        {
+            get { return new RelayCommand(() => ViewIndex = 4); }
+        }
+
+        public RelayCommand BtnLogInCommand
+        {
+            get
+            {
+                return new RelayCommand(() => ViewIndex = 5);
+            }
+        }
         #endregion
     }
 }

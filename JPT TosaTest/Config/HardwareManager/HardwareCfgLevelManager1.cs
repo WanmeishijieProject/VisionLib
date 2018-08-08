@@ -17,6 +17,7 @@ namespace JPT_TosaTest.Config.HardwareManager
     {
 
     }
+
  
  
     public class ComportCfg
