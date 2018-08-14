@@ -94,16 +94,6 @@ namespace JPT_TosaTest.Model
             get { return _itemColor; }
         }
 
-        public RelayCommand TeachCommand
-        {
-            get
-            {
-                return new RelayCommand(() =>
-                {
-                    Console.WriteLine("Click");
-                });
-            }
-        }
         public event PropertyChangedEventHandler PropertyChanged;
     }
 }

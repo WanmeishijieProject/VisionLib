@@ -6,20 +6,50 @@ using System.Threading.Tasks;
 
 namespace JPT_TosaTest.Config.HardwareManager
 {
-    public class HardwareCfgLevelManager1
+    //为所有的Instrument提供配置
+    public class InstrumentCfg
     {
         public bool Enabled { get; set; }
         public string InstrumentName { get; set; }
         public string ConnectMode { get; set; }
         public string PortName { get; set; }
     }
-    public class PowerMeteConfig : HardwareCfgLevelManager1
-    {
 
+    //为所有的运动控制卡提供配置
+    public class MotionCardCfg
+    {
+        public bool Enabled { get; set; }
+        public string Name { get; set; }
+        public bool NeedInit { get; set; }
+        public int MinAxisNo { get; set; }
+        public int MaxAxisNo { get; set; }
+        public string RealAxisNo { get; set; }
+        public string SN { get; set; }
+        public string ConnectMode { get; set; }
+        public string PortName { get; set; }
     }
 
- 
- 
+    //位IO卡提供配置
+    public class IOCardCfg
+    {
+        public bool Enabled { get; set; }
+        public string Name { get; set; }
+        public bool NeedInit { get; set; }
+        public string ConnectMode { get; set; }
+        public string IOName { get; set; }
+    }
+
+    public class CameraCfg
+    {
+        public string Name { get; set; }            //UserName:IP
+        public string NameForVision { get; set; }   //Vision use
+        public int LightValue { get; set; }
+        public string ConnectType { get; set; }
+    }
+
+
+
+
     public class ComportCfg
     {
         public string PortName { get; set; }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JPT_TosaTest.Config.HardwareManager;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,12 +10,12 @@ namespace JPT_TosaTest.IOCards
     public abstract class IOBase
     {
 
-        
+        protected IOCardCfg ioCfg = null;
         /// <summary>
         /// 初始化IO卡
         /// </summary>
         /// <returns></returns>
-        public abstract bool Init();
+        public abstract bool Init(IOCardCfg ioCfg);
 
         /// <summary>
         /// 释放资源

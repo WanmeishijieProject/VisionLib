@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JPT_TosaTest.ViewModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,13 +17,18 @@ using System.Windows.Shapes;
 namespace JPT_TosaTest.UserCtrl
 {
     /// <summary>
-    /// UC_Para.xaml 的交互逻辑
+    /// UC_LogIn.xaml 的交互逻辑
     /// </summary>
-    public partial class UC_Para : UserControl
+    public partial class UC_LogIn : UserControl
     {
-        public UC_Para()
+        public UC_LogIn()
         {
             InitializeComponent();
+        }
+
+        private void BtnLogIn_Click(object sender, RoutedEventArgs e)
+        {
+            (UsrTextBox.DataContext as LogInViewModel).LogInCommand.Execute(new Tuple<string,string>(UsrTextBox.Text,PsdTextBox.Password));
         }
     }
 }

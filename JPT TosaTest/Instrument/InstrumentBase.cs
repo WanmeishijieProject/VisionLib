@@ -23,14 +23,14 @@ namespace JPT_TosaTest.Instrument
     public abstract class InstrumentBase
     {
         protected COMPORT_DATA comportData;
-        protected HardwareCfgLevelManager1 Config = null;
+        protected InstrumentCfg Config = null;
         //Comport
         protected SerialPort comPort = null;
         public int Index = -1;
         protected object _lock = new object();
         public abstract bool Init();
         public abstract bool DeInit();
-        public InstrumentBase(HardwareCfgLevelManager1 cfg)
+        public InstrumentBase(InstrumentCfg cfg)
         {
             Config = cfg;
         }

@@ -15,6 +15,7 @@
         Height="800"
         Width="1200"
         Title="Assembly Bench"
+        Loaded="Window_Loaded"
         DataContext="{Binding Main, Source={StaticResource Locator}}">
 
     <Window.Resources>
@@ -51,23 +52,28 @@
                         <dxb:BarButtonItem 
                             Content="Home" 
                             RibbonStyle="Large" Glyph="Images/home.png"
-                            Command="{Binding BtnHomeCommand}"/>
+                            Command="{Binding BtnHomeCommand}"
+                            IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Visibility}, ConverterParameter=1}"/>
                         <dxb:BarButtonItem 
                             Content="Setting" 
                             RibbonStyle="Large" Glyph="Images/settings.png"
-                            Command="{Binding BtnSettingCommand}"/>
+                            Command="{Binding BtnSettingCommand}"
+                            IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Visibility}, ConverterParameter=2}"/>
                         <dxb:BarButtonItem 
                             Content="Camera" 
                             RibbonStyle="Large" Glyph="Images/camera.png"
-                            Command="{Binding BtnCameraCommand}"/>
+                            Command="{Binding BtnCameraCommand}"
+                            IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Visibility}, ConverterParameter=2}"/>
                         <dxb:BarButtonItem 
                             Content="Teach" 
                             RibbonStyle="Large" Glyph="Images/joypad.png"
-                            Command="{Binding BtnTeachCommand}"/>
+                            Command="{Binding BtnTeachCommand}"
+                            IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Visibility}, ConverterParameter=2}"/>
                         <dxb:BarButtonItem 
-                            Content="Login" 
+                            Content="User" 
                             RibbonStyle="Large" Glyph="Images/User.png"
-                            Command="{Binding BtnLoginCommand}"/>
+                            Command="{Binding BtnUserCommand}"
+                            IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Visibility}, ConverterParameter=1}"/>
                     </dxr:RibbonPageGroup>
                 </dxr:RibbonPage>
             </dxr:RibbonDefaultPageCategory>
@@ -76,10 +82,11 @@
         <Grid Width="130" HorizontalAlignment="Right" Height="Auto" VerticalAlignment="Bottom">
             <UserCtrl:UC_AxisPos CtrlFontSize="10"/>
         </Grid>
-        <useCtrl:UC_HomeView Grid.Row="1" Level="1" Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=1}"/>
-        <useCtrl:UC_Setting Grid.Row="1" Level="2" Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=2}"/>
-        <useCtrl:UC_ErrorInfo Grid.Row="1" Level="1" Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=3}"/>
-        <useCtrl:UC_CameraDebug Grid.Row="1" Level="3" Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=4}"/>
+        <useCtrl:UC_HomeView Grid.Row="1"  Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=1}"/>
+        <useCtrl:UC_Setting Grid.Row="1"  Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=2}"/>
+        <useCtrl:UC_ErrorInfo Grid.Row="1"  Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=3}"/>
+        <useCtrl:UC_CameraDebug Grid.Row="1"  Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=4}"/>
+        <useCtrl:UC_LogIn Grid.Row="1"  Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility}, ConverterParameter=5}"/>
 
         <!--<materialDesign:Snackbar Grid.Row="1" HorizontalAlignment="Stretch" x:Name="SnackbarFive" IsActive="True">
             <materialDesign:SnackbarMessage>

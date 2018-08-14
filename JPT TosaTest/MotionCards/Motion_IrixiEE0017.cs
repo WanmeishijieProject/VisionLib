@@ -4,32 +4,30 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using IrixiStepperControllerHelper;
+using JPT_TosaTest.Config.HardwareManager;
 
 namespace JPT_TosaTest.MotionCards
 {
-    public struct EnumAxisState
-    {
-        public double CurAbsPos;
-        public bool IsHomed;
-    }
-
-
     public class Motion_IrixiEE0017 : MotionBase
     {
        
         private IrixiMotionController _controller = null;
         private bool IsInitialized = false;
+        private AxisArgs[] AxisStateList = new AxisArgs[16];
         
-
-        public override bool Init(int minAxis, int maxAxis, int gainFactor)
+        public override bool Init(MotionCardCfg motionCfg)
         {
-            MAX_AXIS = maxAxis;
-            MIN_AXIS = minAxis;
+            this.motionCfg = motionCfg;
+            MAX_AXIS = motionCfg.MaxAxisNo;
+            MIN_AXIS = motionCfg.MinAxisNo;
 
-            _controller = new IrixiMotionController();
+            _controller = new IrixiMotionController(motionCfg.SN);
             _controller.Open();
             _controller.OnConnectionStatusChanged += _controller_OnConnectionProgressChanged;
             _controller.OnReportUpdated += _controller_OnReportUpdated;
+
+            for (int i = 0; i < 16; i++)
+                AxisStateList[i]=new AxisArgs();
 
             return _controller.IsConnected;
         }
@@ -53,7 +51,16 @@ namespace JPT_TosaTest.MotionCards
 
         public override bool GetCurrentPos(int AxisNo, out double Pos)
         {
-            throw new NotImplementedException();
+            Pos = 0;
+            if (AxisNo > MAX_AXIS || AxisNo < MIN_AXIS)
+            {
+                return false;
+            }
+            lock (AxisStateList[AxisNo - MIN_AXIS].AxisLock)
+            {
+                Pos = AxisStateList[AxisNo - MIN_AXIS].CurAbsPos;
+            }
+            return true;
         }
 
         /// <summary>
@@ -67,6 +74,7 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public override bool Home(int AxisNo, int Dir, double Acc, double Speed1, double Speed2)    //阻塞
         {
+
             if (AxisNo > MAX_AXIS || AxisNo < MIN_AXIS)
             {
                 return false;
@@ -85,19 +93,32 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-
         }
 
 
 
         public override bool IsHomeStop(int AxisNo)
         {
-            throw new NotImplementedException();
+            if (AxisNo > MAX_AXIS || AxisNo < MIN_AXIS)
+            {
+                return false;
+            }
+            lock (AxisStateList[AxisNo-MIN_AXIS].AxisLock)
+            {
+                return AxisStateList[AxisNo - MIN_AXIS].IsHomed;
+            }
         }
 
         public override bool IsNormalStop(int AxisNo)
         {
-            throw new NotImplementedException();
+            if (AxisNo > MAX_AXIS || AxisNo < MIN_AXIS)
+            {
+                return false;
+            }
+            lock (AxisStateList[AxisNo - MIN_AXIS].AxisLock)
+            {
+                return AxisStateList[AxisNo - MIN_AXIS].IsRunning;
+            }
         }
 
         /// <summary>
@@ -161,10 +182,15 @@ namespace JPT_TosaTest.MotionCards
         }
         private void _controller_OnReportUpdated(object sender, DeviceStateReport e)
         {
+            int i = 0;
             foreach (var state in e.AxisStateCollection)
-            {       
-                //_axis.AbsPosition = state.AbsPosition;
-                //_axis.IsHomed = state.IsHomed;
+            {
+                lock (AxisStateList[i].AxisLock)
+                {
+                    AxisStateList[i].IsHomed = state.IsHomed;
+                    AxisStateList[i].IsRunning = state.IsRunning;
+                    AxisStateList[i++].CurAbsPos = state.AbsPosition;
+                }
             }
         }
     }

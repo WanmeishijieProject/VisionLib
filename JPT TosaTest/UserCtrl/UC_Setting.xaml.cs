@@ -24,11 +24,5 @@ namespace JPT_TosaTest.UserCtrl
         {
             InitializeComponent();
         }
-
-        public int Level
-        {
-            set;
-            get;
-        }
     }
 }

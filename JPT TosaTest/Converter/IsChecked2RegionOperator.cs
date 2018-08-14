@@ -1,4 +1,4 @@
-﻿using HalconVision.Vision;
+﻿using JPT_TosaTest.Vision;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

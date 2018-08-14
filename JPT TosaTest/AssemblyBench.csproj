@@ -9,11 +9,12 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>JPT_TosaTest</RootNamespace>
     <AssemblyName>JPT TosaTest</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -117,6 +118,7 @@
     <Compile Include="Classes\FileHelper.cs" />
     <Compile Include="Classes\ListBoxBehavior.cs" />
     <Compile Include="Classes\LogExcel.cs" />
+    <Compile Include="Classes\PasswordBoxBehavior.cs" />
     <Compile Include="Classes\PSSWraper.cs" />
     <Compile Include="Config\ConfigMgr.cs" />
     <Compile Include="Config\HardwareManager\HardwareCfgLevelManager1.cs" />
@@ -125,9 +127,12 @@
     <Compile Include="Config\SoftwareManager\SoftwareCfgManager.cs" />
     <Compile Include="Config\SystemCfgManager\SystemCfgManager.cs" />
     <Compile Include="Config\SystemCfgManager\SystemParaModel.cs" />
+    <Compile Include="Config\UserManager\UserCfgManager.cs" />
+    <Compile Include="Config\UserManager\UserModel.cs" />
     <Compile Include="Converter\Bool2Visibility.cs" />
     <Compile Include="Converter\EnumCamSnapState2SnapButtonEnable.cs" />
     <Compile Include="Converter\Int2BackgroundBrush.cs" />
+    <Compile Include="Converter\Level2Visibility.cs" />
     <Compile Include="Converter\int2Visibility.cs" />
     <Compile Include="Converter\IsChecked2RegionOperator.cs" />
     <Compile Include="Converter\IsChecked2RegionType.cs" />
@@ -135,18 +140,25 @@
     <Compile Include="Converter\MsgType2Image.cs" />
     <Compile Include="Converter\RoiTemplate2Visibility.cs" />
     <Compile Include="Converter\Text2CameStateImage.cs" />
+    <Compile Include="Converter\UserName2Visibility.cs" />
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Instrument\InstrumentBase.cs" />
     <Compile Include="Instrument\InstrumentMgr.cs" />
     <Compile Include="IOCards\IOBase.cs" />
     <Compile Include="IOCards\IOCardMgr.cs" />
+    <Compile Include="IOCards\IO_IrixiEE0017.cs" />
+    <Compile Include="Model\CameraItem.cs" />
     <Compile Include="Model\DataItem.cs" />
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\HardwareParaModel.cs" />
     <Compile Include="Model\IDataService.cs" />
     <Compile Include="Model\MessageItem.cs" />
     <Compile Include="Model\ResultItem.cs" />
+    <Compile Include="Model\RoiItem.cs" />
+    <Compile Include="Model\ModelItem.cs" />
+    <Compile Include="Model\RoiModelBase.cs" />
     <Compile Include="Model\TestItemModel.cs" />
+    <Compile Include="MotionCards\AxisArgs.cs" />
     <Compile Include="MotionCards\MotionBase.cs" />
     <Compile Include="MotionCards\MotionMgr.cs" />
     <Compile Include="MotionCards\Motion_IrixiEE0017.cs" />
@@ -166,6 +178,12 @@
     <Compile Include="UserCtrl\UC_HomeView.xaml.cs">
       <DependentUpon>UC_HomeView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserCtrl\UC_LogIn.xaml.cs">
+      <DependentUpon>UC_LogIn.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserCtrl\UC_MessageBox.xaml.cs">
+      <DependentUpon>UC_MessageBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserCtrl\UC_ModelSettingPanel.xaml.cs">
       <DependentUpon>UC_ModelSettingPanel.xaml</DependentUpon>
     </Compile>
@@ -181,10 +199,16 @@
     <Compile Include="UserCtrl\UC_TeachBox.xaml.cs">
       <DependentUpon>UC_TeachBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserCtrl\Window_AddRoiModel.xaml.cs">
+      <DependentUpon>Window_AddRoiModel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserCtrl\Window_TeachBox.xaml.cs">
       <DependentUpon>Window_TeachBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModel\CamDebugViewModel.cs" />
+    <Compile Include="ViewModel\LogInViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
+    <Compile Include="ViewModel\SettingVM.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Compile Include="Vision\HalconVision.cs" />
     <Compile Include="WorkFlow\WorkCalib.cs" />
@@ -234,6 +258,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="UserCtrl\UC_LogIn.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserCtrl\UC_MessageBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserCtrl\UC_ModelSettingPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -251,6 +283,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserCtrl\UC_TeachBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserCtrl\Window_AddRoiModel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -345,6 +381,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\User.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\bk.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

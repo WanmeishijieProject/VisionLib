@@ -16,6 +16,11 @@ namespace JPT_TosaTest
             InitializeComponent();
             Closing += (s, e) => ViewModelLocator.Cleanup();  
         }
-       
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            var Vm = DataContext as MainViewModel;
+            Vm.WindowLoadedCommand.Execute(null);
+        }
     }
 }

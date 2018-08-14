@@ -16,13 +16,6 @@ using JPT_TosaTest.Model;
 
 namespace JPT_TosaTest.ViewModel
 {
-    /// <summary>
-    /// This class contains static references to all the view models in the
-    /// application and provides an entry point for the bindings.
-    /// <para>
-    /// See http://www.mvvmlight.net
-    /// </para>
-    /// </summary>
     public class ViewModelLocator
     {
         static ViewModelLocator()
@@ -39,11 +32,11 @@ namespace JPT_TosaTest.ViewModel
             }
 
             SimpleIoc.Default.Register<MainViewModel>();
+            SimpleIoc.Default.Register<SettingVM>();
+            SimpleIoc.Default.Register<LogInViewModel>();
+            SimpleIoc.Default.Register<CamDebugViewModel>();
         }
 
-        /// <summary>
-        /// Gets the Main property.
-        /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
             "CA1822:MarkMembersAsStatic",
             Justification = "This non-static member is needed for data binding purposes.")]
@@ -54,6 +47,29 @@ namespace JPT_TosaTest.ViewModel
                 return ServiceLocator.Current.GetInstance<MainViewModel>();
             }
         }
+
+        public SettingVM SettingViewModel
+        {
+            get
+            {
+                return ServiceLocator.Current.GetInstance<SettingVM>();
+            }
+        }
+        public LogInViewModel LogInVM
+        {
+            get
+            {
+                return ServiceLocator.Current.GetInstance<LogInViewModel>();
+            }
+        }
+        public CamDebugViewModel CamDebugVM
+        {
+            get
+            {
+                return ServiceLocator.Current.GetInstance<CamDebugViewModel>();
+            }
+        }
+
 
         public static void Cleanup()
         {

@@ -17,10 +17,10 @@ namespace JPT_TosaTest.WorkFlow
         }
         public WorkCalib(WorkFlowConfig cfg) : base(cfg)
         {
+
         }
         protected override int WorkFlow()
         {
-          
             return 0;
         }
 

@@ -24,7 +24,8 @@
             <Convert:RoiTemplate2Visibility x:Key="RoiTemplate2Visibility"/>
             <Convert:IsChecked2RegionOperator x:Key="IsChecked2RegionOperator"/>
             <Convert:IsChecked2RegionType x:Key="IsChecked2RegionType"/>
-            
+            <Convert:UserName2Visibility x:Key="UserName2Visibility"/>
+            <Convert:Level2Visibility x:Key="Level2Visibility"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resource/MDStyle.xaml"/>
                 <ResourceDictionary Source="Resource/StylesResourceDictionary.xaml"/>

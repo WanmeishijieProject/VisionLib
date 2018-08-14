@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using GalaSoft.MvvmLight.Messaging;
 using HalconDotNet;
 
 
-namespace HalconVision.Vision
+namespace JPT_TosaTest.Vision
 {
     public enum Enum_REGION_OPERATOR { ADD, SUB }
     public enum Enum_REGION_TYPE { RECTANGLE, CIRCLE }
@@ -43,10 +39,10 @@ namespace HalconVision.Vision
     {
         ModelRegionReduce,
     }
-    public class Vision
+    public class HalconVision
     {
         #region constructor
-        private Vision()
+        private HalconVision()
         {
             HOperatorSet.GenEmptyObj(out HObject emptyImage);
             for (int i = 0; i < 10; i++)
@@ -59,8 +55,8 @@ namespace HalconVision.Vision
             HOperatorSet.GenEmptyObj(out Region);
             CamCfgDic = FindCamera(EnumCamType.HuaRay,new List<string>() { "Cam1","Cam2"});
         }
-        private static readonly Lazy<Vision> _instance = new Lazy<Vision>(() => new Vision());
-        public static Vision Instance
+        private static readonly Lazy<HalconVision> _instance = new Lazy<HalconVision>(() => new HalconVision());
+        public static HalconVision Instance
         {
             get { return _instance.Value; }
         }
@@ -82,7 +78,7 @@ namespace HalconVision.Vision
         private HObject Region = null;
         public Enum_REGION_OPERATOR RegionOperator = Enum_REGION_OPERATOR.ADD;
         public Enum_REGION_TYPE RegionType = Enum_REGION_TYPE.CIRCLE;
-        //private HObject ImageTemp = null;
+        private object VisionLock = new object();   //防止连续拍照时窗口缩放
         #endregion
 
         public bool AttachCamWIndow(int nCamID, string Name, HTuple hWindow)

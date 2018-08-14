@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JPT_TosaTest.Config.HardwareManager;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,12 +11,12 @@ namespace JPT_TosaTest.MotionCards
     {
         protected int MAX_AXIS;
         protected int MIN_AXIS;
-
+        protected MotionCardCfg motionCfg=null;
         /// <summary>
         /// 板卡初始化
         /// </summary>
         /// <returns></returns>
-        public abstract bool Init(int minAxis, int maxAxis, int gainFactor);
+        public abstract bool Init(MotionCardCfg motionCfg);
 
         /// <summary>
         /// 释放板卡资源
