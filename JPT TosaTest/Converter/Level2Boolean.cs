@@ -9,12 +9,12 @@ using System.Windows.Data;
 
 namespace JPT_TosaTest.Converter
 {
-    class Level2Visibility : IValueConverter
+    class Level2Boolean : IValueConverter
     {
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return (int)value>=System.Convert.ToInt16(parameter.ToString()) ? Visibility.Visible : Visibility.Hidden;
+            return (int)value>=System.Convert.ToInt16(parameter.ToString());
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using GalaSoft.MvvmLight.Messaging;
 using HalconDotNet;
-
+using JPT_TosaTest.UserCtrl;
 
 namespace JPT_TosaTest.Vision
 {
@@ -78,7 +79,7 @@ namespace JPT_TosaTest.Vision
         private HObject Region = null;
         public Enum_REGION_OPERATOR RegionOperator = Enum_REGION_OPERATOR.ADD;
         public Enum_REGION_TYPE RegionType = Enum_REGION_TYPE.CIRCLE;
-        private object VisionLock = new object();   //防止连续拍照时窗口缩放
+        private AutoResetEvent SyncEvent = new AutoResetEvent(false);
         #endregion
 
         public bool AttachCamWIndow(int nCamID, string Name, HTuple hWindow)
@@ -138,6 +139,13 @@ namespace JPT_TosaTest.Vision
                 return true;
             }
         }
+        public void GetSyncSp(out AutoResetEvent Se, out object Lock, int CamID)
+        {
+            Se = SyncEvent;
+            Lock = _lockList[CamID];
+
+        }
+
         public bool OpenCam(int nCamID)
         {
             if (nCamID < 0)
@@ -244,9 +252,12 @@ namespace JPT_TosaTest.Vision
                         HoImageList[nCamID] = null;
                     }
                     HoImageList[nCamID] = image.SelectObj(1);
-                    foreach (var it in HwindowDic[nCamID])
-                        if (it.Value != -1)
-                            HOperatorSet.DispObj(HoImageList[nCamID], it.Value);
+                    if (!SyncEvent.WaitOne(10))
+                    {
+                        foreach (var it in HwindowDic[nCamID])
+                            if (it.Value != -1)
+                                HOperatorSet.DispObj(HoImageList[nCamID], it.Value);
+                    }
                 }
             }
             catch (Exception ex)
@@ -592,38 +603,55 @@ namespace JPT_TosaTest.Vision
         }
         public bool SaveImage(int nCamID, EnumImageType type, string filePath, string fileName, HTuple hWindow)
         {
-            if (nCamID < 0)
-                return false;
-            if (!Directory.Exists(filePath))
-                return false;
-            switch (type)
+            try
             {
-                case EnumImageType.Image:
-                    HOperatorSet.WriteImage(HoImageList[nCamID], "jpeg", 0, $"{filePath}\\{fileName}");
-                    break;
-                case EnumImageType.Window:
-                    HOperatorSet.DumpWindow(hWindow, "jpeg", $"{filePath}\\{fileName}");
-                    break;
+                if (nCamID < 0)
+                    return false;
+                if (!Directory.Exists(filePath))
+                    return false;
+                switch (type)
+                {
+                    case EnumImageType.Image:
+                        HOperatorSet.WriteImage(HoImageList[nCamID], "jpeg", 0, $"{filePath}\\{fileName}");
+                        break;
+                    case EnumImageType.Window:
+                        HOperatorSet.DumpWindow(hWindow, "jpeg", $"{filePath}\\{fileName}");
+                        break;
+                }
+                return true;
             }
-            return true;
+            catch (Exception ex)
+            {
+                UC_MessageBox.ShowMsgBox($"{ex.Message}");
+                return false;
+            }
         }
 
         public bool OpenImageInWindow(int nCamID, string imageFilePath, HTuple hwindow)
         {
-
-            HOperatorSet.ReadImage(out HObject image, imageFilePath);
-            if (HoImageList[nCamID] != null)
+            try
             {
-                HoImageList[nCamID].Dispose();
-                HoImageList[nCamID] = null;
+                HOperatorSet.ReadImage(out HObject image, imageFilePath);
+                if (nCamID >= 0)
+                {
+                    if (HoImageList[nCamID] != null)
+                    {
+                        HoImageList[nCamID].Dispose();
+                        HoImageList[nCamID] = null;
+                    }
+                    HoImageList[nCamID] = image.SelectObj(1);
+                }
+                HOperatorSet.GetImageSize(image, out HTuple width, out HTuple height);
+                HOperatorSet.SetPart(hwindow, 0, 0, height, width);
+                HOperatorSet.DispObj(image, hwindow);
+                image.Dispose();
+                return true;
             }
-            HoImageList[nCamID] = image.SelectObj(1);
-            HOperatorSet.GetImageSize(HoImageList[nCamID], out HTuple width, out HTuple height);
-            HOperatorSet.SetPart(hwindow, 0, 0, height, width);
-            HOperatorSet.DispObj(HoImageList[nCamID], hwindow);
-
-            image.Dispose();
-            return true;
+            catch (Exception ex)
+            {
+                UC_MessageBox.ShowMsgBox($"{ex.Message}");
+                return false;
+            }
         }
         public bool CloseCamera()
         {

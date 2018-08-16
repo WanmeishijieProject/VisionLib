@@ -28,7 +28,7 @@ namespace JPT_TosaTest.UserCtrl
             StrContent = "Message";
         }
 
-        public static MessageBoxResult ShowMsgBox(string strContent, string strCaption = "GPAS")
+        public static MessageBoxResult ShowMsgBox(string strContent, string strCaption = "Info")
         {
             UC_MessageBox dlg = new UC_MessageBox();
             dlg.StrCaption = strCaption;

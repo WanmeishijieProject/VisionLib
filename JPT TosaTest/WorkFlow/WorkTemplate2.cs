@@ -1,5 +1,6 @@
 ﻿
 using JPT_TosaTest.Config.SoftwareManager;
+using JPT_TosaTest.Vision;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,13 +10,13 @@ using System.Threading.Tasks;
 
 namespace JPT_TosaTest.WorkFlow
 {
-    public class WorkCalib : WorkFlowBase
+    public class WorkTemplate2 : WorkFlowBase
     {
         protected override bool UserInit()
         {
             return true;
         }
-        public WorkCalib(WorkFlowConfig cfg) : base(cfg)
+        public WorkTemplate2(WorkFlowConfig cfg) : base(cfg)
         {
 
         }
@@ -27,7 +28,8 @@ namespace JPT_TosaTest.WorkFlow
                 Thread.Sleep(100);
                 if (bPause)
                     continue;
-                ShowInfo($"ABCDEFG{i}{i++}");
+                ShowInfo($"{i}{i}{i}{i++}");
+                HalconVision.Instance.GrabImage(0);
             }
             return 0;
         }

@@ -131,7 +131,7 @@ namespace JPT_TosaTest.Config
                         {
                             if (instrumentCfg.Enabled)
                             {
-                                instrumentBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.IOCards." + instrumentCfg.InstrumentName.Substring(0, instrumentCfg.InstrumentName.Length - 3), true, BindingFlags.CreateInstance, null, null, null, null) as InstrumentBase;
+                                instrumentBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.Instruments." + instrumentCfg.InstrumentName.Substring(0, instrumentCfg.InstrumentName.Length - 3), true, BindingFlags.CreateInstance, null, null, null, null) as InstrumentBase;
                             }
                         }
                         break;
@@ -160,8 +160,7 @@ namespace JPT_TosaTest.Config
             }
             catch (Exception ex)
             {
-                Messenger.Default.Send<string>(String.Format("Unable to load config file {0}, {1}", File_SoftwareCfg, ex.Message), "ShowError");
-                throw new Exception(ex.Message);
+                errList.Add(String.Format("Unable to load config file {0}, {1}", File_SoftwareCfg, ex.Message));
             }
 
             Type tStationCfg = SoftwareCfgMgr.GetType();
@@ -175,8 +174,11 @@ namespace JPT_TosaTest.Config
                 {
                     if (it.Enable)
                     {
-                        workFlowBase = tStationCfg.Assembly.CreateInstance("CPAS.WorkFlow." + it.Name, true, BindingFlags.CreateInstance, null, new object[] { it }, null, null) as WorkFlowBase;
-                        WorkFlowMgr.Instance.AddStation(it.Name, workFlowBase);
+                        workFlowBase = tStationCfg.Assembly.CreateInstance("JPT_TosaTest.WorkFlow." + it.Name, true, BindingFlags.CreateInstance, null, new object[] { it }, null, null) as WorkFlowBase;
+                        if (workFlowBase == null)
+                            errList.Add($"Station: {it.Name} Create instance failed!");
+                        else
+                            WorkFlowMgr.Instance.AddStation(it.Name, workFlowBase);
                     }
                 }
             }
@@ -190,8 +192,7 @@ namespace JPT_TosaTest.Config
             }
             catch (Exception ex)
             {
-                Messenger.Default.Send<string>(String.Format("Unable to load config file {0}, {1}", File_SystemParaCfg, ex.Message), "ShowError");
-                throw new Exception(ex.Message);
+                errList.Add(String.Format("Unable to load config file {0}, {1}", File_SystemParaCfg, ex.Message));
             }
             #endregion
 
@@ -203,8 +204,7 @@ namespace JPT_TosaTest.Config
             }
             catch (Exception ex)
             {
-                Messenger.Default.Send<string>(String.Format("Unable to load config file {0}, {1}", File_UserCfg, ex.Message), "ShowError");
-                throw new Exception(ex.Message);
+                errList.Add(String.Format("Unable to load config file {0}, {1}", File_UserCfg, ex.Message));
             }
             #endregion
         }
@@ -230,6 +230,9 @@ namespace JPT_TosaTest.Config
                     SystemParaCfgMgr = objSaved as SystemParaCfgManager;
                     break;
                 case EnumConfigType.UserCfg:
+                    fileSaved = File_UserCfg;
+                    objSaved = new UserCfgManager();
+                    (objSaved as UserCfgManager).Users= listObj as UserModel[];
                     break;
                 default:
                     break;

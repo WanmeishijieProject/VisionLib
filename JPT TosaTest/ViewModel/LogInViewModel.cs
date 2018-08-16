@@ -26,7 +26,7 @@ namespace JPT_TosaTest.ViewModel
 
 
         private int _level = 0;
-        private string _currentStrUserName = "";
+        private string _currentStrUserName = "Operator";
         private bool _showSerUserPsw = false;
         #region Properties
 

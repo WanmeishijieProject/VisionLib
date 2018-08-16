@@ -45,11 +45,63 @@ namespace JPT_TosaTest.WorkFlow
                     return it.Value;
             return null;
         }
+
+        public bool StartStationByIndex(int Index)
+        {
+            var station= FindStationByIndex(Index);
+            if (station != null)
+                return station.Start();
+            return false;
+        }
+        public bool StartStationByName(string StrName)
+        {
+            var station = FindStationByName(StrName);
+            if (station != null)
+                return station.Start();
+            return false;
+        }
+        public bool StopStationByIndex(int Index)
+        {
+            var station = FindStationByIndex(Index);
+            if (station != null)
+                return station.Stop();
+            return false;
+        }
+        public bool StopStationByName(string StrName)
+        {
+            var station = FindStationByName(StrName);
+            if (station != null)
+                return station.Stop();
+            return false;
+        }
+        public bool PauseStationByIndex(int Index)
+        {
+            var station = FindStationByIndex(Index);
+            if (station != null)
+            {
+                return station.Pause();
+            }
+            return false;
+        }
+        public bool PauseStationByName(string StrName)
+        {
+            var station = FindStationByName(StrName);
+            if (station != null)
+                return station.Pause();
+            return false;
+        }
         public bool StartAllStation()
         {
             bool bRet = true;
             foreach (var it in stationDic)
                 bRet &= it.Value.Start();
+            return bRet;
+        }
+        public bool PauseAllStation()
+        {
+            bool bRet = true;
+            foreach (var it in stationDic)
+                bRet &= it.Value.Pause();
             return bRet;
         }
         public bool StopAllStation()

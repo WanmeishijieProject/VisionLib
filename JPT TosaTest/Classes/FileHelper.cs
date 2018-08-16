@@ -12,18 +12,16 @@ namespace JPT_TosaTest.Classes
         #region static method
         public static List<string> GetProfileList(string filePath)
         {
+            List<string> list = new List<string>();
             var dir = filePath + "\\";
             if (Directory.Exists(dir))
             {
-                List<string> list = new List<string>();
-
                 DirectoryInfo info = new DirectoryInfo(dir);
                 foreach (var file in info.GetFiles())
                     list.Add(System.IO.Path.GetFileNameWithoutExtension(file.FullName));
-                return list;
+                
             }
-            else
-                return null;
+            return list;
         }
         public static string GetCurFilePathString()
         {

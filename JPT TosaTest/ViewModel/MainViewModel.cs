@@ -7,6 +7,7 @@ using System.Linq;
 using JPT_TosaTest.UserCtrl;
 using System.Threading;
 using System.Collections.Generic;
+using System.Windows;
 
 namespace JPT_TosaTest.ViewModel
 {
@@ -19,7 +20,7 @@ namespace JPT_TosaTest.ViewModel
         private bool _boolShowInfoListBox = false;
         private AutoResetEvent OpenedEvent = new AutoResetEvent(true);
         private List<string> ErrList = null;
-
+        private object[] stationLock = new object[10];
 
         public MainViewModel(IDataService dataService)
         {
@@ -37,7 +38,29 @@ namespace JPT_TosaTest.ViewModel
             SystemErrorMessageCollection = new ObservableCollection<MessageItem>();
             SystemErrorMessageCollection.CollectionChanged += SystemErrorMessageCollection_CollectionChanged;
             Config.ConfigMgr.Instance.LoadConfig(out ErrList);
+            StationInfoCollection = new ObservableCollection<string>();
+            foreach (var stationCfg in Config.ConfigMgr.Instance.SoftwareCfgMgr.WorkFlowConfigs)
+            {
+                StationInfoCollection.Add(stationCfg.Name);
+            }
+            foreach (var station in WorkFlow.WorkFlowMgr.Instance.stationDic)
+            {
+                station.Value.OnStationInfoChanged += Value_OnStationInfoChanged1; ;
+            }
+            for (int i = 0; i < 10; i++)
+                stationLock[i] = new object();
         }
+
+        private void Value_OnStationInfoChanged1(int Index, string StationName, string Msg)
+        {
+            lock (stationLock[Index])
+            {
+                StationInfoCollection[Index] = $"{StationName}:{Msg}";
+            }
+        }
+
+   
+
         private void SystemErrorMessageCollection_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             var colls = from item in SystemErrorMessageCollection where item.MsgType == EnumMessageType.Error select item;
@@ -98,12 +121,51 @@ namespace JPT_TosaTest.ViewModel
             get;
             set;
         }
+        public ObservableCollection<string> StationInfoCollection { get; set; }
         #endregion
 
 
 
         #region Command
-      
+        /// <summary>
+        /// 切换中英文
+        /// </summary>
+        public RelayCommand<string> SwitchLangCommand
+        {
+            get
+            {
+                return new RelayCommand<string>(strLang => {
+                    string langFileOld = null;
+                    string langFileNew = null;
+                    switch (strLang)
+                    {
+                        case "CH":
+                            langFileNew = "Lang_CH";
+                            langFileOld = "Lang_EN";
+                            break;
+                        case "EN":
+                            langFileNew = "Lang_EN";
+                            langFileOld = "Lang_CH";
+                            break;
+                        default:
+                            break;
+                    }
+                    var MergedDic = Application.Current.Resources.MergedDictionaries;
+                    if (!string.IsNullOrEmpty(langFileNew) && !string.IsNullOrEmpty(langFileOld))
+                    {
+                        foreach (ResourceDictionary dictionary in MergedDic)
+                        {
+                            if (dictionary.Source.OriginalString.Contains(langFileNew))
+                            {
+                                MergedDic.Remove(dictionary);
+                                MergedDic.Add(dictionary);
+                                break;
+                            }
+                        }
+                    }
+                });
+            }
+        }
         /// <summary>
         /// 窗口Load
         /// </summary>
@@ -228,11 +290,11 @@ namespace JPT_TosaTest.ViewModel
         }
         public RelayCommand PauseStationCommand
         {
-            get { return new RelayCommand(() => WorkFlow.WorkFlowMgr.Instance.StartAllStation()); }
+            get { return new RelayCommand(() => WorkFlow.WorkFlowMgr.Instance.PauseAllStation()); }
         }
         public RelayCommand StopStationCommand
         {
-            get { return new RelayCommand(() => WorkFlow.WorkFlowMgr.Instance.StopAllStation()); }
+            get { return new RelayCommand(() => WorkFlow.WorkFlowMgr.Instance.StopAllStation());}
         }
         /// <summary>
         /// 主界面登陆按钮

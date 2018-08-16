@@ -8,6 +8,8 @@
              xmlns:halcon="clr-namespace:HalconDotNet;assembly=halcondotnet"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
+             Loaded="UserControl_Loaded"
+             SizeChanged="UserControl_SizeChanged"
              d:DesignHeight="800" d:DesignWidth="1200">
     <Grid>
         <Grid.RowDefinitions>
@@ -18,8 +20,8 @@
             <ColumnDefinition Width="700"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <halcon:HWindowControlWPF Margin="1"/>
-        <halcon:HWindowControlWPF Grid.Row="1" Margin="1"/>
+        <halcon:HWindowControlWPF Name="Cam1" Margin="1"/>
+        <halcon:HWindowControlWPF Name="Cam2" Grid.Row="1" Margin="1"/>
         <Grid  Grid.Column="1">
             <DataGrid Background="Transparent" ItemsSource="{Binding ResultCollection}"/>
         </Grid>
@@ -28,9 +30,8 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <DataGrid Name="DatagridPos" ItemsSource="{Binding TestItemCollection}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Hidden" Cursor="Arrow" Background="Transparent">
-              
-            </DataGrid>
 
+            </DataGrid>
             <materialDesign:PopupBox Grid.Row="1"
                                      Style="{StaticResource MaterialDesignMultiFloatingActionPopupBox}"
                                      PlacementMode="LeftAndAlignMiddles"

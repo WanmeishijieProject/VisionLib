@@ -1,0 +1,48 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib"
+                    xmlns:local="clr-namespace:JPT_TosaTest.Resource.Lang">
+    
+    <system:String x:Key="Appliction_Title">Assembly Bench</system:String>
+    <system:String x:Key="Page_Frame_Menu_Page_Home">Home</system:String>
+    <system:String x:Key="Page_Frame_Menu_Page_Run"> Run </system:String>
+    <system:String x:Key="Page_Frame_Menu_Page_Menu">Menu</system:String>
+
+    <system:String x:Key="Menu_Run">Run</system:String>
+    <system:String x:Key="Menu_Pause">Pause</system:String>
+    <system:String x:Key="Menu_Stop">Stop</system:String>
+    <system:String x:Key="Menu_Home">Home</system:String>
+    <system:String x:Key="Menu_Setting">Setting</system:String>
+    <system:String x:Key="Menu_Camera">Camera</system:String>
+    <system:String x:Key="Menu_Teach">Teach</system:String>
+    <system:String x:Key="Menu_User">User</system:String>
+
+    <system:String x:Key="Status_Version">Ver:1.0.0.0</system:String>
+    <system:String x:Key="Status_User">User:</system:String>
+    <system:String x:Key="Status_Info">INFO</system:String>
+
+    <system:String x:Key="LogInPage_User">User:</system:String>
+    <system:String x:Key="LogInPage_Password">Password:</system:String>
+    <system:String x:Key="LogInPage_Login">Login</system:String>
+    <system:String x:Key="LogInPage_Logout">Logout</system:String>
+    <system:String x:Key="LogInPage_ModifyPassword">ModifyPassword</system:String>
+    <system:String x:Key="LogInPage_UserEdit">User:</system:String>
+    <system:String x:Key="LogInPage_PasswordEdit">Password:</system:String>
+    <system:String x:Key="LogInPage_BtnModifyPasswordEdit">ModifyPassword</system:String>
+
+
+    <system:String x:Key="CameraPage_SnapOnce">Once</system:String>
+    <system:String x:Key="CameraPage_SnapContinus">Continus</system:String>
+    <system:String x:Key="CameraPage_StopGrab">Stop</system:String>
+    <system:String x:Key="CameraPage_OpenImage">OpenImage</system:String>
+    <system:String x:Key="CameraPage_SaveImage">Save</system:String>
+    <system:String x:Key="CameraPage_TypeImage">Image</system:String>
+    <system:String x:Key="CameraPage_TypeWindow">Window</system:String>
+    <system:String x:Key="CameraPage_AddRoi">+Roi</system:String>
+    <system:String x:Key="CameraPage_AddModel">+Model</system:String>
+    <system:String x:Key="CameraPage_TypeCircle">Circle</system:String>
+    <system:String x:Key="CameraPage_TypeRectangle">Rect</system:String>
+    <system:String x:Key="CameraPage_BtnDraw">Draw</system:String>
+    <system:String x:Key="CameraPage_MenuShow">ShowItem</system:String>
+    <system:String x:Key="CameraPage_MenuUseItem">UseItem</system:String>
+</ResourceDictionary>

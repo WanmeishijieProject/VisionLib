@@ -14,7 +14,8 @@
         mc:Ignorable="d ignore"
         Height="800"
         Width="1200"
-        Title="Assembly Bench"
+        Title="{DynamicResource Appliction_Title}"
+        Icon="Images/AppIcon.png"
         Loaded="Window_Loaded"
         DataContext="{Binding Main, Source={StaticResource Locator}}">
 
@@ -31,49 +32,64 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
-        <dxr:RibbonControl>
+        <dxr:RibbonControl ApplicationButtonLargeIcon="Images/AppIcon.png" RibbonStyle="Office2007">
+            <dxr:RibbonControl.ApplicationMenu>
+                <dxr:ApplicationMenu>
+                    <dxr:ApplicationMenu.Items>
+                        <dxr:RibbonPopupMenuButtonItem Content="中文" Glyph="Images/China.png" Command="{Binding SwitchLangCommand}" CommandParameter="CH"/>
+                        <dxr:RibbonPopupMenuButtonItem Content="English" Glyph="Images/us.png" Command="{Binding SwitchLangCommand}" CommandParameter="EN"/>
+                    </dxr:ApplicationMenu.Items>
+                </dxr:ApplicationMenu>
+                <!--<dxr:BackstageViewControl.Items>
+                        <dxr:BackstageTabItem Content="个人账户" >
+                        </dxr:BackstageTabItem>
+                        <dxr:BackstageTabItem  Content="订单查询">
+                        </dxr:BackstageTabItem>
+                        <dxr:BackstageButtonItem  Content="授信查询"/>
+                    </dxr:BackstageViewControl.Items>-->
+            </dxr:RibbonControl.ApplicationMenu>
             <dxr:RibbonDefaultPageCategory>
-                <dxr:RibbonPage x:Name="rpHome" Caption="Home">
-                    <dxr:RibbonPageGroup Caption="Run">
+                <dxr:RibbonPage x:Name="rpHome" Caption="{DynamicResource Page_Frame_Menu_Page_Home}">
+                    <dxr:RibbonPageGroup Caption="{DynamicResource Page_Frame_Menu_Page_Run}">
                         <dxb:BarButtonItem 
-                            Content="Start" 
+                            Content="{DynamicResource Menu_Run}" 
                             RibbonStyle="Large" Glyph="Images/start.png"
                             Command="{Binding StartStationCommand}"/>
                         <dxb:BarButtonItem 
-                            Content="Pause" 
+                            Content="{DynamicResource Menu_Pause}" 
                             RibbonStyle="Large" LargeGlyph="Images/pause.png"
                             Command="{Binding PauseStationCommand}"/>
                         <dxb:BarButtonItem 
-                            Content="Stop" 
+                            Content="{DynamicResource Menu_Stop}" 
                             RibbonStyle="Large" Glyph="Images/stop.png"
                             Command="{Binding StopStationCommand}"/>
                     </dxr:RibbonPageGroup>
-                    <dxr:RibbonPageGroup Caption="Menu">
+                    <dxr:RibbonPageGroup Caption="{DynamicResource Page_Frame_Menu_Page_Menu}">
                         <dxb:BarButtonItem 
-                            Content="Home" 
+                            Content="{DynamicResource Menu_Home}" 
                             RibbonStyle="Large" Glyph="Images/home.png"
                             Command="{Binding BtnHomeCommand}"
-                            IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Visibility}, ConverterParameter=1}"/>
+                            IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Boolean}, ConverterParameter=0}"/>
                         <dxb:BarButtonItem 
-                            Content="Setting" 
+                            Content="{DynamicResource Menu_Setting}" 
                             RibbonStyle="Large" Glyph="Images/settings.png"
                             Command="{Binding BtnSettingCommand}"
-                            IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Visibility}, ConverterParameter=2}"/>
+                            IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Boolean}, ConverterParameter=0}"/>
                         <dxb:BarButtonItem 
-                            Content="Camera" 
+                            Content="{DynamicResource Menu_Camera}" 
                             RibbonStyle="Large" Glyph="Images/camera.png"
                             Command="{Binding BtnCameraCommand}"
-                            IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Visibility}, ConverterParameter=2}"/>
+                            IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Boolean}, ConverterParameter=0}"/>
                         <dxb:BarButtonItem 
-                            Content="Teach" 
+                            Content="{DynamicResource Menu_Teach}" 
                             RibbonStyle="Large" Glyph="Images/joypad.png"
                             Command="{Binding BtnTeachCommand}"
-                            IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Visibility}, ConverterParameter=2}"/>
+                            IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Boolean}, ConverterParameter=0}"/>
                         <dxb:BarButtonItem 
-                            Content="User" 
+                            Content="{DynamicResource Menu_User}" 
                             RibbonStyle="Large" Glyph="Images/User.png"
                             Command="{Binding BtnUserCommand}"
-                            IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Visibility}, ConverterParameter=1}"/>
+                            IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Boolean}, ConverterParameter=0}"/>
                     </dxr:RibbonPageGroup>
                 </dxr:RibbonPage>
             </dxr:RibbonDefaultPageCategory>
@@ -99,14 +115,17 @@
         <Grid Grid.Row="2" Background="SteelBlue">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="100"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="160"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="版本号: V1.0.0" VerticalAlignment="Center" Margin="5" Foreground="White"/>
+            <TextBlock Grid.Column="0" Text="{DynamicResource Status_Version}" VerticalAlignment="Center" Margin="5" Foreground="White"/>
+            <TextBlock Grid.Column="1"  Text="{DynamicResource Status_User}" VerticalAlignment="Center" Margin="5" Foreground="White"/>
+            <TextBlock Grid.Column="2" Text="{Binding LogInVM.CurrentStrUserName, Source={StaticResource Locator}}" VerticalAlignment="Center" Margin="5" Foreground="White"/>
+            <Grid Name="StationInfoGrid" Grid.Column="3" Background="LightBlue"/>
             <materialDesign:Badged Grid.Column="4" Badge="{Binding ErrorCount}" BadgeBackground="LightBlue" BadgeForeground="{Binding ErrorCount,Converter={StaticResource Int2BackgroundBrush}}" Width="150">
-                <Button Background="{Binding ErrorCount,Converter={StaticResource Int2BackgroundBrush}}" Width="150" Command="{Binding ShowInfoListCommand}">INFO</Button>
+                <Button Background="{Binding ErrorCount,Converter={StaticResource Int2BackgroundBrush}}" Width="150" Command="{Binding ShowInfoListCommand}" Content="{DynamicResource Status_Info}"/>
             </materialDesign:Badged>
         </Grid>
     </Grid>

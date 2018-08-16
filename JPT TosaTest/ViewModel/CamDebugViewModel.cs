@@ -11,8 +11,11 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Forms;
+using System.Windows.Media.Animation;
 
 namespace JPT_TosaTest.ViewModel
 {
@@ -34,6 +37,8 @@ namespace JPT_TosaTest.ViewModel
                 CameraCollection.Add(new CameraItem() { CameraName = it.Key, StrCameraState = bOpen ? "Connected" : "DisConnected" });
             }
             #endregion
+
+            RoiModelList = RoiCollection;
         }
 
         private ObservableCollection<CameraItem> _cameraCollection = new ObservableCollection<CameraItem>();
@@ -43,7 +48,14 @@ namespace JPT_TosaTest.ViewModel
         private FileHelper RoiFileHelper = new FileHelper(FileHelper.GetCurFilePathString() + "VisionData\\Roi");
         private int _maxThre = 0, _minThre = 0;
         private int _currentSelectRoiModel;
+        private CancellationTokenSource cts = null;
+        private int _currentSelectedCamera = -1;
+        private bool _saveImageType = true;
+        private IEnumerable<RoiModelBase> _roiModelList = null;
+        private Task GrabTask = null;
         public EnumCamSnapState _camSnapState;
+        private Storyboard RoiSb = null, TemplateSb=null;
+        private string DefaultImagePath = @"C:\";
 
         #region Private method
         private void UpdateRoiCollect(int nCamID)
@@ -57,6 +69,24 @@ namespace JPT_TosaTest.ViewModel
             ModelCollection.Clear();
             foreach (var it in Vision.VisionDataHelper.GetTemplateListForSpecCamera(nCamID, ModelFileHelper.GetWorkDictoryProfileList(new string[] { "shm" })))
                 ModelCollection.Add(new ModelItem() { StrName = it.Replace(string.Format("Cam{0}_", nCamID), ""), StrFullName = it });
+        }
+        private void ThreadFunc(int nCamID)
+        {
+            CamSnapState = EnumCamSnapState.BUSY;
+            while (!cts.Token.IsCancellationRequested)
+            {
+                HalconVision.Instance.GrabImage(nCamID);
+                Thread.Sleep(30);
+            }
+            CamSnapState = EnumCamSnapState.IDLE;
+        }
+        private void TemplateSb_Completed(object sender, EventArgs e)
+        {
+            RoiModelList = ModelCollection;
+        }
+        private void RoiSb_Completed(object sender, EventArgs e)
+        {
+            RoiModelList = RoiCollection;
         }
         #endregion
 
@@ -86,6 +116,8 @@ namespace JPT_TosaTest.ViewModel
                 }
             }
         }
+
+
         public int MaxThre
         {
             set
@@ -110,6 +142,10 @@ namespace JPT_TosaTest.ViewModel
             }
             get { return _minThre; }
         }
+
+        /// <summary>
+        /// 当前选择的是ROI还是Model模式
+        /// </summary>
         public int CurrentSelectRoiModel
         {
             set
@@ -122,16 +158,28 @@ namespace JPT_TosaTest.ViewModel
             }
             get { return _currentSelectRoiModel; }
         }
+
+        /// <summary>
+        /// 当前ROI的操作符
+        /// </summary>
         public Enum_REGION_OPERATOR RegionOperator
         {
             get { return HalconVision.Instance.RegionOperator; }
             set { HalconVision.Instance.RegionOperator = value; }
         }
+
+        /// <summary>
+        /// ROI的类型
+        /// </summary>
         public Enum_REGION_TYPE RegionType
         {
             get { return HalconVision.Instance.RegionType; }
             set { HalconVision.Instance.RegionType = value; }
         }
+
+        /// <summary>
+        /// 相机的状态
+        /// </summary>
         public EnumCamSnapState CamSnapState
         {
             set
@@ -144,10 +192,56 @@ namespace JPT_TosaTest.ViewModel
             }
             get { return _camSnapState; }
         }
+
+        /// <summary>
+        /// 保存图像的类型
+        /// </summary>
+        public bool SaveImageType
+        {
+            set
+            {
+                if (_saveImageType != value)
+                {
+                    _saveImageType = value;
+                    RaisePropertyChanged();
+                }
+            }
+            get { return _saveImageType; }
+        }
+
         public ObservableCollection<CameraItem> CameraCollection
         {
             get;
             set;
+        }
+
+        /// <summary>
+        /// 当前选择的是哪个相机
+        /// </summary>
+        public int CurrentSelectedCamera
+        {
+            set
+            {
+                if (_currentSelectedCamera != value)
+                {
+                    _currentSelectedCamera = value;
+                    RaisePropertyChanged();
+                }
+            }
+            get { return _currentSelectedCamera; }
+        }
+
+        public IEnumerable<RoiModelBase> RoiModelList
+        {
+            set
+            {
+                if (_roiModelList != value)
+                {
+                    _roiModelList = value;
+                    RaisePropertyChanged();
+                }
+            }
+            get { return _roiModelList; }
         }
         #endregion
 
@@ -222,18 +316,17 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
-        public RelayCommand<Tuple<RoiModelBase, int>> PreDrawModelRoiCommand     //调整Model的ROI
+        public RelayCommand<RoiModelBase> PreDrawModelRegionCommand     //调整Model的Region
         {
             get
             {
-                return new RelayCommand<Tuple<RoiModelBase, int>>(tuple =>
+                return new RelayCommand<RoiModelBase>(item =>
                 {
                     List<string> fileList = FileHelper.GetProfileList($"VisionData\\ModelTemp");
-                    ModelItem item = tuple.Item1 as ModelItem;
-                    int nCamID = tuple.Item2;
-                    if (fileList.Count == 0)
+                    int nCamID = CurrentSelectedCamera;
+                    if (fileList.Count == 0) //判断编辑现有的还是编辑新模板
                     {
-                        if (item != null)      //判断编辑现有的还是编辑新模板
+                        if (item != null)      
                         {
                             if (nCamID >= 0)
                             {
@@ -410,8 +503,108 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
+        public RelayCommand GrabContinusCommand
+        {
+            get { return new RelayCommand(()=> {
+                if (CurrentSelectedCamera >= 0 && (GrabTask == null || GrabTask.IsCanceled || GrabTask.IsCompleted))
+                {
+                    cts = new CancellationTokenSource();
+                    GrabTask = new Task(()=>ThreadFunc(CurrentSelectedCamera));
+                    GrabTask.Start();
+                }
+            }); }
+        }
+        public RelayCommand GrabOnceCommand
+        {
+            get
+            {
+                return new RelayCommand (() => {
+                    if (CurrentSelectedCamera >= 0)
+                    {
+                        HalconVision.Instance.GrabImage(CurrentSelectedCamera);
+                    }
+                    else
+                    {
+                        //doNothing
+                    }
+                });
+            }
+        }
+        public RelayCommand StopGrabCommand
+        {
+            get
+            {
+                return new RelayCommand(() => {
+                    if(cts!=null)
+                        cts.Cancel();
+                    CamSnapState = EnumCamSnapState.IDLE;
+                });
+            }
+        }
+        public RelayCommand<IntPtr> SaveImagerCommand
+        {
+            get
+            {
+                return new RelayCommand<IntPtr>(hWindow =>
+                {
+                    if (CurrentSelectedCamera >= 0)
+                    {
+                        DateTime now = DateTime.Now;
+                        HalconVision.Instance.SaveImage(CurrentSelectedCamera, SaveImageType ? EnumImageType.Image : EnumImageType.Window, FileHelper.GetCurFilePathString() + "ImageSaved\\ImageSaved", $"{now.Month}月{now.Day}日 {now.Hour}时{now.Minute}分{now.Second}秒_Cam{CurrentSelectedCamera}.jpg", hWindow);
+                    }
+                });
+            }
+        }
+        public RelayCommand<IntPtr> OpenImageCommand
+        {
+            get
+            {
+                return new RelayCommand<IntPtr>(hWindow =>
+                {
+                    OpenFileDialog ofd = new OpenFileDialog();
+                    ofd.Title = "请选择要打开的文件";
+                    ofd.Multiselect = false;
+                    ofd.InitialDirectory = DefaultImagePath;
+                    if (ofd.ShowDialog() == DialogResult.OK)
+                    {
+                        DefaultImagePath = ofd.FileName;
+                        HalconVision.Instance.OpenImageInWindow(CurrentSelectedCamera, DefaultImagePath, hWindow);
+                    }
 
+                });
+            }
+        }
 
+        /// <summary>
+         /// Model与Roi切换动画
+         /// </summary>
+        public RelayCommand<FrameworkElement> SwitchRoiModelCommand
+        {
+            get
+            {
+                return new RelayCommand<FrameworkElement> (control =>
+                {
+                    if (RoiSb == null && TemplateSb == null)
+                    {
+                        RoiSb = control.TryFindResource("RoiSb") as Storyboard;
+                        TemplateSb = control.TryFindResource("ModelSb") as Storyboard;
+                        if (RoiSb != null)
+                            RoiSb.Completed += RoiSb_Completed;
+                        if (TemplateSb != null)
+                            TemplateSb.Completed += TemplateSb_Completed;
+                    }
+                    CurrentSelectRoiModel ^= 1;
+                    if (RoiSb != null && TemplateSb != null)
+                    {
+                        if (CurrentSelectRoiModel == 0)
+                            TemplateSb.Begin();
+                        else
+                            RoiSb.Begin();
+                    }
+                    
+                });
+            }
+        }
     }
     #endregion
 

@@ -23,7 +23,7 @@
                 <RowDefinition Height="60"/>
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Name="LabelName" Text="名称" FontSize="20" VerticalAlignment="Center" Margin="20,0,10,0"/>
+                <TextBlock Name="LabelName" Text="Name" FontSize="20" VerticalAlignment="Center" Margin="20,0,10,0"/>
                 <TextBox  Name="EditBoxName" FontSize="20" VerticalAlignment="Center"  Margin="20,0,0,0" TextWrapping="Wrap" Width="300" Style="{StaticResource RoundTextBox}"/>
             </StackPanel>
 
@@ -34,8 +34,8 @@
                     <ColumnDefinition Width="*"/>
 
                 </Grid.ColumnDefinitions>
-                <Button Name="BtnYes" Grid.Column="1" Margin="49,10,71,10" Width="100" Height="40"  Content="Yes" FontSize="20" Click="BtnYes_Click" Background="{x:Null}"/>
-                <Button Name="BtnNo" Grid.Column="2"   Width="100" Height="40"  Content="No" FontSize="20" Click="BtnNo_Click" Background="{x:Null}" Margin="2,10,118,10"/>
+                <Button Name="BtnYes" Grid.Column="1" Margin="49,10,71,10" Width="100" Height="40"  Content="Yes" FontSize="20" Click="BtnYes_Click"/>
+                <Button Name="BtnNo" Grid.Column="2"   Width="100" Height="40"  Content="No" FontSize="20" Click="BtnNo_Click" Margin="2,10,118,10"/>
             </Grid>
         </Grid>
     </Grid>

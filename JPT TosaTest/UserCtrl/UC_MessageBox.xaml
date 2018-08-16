@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:JPT_TosaTest.UserCtrl"
         mc:Ignorable="d"
         Title="UC_MessageBox" Height="450" Width="800"
-    Background="Transparent" AllowsTransparency="true" ResizeMode="NoResize"
+        WindowStyle="None"
+        Background="Transparent" AllowsTransparency="true" ResizeMode="NoResize"
         DataContext="{Binding RelativeSource={RelativeSource Mode=Self}}">
     <Grid Background="White" Margin="100" MouseDown="Grid_MouseDown">
         <Grid.Effect>

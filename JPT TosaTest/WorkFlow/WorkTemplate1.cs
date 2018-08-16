@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace JPT_TosaTest.WorkFlow
 {
-    public class WorkCalib : WorkFlowBase
+    public class WorkTemplate1 : WorkFlowBase
     {
         protected override bool UserInit()
         {
             return true;
         }
-        public WorkCalib(WorkFlowConfig cfg) : base(cfg)
+        public WorkTemplate1(WorkFlowConfig cfg) : base(cfg)
         {
 
         }
@@ -27,7 +27,9 @@ namespace JPT_TosaTest.WorkFlow
                 Thread.Sleep(100);
                 if (bPause)
                     continue;
-                ShowInfo($"ABCDEFG{i}{i++}");
+                
+                ShowInfo($"{i}{i}{i}{i++}");
+                
             }
             return 0;
         }
