@@ -58,7 +58,6 @@ namespace JPT_TosaTest.Instrument
                 case 0:
                     comportData.stopbits = StopBits.None;
                     break;
-
                 case 1:
                     comportData.stopbits = StopBits.One;
                     break;

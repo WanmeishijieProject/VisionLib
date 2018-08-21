@@ -24,6 +24,7 @@ namespace JPT_TosaTest.ViewModel
             SimpleIoc.Default.Register<SettingVM>();
             SimpleIoc.Default.Register<LogInViewModel>();
             SimpleIoc.Default.Register<CamDebugViewModel>();
+            SimpleIoc.Default.Register<TeachBoxViewModel>();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
@@ -58,7 +59,14 @@ namespace JPT_TosaTest.ViewModel
                 return ServiceLocator.Current.GetInstance<CamDebugViewModel>();
             }
         }
-
+        public TeachBoxViewModel TeachBoxVM
+        {
+            get
+            {
+                return ServiceLocator.Current.GetInstance<TeachBoxViewModel>();
+            }
+        }
+    
 
         public static void Cleanup()
         {

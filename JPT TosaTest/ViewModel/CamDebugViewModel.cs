@@ -72,7 +72,8 @@ namespace JPT_TosaTest.ViewModel
         public EnumCamSnapState _camSnapState;
         private Storyboard RoiSb = null, TemplateSb=null;
         private string DefaultImagePath = @"C:\";
-        public int _lightBrightness = 0;
+        private int _lightBrightness = 0;
+        private bool _openLightSource = false;
 
         #region Private method
         private void UpdateRoiCollect(int nCamID)
@@ -281,6 +282,18 @@ namespace JPT_TosaTest.ViewModel
                 }
             }
             get { return _lightBrightness; }
+        }
+        public bool OpenLightSource
+        {
+            set
+            {
+                if (_openLightSource != value)
+                {
+                    _openLightSource = value;
+                    RaisePropertyChanged();
+                }
+            }
+            get { return _openLightSource; }
         }
         #endregion
 
@@ -639,6 +652,7 @@ namespace JPT_TosaTest.ViewModel
                         LightBase lightControl= LigtMgr.Instance.FindInstrumentByChannelIndex(LightChannel);
                         if (lightControl != null)
                         {
+                            //lightControl.OpenLight(LightChannel);
                             lightControl.SetLightValue(LightChannel, LightBrightness);
                         }
                     }
@@ -680,6 +694,27 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
+        public RelayCommand SwitchLightPowerCommand
+        {
+            get
+            {
+                return new RelayCommand(() =>
+                {
+                    if (CurrentSelectedCamera < 0)
+                        return;
+                    OpenLightSource = !OpenLightSource;
+                    int LightChannel = ConfigMgr.Instance.HardwareCfgMgr.Cameras[CurrentSelectedCamera].LightPortChannel;
+                    LightBase lightControl = LigtMgr.Instance.FindInstrumentByChannelIndex(LightChannel);
+                    if (lightControl == null)
+                        return;
+                    if (OpenLightSource)
+                        lightControl.OpenLight(LightChannel, LightBrightness);
+                    else
+                        lightControl.CloseLight(LightChannel, LightBrightness);
+                });
+            }
+        }
+        
     }
     #endregion
 

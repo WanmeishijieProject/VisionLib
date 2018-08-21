@@ -53,4 +53,16 @@
     <system:String x:Key="CameraPage_MinScore">MinScore:</system:String>
     <system:String x:Key="CameraPage_SaveModel">SaveModel</system:String>
     <system:String x:Key="CameraPage_TestModel">TestModel</system:String>
+
+    <system:String x:Key="SettingPage_Process_parameters">Process parameters</system:String>
+    <system:String x:Key="SettingPage_CenterLineOffset">CenterLineOffset</system:String>
+    <system:String x:Key="SettingPage_Pad_Perpendicular">PadPerpendicularOffset</system:String>
+    <system:String x:Key="SettingPage_Machine_parameters">Machine parameter</system:String>
+    <system:String x:Key="SettingPage_BtnApply">Apply</system:String>
+    <system:String x:Key="SettingPage_BtnSave">Save</system:String>
+
+    <system:String x:Key="TeachBox_Title">TeachBox</system:String>
+    <system:String x:Key="TeachBox_Speed">Speed(mm/s)</system:String>
+    <system:String x:Key="TeachBox_Position">Position(mm)</system:String>
+    <system:String x:Key="TeachBox_Step">Step(mm)</system:String>
 </ResourceDictionary>

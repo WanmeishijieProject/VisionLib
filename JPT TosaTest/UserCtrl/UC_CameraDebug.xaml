@@ -177,7 +177,8 @@
                         <Button Name="BtnDrawModelRegion" Grid.Column="2" Style="{StaticResource RoundButtonStyle1}" Background="LightGreen" Content="{DynamicResource CameraPage_BtnDraw}" FontSize="15" Margin="3" 
                             Command="{Binding PreDrawModelRegionCommand}" CommandParameter="{Binding SelectedItem, ElementName=ListBoxRoiModel}"/>
                     </Grid>
-                    <ListBox x:Name="ListBoxRoiModel" Grid.Row="5" Grid.ColumnSpan="2" Grid.RowSpan="3" Margin="5" SelectedIndex="0" ItemsSource="{Binding RoiModelList}" IsEnabled="{Binding IsEnabled,ElementName=Cb_Cameras}">
+                    <ListBox x:Name="ListBoxRoiModel" Grid.Row="5" Grid.ColumnSpan="2" Grid.RowSpan="3" Margin="5" SelectedIndex="0" ItemsSource="{Binding RoiModelList}" 
+                             IsEnabled="{Binding IsEnabled,ElementName=Cb_Cameras}">
                         <ListBox.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Name="MenueShow" Header="{DynamicResource CameraPage_MenuShow}" FontSize="15" Click="MenueShow_Click"/>
@@ -206,7 +207,7 @@
                             <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="70"/>
-                                    <ColumnDefinition Width="60"/>
+                                    <ColumnDefinition Width="40"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{DynamicResource CameraPage_MaxThres}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2" FontSize="12"/>
@@ -222,7 +223,7 @@
                             <Grid Grid.Row="1" Grid.ColumnSpan="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="70"/>
-                                    <ColumnDefinition Width="60"/>
+                                    <ColumnDefinition Width="40"/>
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{DynamicResource CameraPage_MinThres}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2" FontSize="12"/>
@@ -238,8 +239,9 @@
                             <Grid Grid.Row="2" Grid.ColumnSpan="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="70"/>
-                                    <ColumnDefinition Width="60"/>
+                                    <ColumnDefinition Width="40"/>
                                     <ColumnDefinition/>
+                                    <ColumnDefinition Width="40"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{DynamicResource CameraPage_LightBrightness}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2" FontSize="12"/>
                                 <TextBlock Grid.Column="1" Text="{Binding LightBrightness, Mode=OneWay}" VerticalAlignment="Center" FontSize="12"/>
@@ -250,6 +252,10 @@
                                         </i:EventTrigger>
                                     </i:Interaction.Triggers>
                                 </Slider>
+                                <Button Grid.Column="3" Margin="5" Style="{StaticResource RoundButtonStyle1}" Background="Transparent" BorderThickness="0" Command="{Binding SwitchLightPowerCommand}">
+                                    <Image Source="{Binding OpenLightSource, Converter={StaticResource Bool2Image}}"/>
+                                </Button>
+
                             </Grid>
                             <Grid Grid.Row="3">
                                 <Grid.ColumnDefinitions>

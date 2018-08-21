@@ -129,6 +129,7 @@
     <Compile Include="Config\SystemCfgManager\SystemParaModel.cs" />
     <Compile Include="Config\UserManager\UserCfgManager.cs" />
     <Compile Include="Config\UserManager\UserModel.cs" />
+    <Compile Include="Converter\Bool2Image.cs" />
     <Compile Include="Converter\Bool2Visibility.cs" />
     <Compile Include="Converter\EnumCamSnapState2SnapButtonEnable.cs" />
     <Compile Include="Converter\Int2BackgroundBrush.cs" />
@@ -206,6 +207,7 @@
     <Compile Include="ViewModel\LogInViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\SettingVM.cs" />
+    <Compile Include="ViewModel\TeachBoxViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Compile Include="Vision\HalconVision.cs" />
     <Compile Include="Vision\Light\LightBase.cs" />
@@ -398,6 +400,10 @@
   <ItemGroup>
     <Resource Include="Images\China.png" />
     <Resource Include="Images\us.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\lightOff.png" />
+    <Resource Include="Images\lightOn.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

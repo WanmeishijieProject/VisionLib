@@ -17,7 +17,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <GroupBox Header="Process parameters setting" Margin="16" Grid.RowSpan="1">
+            <GroupBox Header="{DynamicResource SettingPage_Process_parameters}" Margin="16" Grid.RowSpan="1">
                 <ScrollViewer VerticalScrollBarVisibility="Hidden">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -29,22 +29,18 @@
                             <RowDefinition Height="80"/>
                             <RowDefinition Height="80"/>
                         </Grid.RowDefinitions>
-                        <TextBox materialDesign:HintAssist.Hint="Floating Hint" Style="{StaticResource MaterialDesignFloatingHintTextBox}" FontSize="20" materialDesign:HintAssist.FloatingOffset="2,-20"/>
-                        <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="Floating Hint" Style="{StaticResource MaterialDesignFloatingHintTextBox}" FontSize="20" materialDesign:HintAssist.FloatingOffset="2,-20"/>
-                        <TextBox Grid.Row="2" materialDesign:HintAssist.Hint="Floating Hint" Style="{StaticResource MaterialDesignFloatingHintTextBox}" FontSize="20" materialDesign:HintAssist.FloatingOffset="2,-20"/>
-                        <TextBox Grid.Row="3" materialDesign:HintAssist.Hint="Floating Hint" Style="{StaticResource MaterialDesignFloatingHintTextBox}" FontSize="20" materialDesign:HintAssist.FloatingOffset="2,-20"/>
-                        <TextBox Grid.Row="4" materialDesign:HintAssist.Hint="Floating Hint" Style="{StaticResource MaterialDesignFloatingHintTextBox}" FontSize="20" materialDesign:HintAssist.FloatingOffset="2,-20"/>
-                        <TextBox Grid.Row="5" materialDesign:HintAssist.Hint="Floating Hint" Style="{StaticResource MaterialDesignFloatingHintTextBox}" FontSize="20" materialDesign:HintAssist.FloatingOffset="2,-20"/>
-                        <TextBox Grid.Row="6" materialDesign:HintAssist.Hint="Floating Hint" Style="{StaticResource MaterialDesignFloatingHintTextBox}" FontSize="20" materialDesign:HintAssist.FloatingOffset="2,-20"/>
+                        <TextBox materialDesign:HintAssist.Hint="{DynamicResource SettingPage_CenterLineOffset}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" FontSize="20" materialDesign:HintAssist.FloatingOffset="2,-20"/>
+                        <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="{DynamicResource SettingPage_Pad_Perpendicular}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" FontSize="20" materialDesign:HintAssist.FloatingOffset="2,-20"/>
+  
                     </Grid>
                 </ScrollViewer>
             </GroupBox>
-            <GroupBox Grid.Row="0" Grid.Column="1" Header="Hardware parameters setting" Margin="16" Grid.RowSpan="1">
+            <GroupBox Grid.Row="0" Grid.Column="1" Header="{DynamicResource SettingPage_Machine_parameters}" Margin="16" Grid.RowSpan="1">
                 <dxprg:PropertyGridControl FontSize="20"/>
             </GroupBox>
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.ColumnSpan="2" Margin="16,0">
-                <Button Content="Apply" Width="100" Command="{Binding ApplyCommand}"/>
-                <Button Content="Save" Width="100" Margin="10,0" Command="{Binding SaveCommand}"/>
+                <Button Content="{DynamicResource SettingPage_BtnApply}" Width="100" Command="{Binding ApplyCommand}"/>
+                <Button Content="{DynamicResource SettingPage_BtnSave}" Width="100" Margin="10,0" Command="{Binding SaveCommand}"/>
             </StackPanel>
            
         </Grid>

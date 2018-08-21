@@ -26,6 +26,7 @@
             <Convert:IsChecked2RegionType x:Key="IsChecked2RegionType"/>
             <Convert:UserName2Visibility x:Key="UserName2Visibility"/>
             <Convert:Level2Boolean x:Key="Level2Boolean"/>
+            <Convert:Bool2Image x:Key="Bool2Image"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resource/MDStyle.xaml"/>
                 <ResourceDictionary Source="Resource/StylesResourceDictionary.xaml"/>

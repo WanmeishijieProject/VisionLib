@@ -73,9 +73,9 @@ namespace JPT_TosaTest.Vision.Light
             }
             return true;
         }
-        public override bool OpenLight(int nCh, int nValue)
+        public override bool OpenLight(int Channel, int nValue)
         {
-            nCh -= MINCH - 1;
+            int nCh = Channel- MINCH + 1;
             if (nCh < 1 || nCh > 4)
                 return false;
             lock (_lock)
@@ -89,9 +89,9 @@ namespace JPT_TosaTest.Vision.Light
                 return count == 1 && recvBuffer[0] == 0x35;
             }
         }
-        public override bool CloseLight(int nCh, int nValue)
+        public override bool CloseLight(int Channel, int nValue)
         {
-            nCh -= MINCH - 1;
+            int nCh = Channel - MINCH + 1;
             if (nCh < 1 || nCh > 4)
                 return false;
             lock (_lock)
@@ -105,9 +105,9 @@ namespace JPT_TosaTest.Vision.Light
                 return count == 1 && recvBuffer[0] == 0x35;
             }
         }
-        public override int GetLightValue(int nCh)
+        public override int GetLightValue(int Channel)
         {
-            nCh -= MINCH - 1;
+            int nCh = Channel - MINCH + 1;
             if (nCh < 1 || nCh > 4)
                 return -1;
             short nValue = 0;
@@ -130,9 +130,9 @@ namespace JPT_TosaTest.Vision.Light
                 return -1;
             }
         }
-        public override bool SetLightValue(int nCh,int nValue)
+        public override bool SetLightValue(int Channel,int nValue)
         {
-            nCh -= MINCH-1;
+            int nCh = Channel - MINCH + 1;
             if (nCh < 1 || nCh > 4)
                 return false;
             lock (_lock)
@@ -157,9 +157,13 @@ namespace JPT_TosaTest.Vision.Light
                 nSum ^= data[i];
             return string.Format("{0:X2}",nSum);
         }
-        public override bool IsInRange(int nCh)
+
+        public override bool IsInRange(int Channel)
         {
-             return nCh >= MINCH && nCh <= MAXCH; 
+            int nCh = Channel - MINCH + 1;
+            if (nCh < 1 || nCh > 4)
+                return false;
+            return Channel >= MINCH && Channel <= MAXCH; 
         }
     }
 }

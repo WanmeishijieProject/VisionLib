@@ -52,4 +52,18 @@
         <system:String x:Key="CameraPage_MinScore">最低分数:</system:String>
         <system:String x:Key="CameraPage_SaveModel">保存模板</system:String>
         <system:String x:Key="CameraPage_TestModel">测试模板</system:String>
+
+
+        <system:String x:Key="SettingPage_Process_parameters">工艺参数</system:String>
+        <system:String x:Key="SettingPage_CenterLineOffset">中心线偏移量</system:String>
+        <system:String x:Key="SettingPage_Pad_Perpendicular">Pad垂线偏移量</system:String>
+        <system:String x:Key="SettingPage_Machine_parameters">机床参数</system:String>
+        <system:String x:Key="SettingPage_BtnApply">应用</system:String>
+        <system:String x:Key="SettingPage_BtnSave">保存</system:String>
+
+        <system:String x:Key="TeachBox_Title">示教器</system:String>
+        <system:String x:Key="TeachBox_Speed">速度(mm/s)</system:String>
+        <system:String x:Key="TeachBox_Position">位置(mm)</system:String>
+        <system:String x:Key="TeachBox_Step">步进(mm)</system:String>
+
 </ResourceDictionary>
