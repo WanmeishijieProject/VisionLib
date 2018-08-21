@@ -41,11 +41,11 @@
                     </dxr:ApplicationMenu.Items>
                 </dxr:ApplicationMenu>
                 <!--<dxr:BackstageViewControl.Items>
-                        <dxr:BackstageTabItem Content="个人账户" >
+                        <dxr:BackstageTabItem Content="" >
                         </dxr:BackstageTabItem>
-                        <dxr:BackstageTabItem  Content="订单查询">
+                        <dxr:BackstageTabItem  Content="">
                         </dxr:BackstageTabItem>
-                        <dxr:BackstageButtonItem  Content="授信查询"/>
+                        <dxr:BackstageButtonItem  Content=""/>
                     </dxr:BackstageViewControl.Items>-->
             </dxr:RibbonControl.ApplicationMenu>
             <dxr:RibbonDefaultPageCategory>
@@ -96,7 +96,7 @@
         </dxr:RibbonControl>
         <Grid Width="130" HorizontalAlignment="Right" Background="White" Opacity="0.5"/>
         <Grid Width="130" HorizontalAlignment="Right" Height="Auto" VerticalAlignment="Bottom">
-            <UserCtrl:UC_AxisPos CtrlFontSize="10"/>
+            <UserCtrl:UC_AxisPos CtrlFontSize="13"/>
         </Grid>
         <useCtrl:UC_HomeView Grid.Row="1"  Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=1}"/>
         <useCtrl:UC_Setting Grid.Row="1"  Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=2}"/>
@@ -111,7 +111,15 @@
                 </Grid>
             </materialDesign:SnackbarMessage>
         </materialDesign:Snackbar>-->
-
+        <materialDesign:Snackbar Grid.Row="1" IsActive="{Binding ShowSnakeInfoBar}" x:Name="SnackbarTwo" Background="Black" Width="{Binding Width, ElementName=StationInfoGrid}">
+            <materialDesign:SnackbarMessage ActionContent="{DynamicResource Snake_OK}" Foreground="White" ActionCommand="{Binding SnackBarActionCommand}">
+                <materialDesign:SnackbarMessage.Content>
+                    <Grid>
+                        <TextBlock Text="{Binding SnakeLastError}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                    </Grid>
+                </materialDesign:SnackbarMessage.Content>
+            </materialDesign:SnackbarMessage>
+        </materialDesign:Snackbar>
         <Grid Grid.Row="2" Background="SteelBlue">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100"/>

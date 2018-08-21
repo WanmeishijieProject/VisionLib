@@ -12,6 +12,7 @@ namespace JPT_TosaTest.Config.HardwareManager
         public MotionCardCfg[] MotionCards { get; set; }
         public IOCardCfg[] IOCards { get; set; }
         public CameraCfg[] Cameras { get; set; }
+        public LightCfg[] Lights { get; set; }
 
         public ComportCfg[] Comports { get; set; }
         public EtherNetCfg[] EtherNets { get; set; }

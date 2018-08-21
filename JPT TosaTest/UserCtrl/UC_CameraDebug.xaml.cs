@@ -98,5 +98,13 @@ namespace JPT_TosaTest.UserCtrl
         }
         #endregion
 
+        private void MenueShow_Click(object sender, RoutedEventArgs e)
+        {
+            (ListBoxRoiModel.DataContext as CamDebugViewModel).ShowRoiModelCommand.Execute(ListBoxRoiModel.SelectedItem);
+        }
+        private void MenueSelectItem_Click(object sender, RoutedEventArgs e)
+        {
+            (ListBoxRoiModel.DataContext as CamDebugViewModel).SelectUseRoiModelCommand.Execute(ListBoxRoiModel.SelectedItem);
+        }
     }
 }

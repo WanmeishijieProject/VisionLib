@@ -8,6 +8,7 @@ using JPT_TosaTest.Config.UserManager;
 using JPT_TosaTest.Instrument;
 using JPT_TosaTest.IOCards;
 using JPT_TosaTest.MotionCards;
+using JPT_TosaTest.Vision.Light;
 using JPT_TosaTest.WorkFlow;
 using Newtonsoft.Json;
 using System;
@@ -66,6 +67,8 @@ namespace JPT_TosaTest.Config
             MotionBase motionBase = null;
             IOBase ioBase = null;
             InstrumentBase instrumentBase = null;
+            LightBase lightBase = null;
+
             Type hardWareMgrType = HardwareCfgMgr.GetType();
             foreach (var it in hardWareMgrType.GetProperties())
             {
@@ -79,7 +82,7 @@ namespace JPT_TosaTest.Config
                         {
                             if (motionCfg.Enabled)
                             {
-                                motionBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.MotionCards." + motionCfg.Name.Substring(0, motionCfg.Name.Length - 3), true, BindingFlags.CreateInstance, null, /*new object[] { motionCfg }*/null, null, null) as MotionBase;
+                                motionBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.MotionCards." + motionCfg.Name.Substring(0, motionCfg.Name.IndexOf("[")), true, BindingFlags.CreateInstance, null, /*new object[] { motionCfg }*/null, null, null) as MotionBase;
                                 if (motionBase != null)
                                 {
                                     if (motionCfg.NeedInit)
@@ -105,7 +108,7 @@ namespace JPT_TosaTest.Config
                         {
                             if (ioCfg.Enabled)
                             {
-                                ioBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.IOCards." + ioCfg.Name.Substring(0, ioCfg.Name.Length - 3), true, BindingFlags.CreateInstance, null, null, null, null) as IOBase;
+                                ioBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.IOCards." + ioCfg.Name.Substring(0, ioCfg.Name.IndexOf("[")), true, BindingFlags.CreateInstance, null, null, null, null) as IOBase;
                                 if (ioBase != null)
                                 {
                                     if (ioCfg.NeedInit)
@@ -131,12 +134,36 @@ namespace JPT_TosaTest.Config
                         {
                             if (instrumentCfg.Enabled)
                             {
-                                instrumentBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.Instruments." + instrumentCfg.InstrumentName.Substring(0, instrumentCfg.InstrumentName.Length - 3), true, BindingFlags.CreateInstance, null, null, null, null) as InstrumentBase;
+                                instrumentBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.Instruments." + instrumentCfg.InstrumentName.Substring(0, instrumentCfg.InstrumentName.IndexOf("[")), true, BindingFlags.CreateInstance, null, null, null, null) as InstrumentBase;
                             }
                         }
                         break;
                     case "Cameras":
                         var cameraCfgs = it.GetValue(HardwareCfgMgr) as CameraCfg[];
+                        break;
+                    case "Lights":
+                        var lightCfgs=it.GetValue(HardwareCfgMgr) as LightCfg[];
+                        foreach (var lightCfg in lightCfgs)
+                        {
+                            if (lightCfg.Enabled)
+                            {
+                                lightBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.Vision.Light." + lightCfg.Name.Substring(0, lightCfg.Name.IndexOf("[")), true, BindingFlags.CreateInstance, null, null, null, null) as LightBase;
+                                if (ioBase != null)
+                                {
+                                    if (lightCfg.NeedInit)
+                                    {
+                                        if (lightBase.Init(lightCfg))
+                                            LigtMgr.Instance.AddLight(lightCfg.Name, lightBase);
+                                        else
+                                            errList.Add($"{lightCfg.Name} init failed");
+                                    }
+                                }
+                                else
+                                {
+                                    errList.Add($"{lightCfg.Name} Create instanse failed");
+                                }
+                            }
+                        }
                         break;
                     case "Comports":
                     case "EtherNets":

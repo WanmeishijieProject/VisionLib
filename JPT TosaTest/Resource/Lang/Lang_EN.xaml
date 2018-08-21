@@ -7,7 +7,6 @@
     <system:String x:Key="Page_Frame_Menu_Page_Home">Home</system:String>
     <system:String x:Key="Page_Frame_Menu_Page_Run"> Run </system:String>
     <system:String x:Key="Page_Frame_Menu_Page_Menu">Menu</system:String>
-
     <system:String x:Key="Menu_Run">Run</system:String>
     <system:String x:Key="Menu_Pause">Pause</system:String>
     <system:String x:Key="Menu_Stop">Stop</system:String>
@@ -16,7 +15,9 @@
     <system:String x:Key="Menu_Camera">Camera</system:String>
     <system:String x:Key="Menu_Teach">Teach</system:String>
     <system:String x:Key="Menu_User">User</system:String>
+    <system:String x:Key="Snake_OK">OK</system:String>
 
+    
     <system:String x:Key="Status_Version">Ver:1.0.0.0</system:String>
     <system:String x:Key="Status_User">User:</system:String>
     <system:String x:Key="Status_Info">INFO</system:String>
@@ -45,4 +46,11 @@
     <system:String x:Key="CameraPage_BtnDraw">Draw</system:String>
     <system:String x:Key="CameraPage_MenuShow">ShowItem</system:String>
     <system:String x:Key="CameraPage_MenuUseItem">UseItem</system:String>
+    <system:String x:Key="CameraPage_MaxThres">MaxThres:</system:String>
+    <system:String x:Key="CameraPage_MinThres">MinThres:</system:String>
+    <system:String x:Key="CameraPage_LightBrightness">Brightness:</system:String>
+    <system:String x:Key="CameraPage_ModelNum">ModelNum:</system:String>
+    <system:String x:Key="CameraPage_MinScore">MinScore:</system:String>
+    <system:String x:Key="CameraPage_SaveModel">SaveModel</system:String>
+    <system:String x:Key="CameraPage_TestModel">TestModel</system:String>
 </ResourceDictionary>

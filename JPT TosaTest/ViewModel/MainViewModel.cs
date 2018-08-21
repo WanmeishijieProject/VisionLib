@@ -13,14 +13,14 @@ namespace JPT_TosaTest.ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
-
-
         private int _viewIndex = 1;
         private int _errorCount = 0;
         private bool _boolShowInfoListBox = false;
         private AutoResetEvent OpenedEvent = new AutoResetEvent(true);
         private List<string> ErrList = null;
         private object[] stationLock = new object[10];
+        private bool _showSnakeInfoBar = false;
+        private string _snakeLastError = "";
 
         public MainViewModel(IDataService dataService)
         {
@@ -58,16 +58,21 @@ namespace JPT_TosaTest.ViewModel
                 StationInfoCollection[Index] = $"{StationName}:{Msg}";
             }
         }
-
-   
-
         private void SystemErrorMessageCollection_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             var colls = from item in SystemErrorMessageCollection where item.MsgType == EnumMessageType.Error select item;
             if (colls != null)
                 ErrorCount = colls.Count();
         }
-
+        private void ShowErrorinfo(string ErrorMsg)
+        {
+            if (!string.IsNullOrEmpty(ErrorMsg))
+            {
+                SnakeLastError = $"{DateTime.Now.GetDateTimeFormats()[35]}: {ErrorMsg}";
+                ShowSnakeInfoBar = true;
+                SystemErrorMessageCollection.Add(new MessageItem() { MsgType = EnumMessageType.Error, StrMsg = SnakeLastError });
+            }
+        }
 
         #region Property
         public int ViewIndex
@@ -122,6 +127,30 @@ namespace JPT_TosaTest.ViewModel
             set;
         }
         public ObservableCollection<string> StationInfoCollection { get; set; }
+        public bool ShowSnakeInfoBar
+        {
+            get { return _showSnakeInfoBar; }
+            set
+            {
+                if (_showSnakeInfoBar != value)
+                {
+                    _showSnakeInfoBar = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+        public string SnakeLastError
+        {
+            get { return _snakeLastError; }
+            set
+            {
+                if (_snakeLastError != value)
+                {
+                    _snakeLastError = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
         #endregion
 
 
@@ -135,23 +164,20 @@ namespace JPT_TosaTest.ViewModel
             get
             {
                 return new RelayCommand<string>(strLang => {
-                    string langFileOld = null;
                     string langFileNew = null;
                     switch (strLang)
                     {
                         case "CH":
                             langFileNew = "Lang_CH";
-                            langFileOld = "Lang_EN";
                             break;
                         case "EN":
                             langFileNew = "Lang_EN";
-                            langFileOld = "Lang_CH";
                             break;
                         default:
                             break;
                     }
                     var MergedDic = Application.Current.Resources.MergedDictionaries;
-                    if (!string.IsNullOrEmpty(langFileNew) && !string.IsNullOrEmpty(langFileOld))
+                    if (!string.IsNullOrEmpty(langFileNew))
                     {
                         foreach (ResourceDictionary dictionary in MergedDic)
                         {
@@ -166,6 +192,7 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
+
         /// <summary>
         /// 窗口Load
         /// </summary>
@@ -175,7 +202,7 @@ namespace JPT_TosaTest.ViewModel
                
                 foreach (var err in ErrList)
                 {
-                    SystemErrorMessageCollection.Add(new MessageItem() { MsgType = EnumMessageType.Error, StrMsg = err });
+                    ShowErrorinfo(err);
                 }
             }); }
         }
@@ -205,7 +232,7 @@ namespace JPT_TosaTest.ViewModel
             {
                 return new RelayCommand(() =>
                       {
-                          SystemErrorMessageCollection.Add(new MessageItem() { MsgType = EnumMessageType.Error, StrMsg = "Error message" });
+                          ShowErrorinfo("Error Info");
                           ViewIndex = 3;
                       });
             }
@@ -304,6 +331,17 @@ namespace JPT_TosaTest.ViewModel
             get
             {
                 return new RelayCommand(() => ViewIndex = 5);
+            }
+        }
+
+        /// <summary>
+        /// 错误信息弹出框的响应按钮
+        /// </summary>
+        public RelayCommand SnackBarActionCommand
+        {
+            get
+            {
+                return new RelayCommand(() => ShowSnakeInfoBar = false);
             }
         }
         #endregion

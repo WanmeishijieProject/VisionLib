@@ -190,9 +190,6 @@
     <Compile Include="UserCtrl\UC_Para.xaml.cs">
       <DependentUpon>UC_Para.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UserCtrl\UC_RoiSettingPanel.xaml.cs">
-      <DependentUpon>UC_RoiSettingPanel.xaml</DependentUpon>
-    </Compile>
     <Compile Include="UserCtrl\UC_Setting.xaml.cs">
       <DependentUpon>UC_Setting.xaml</DependentUpon>
     </Compile>
@@ -211,6 +208,9 @@
     <Compile Include="ViewModel\SettingVM.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Compile Include="Vision\HalconVision.cs" />
+    <Compile Include="Vision\Light\LightBase.cs" />
+    <Compile Include="Vision\Light\Light_JK_PWD6024.cs" />
+    <Compile Include="Vision\Light\LigtMgr.cs" />
     <Compile Include="WorkFlow\WorkTemplate2.cs" />
     <Compile Include="WorkFlow\WorkTemplate1.cs" />
     <Compile Include="WorkFlow\WorkTemplate.cs" />
@@ -282,10 +282,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserCtrl\UC_Para.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UserCtrl\UC_RoiSettingPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

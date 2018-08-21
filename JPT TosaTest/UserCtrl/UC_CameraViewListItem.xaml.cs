@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JPT_TosaTest.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,7 +28,14 @@ namespace JPT_TosaTest.UserCtrl
 
         private void BtnDelete_Click(object sender, RoutedEventArgs e)
         {
-
+            var vm = DataContext as RoiModelBase;
+            if (CurCamID < 0)
+            {
+                UC_MessageBox.ShowMsgBox("请选择一个相机进行操作");
+                return;
+            }
+            vm.Index = 2;// CurCamID;
+            vm.OperateDelete.Execute(vm);
         }
 
         public int CurCamID

@@ -6,7 +6,6 @@
         <system:String x:Key="Page_Frame_Menu_Page_Home">主页</system:String>
         <system:String x:Key="Page_Frame_Menu_Page_Run">运行</system:String>
         <system:String x:Key="Page_Frame_Menu_Page_Menu">菜单</system:String>
-
         <system:String x:Key="Menu_Run">启动</system:String>
         <system:String x:Key="Menu_Pause">暂停</system:String>
         <system:String x:Key="Menu_Stop">停止</system:String>
@@ -15,7 +14,9 @@
         <system:String x:Key="Menu_Camera">相机</system:String>
         <system:String x:Key="Menu_Teach">示教</system:String>
         <system:String x:Key="Menu_User">用户</system:String>
-
+        <system:String x:Key="Snake_OK">确定</system:String>
+    
+    
         <system:String x:Key="Status_Version">版本:1.0.0.0</system:String>
         <system:String x:Key="Status_User">用户:</system:String>
         <system:String x:Key="Status_Info">信息</system:String>
@@ -44,4 +45,11 @@
         <system:String x:Key="CameraPage_BtnDraw">绘制</system:String>
         <system:String x:Key="CameraPage_MenuShow">显示此项</system:String>
         <system:String x:Key="CameraPage_MenuUseItem">使用此项</system:String>
+        <system:String x:Key="CameraPage_MaxThres">阈值上限:</system:String>
+        <system:String x:Key="CameraPage_MinThres">阈值下限:</system:String>
+        <system:String x:Key="CameraPage_LightBrightness">光源亮度:</system:String>
+        <system:String x:Key="CameraPage_ModelNum">查找数量:</system:String>
+        <system:String x:Key="CameraPage_MinScore">最低分数:</system:String>
+        <system:String x:Key="CameraPage_SaveModel">保存模板</system:String>
+        <system:String x:Key="CameraPage_TestModel">测试模板</system:String>
 </ResourceDictionary>

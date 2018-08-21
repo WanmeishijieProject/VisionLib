@@ -1,10 +1,12 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight.Messaging;
 using JPT_TosaTest.Classes;
 using JPT_TosaTest.Config;
 using JPT_TosaTest.Models;
 using JPT_TosaTest.UserCtrl;
 using JPT_TosaTest.Vision;
+using JPT_TosaTest.Vision.Light;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,10 +21,15 @@ using System.Windows.Media.Animation;
 
 namespace JPT_TosaTest.ViewModel
 {
- 
-    
+
+
     public class CamDebugViewModel : ViewModelBase
     {
+        public enum EnumRoiModelType : int
+        {
+            ROI,
+            MODEL
+        }
         public CamDebugViewModel()
         {
             #region CameraInit
@@ -38,7 +45,16 @@ namespace JPT_TosaTest.ViewModel
             }
             #endregion
 
+            //ModelList
             RoiModelList = RoiCollection;
+
+            Messenger.Default.Register<int>(this, "UpdateRoiFiles", nCamID => UpdateRoiCollect(nCamID));
+            Messenger.Default.Register<int>(this, "UpdateModelFiles", nCamID => UpdateModelCollect(nCamID));
+        }
+        ~CamDebugViewModel()
+        {
+            Messenger.Default.Unregister<string>("UpdateRoiFiles");
+            Messenger.Default.Unregister<string>("UpdateModelFiles");
         }
 
         private ObservableCollection<CameraItem> _cameraCollection = new ObservableCollection<CameraItem>();
@@ -47,7 +63,7 @@ namespace JPT_TosaTest.ViewModel
         private FileHelper ModelFileHelper = new FileHelper(FileHelper.GetCurFilePathString() + "VisionData\\Model");
         private FileHelper RoiFileHelper = new FileHelper(FileHelper.GetCurFilePathString() + "VisionData\\Roi");
         private int _maxThre = 0, _minThre = 0;
-        private int _currentSelectRoiModel;
+        private EnumRoiModelType _currentSelectRoiModel;
         private CancellationTokenSource cts = null;
         private int _currentSelectedCamera = -1;
         private bool _saveImageType = true;
@@ -56,6 +72,7 @@ namespace JPT_TosaTest.ViewModel
         public EnumCamSnapState _camSnapState;
         private Storyboard RoiSb = null, TemplateSb=null;
         private string DefaultImagePath = @"C:\";
+        public int _lightBrightness = 0;
 
         #region Private method
         private void UpdateRoiCollect(int nCamID)
@@ -142,11 +159,11 @@ namespace JPT_TosaTest.ViewModel
             }
             get { return _minThre; }
         }
-
+  
         /// <summary>
         /// 当前选择的是ROI还是Model模式
         /// </summary>
-        public int CurrentSelectRoiModel
+        public EnumRoiModelType RoiOrModelPanel
         {
             set
             {
@@ -224,6 +241,15 @@ namespace JPT_TosaTest.ViewModel
             {
                 if (_currentSelectedCamera != value)
                 {
+                    //更新对应相机的Roi和Model
+                    if (RoiOrModelPanel == EnumRoiModelType.ROI)
+                        RoiModelList = ModelCollection;
+                    else
+                        RoiModelList = RoiCollection;
+
+                    //更新对应光源的亮度值
+                    LightBrightness = ConfigMgr.Instance.HardwareCfgMgr.Cameras[value].LightValue;
+
                     _currentSelectedCamera = value;
                     RaisePropertyChanged();
                 }
@@ -242,6 +268,19 @@ namespace JPT_TosaTest.ViewModel
                 }
             }
             get { return _roiModelList; }
+        }
+
+        public int LightBrightness
+        {
+            set
+            {
+                if (_lightBrightness != value)
+                {
+                    _lightBrightness = value;
+                    RaisePropertyChanged();
+                }
+            }
+            get { return _lightBrightness; }
         }
         #endregion
 
@@ -348,15 +387,14 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
-        public RelayCommand<Tuple<RoiModelBase, int>> PreViewRoiCommand     //只是动态显示，不绘图
+        public RelayCommand<ModelItem> PreViewModelRegionCommand     //只是动态显示，不绘图
         {
             get
             {
-                return new RelayCommand<Tuple<RoiModelBase, int>>(tuple =>
+                return new RelayCommand<ModelItem>(item =>
                 {
                     List<string> fileList = FileHelper.GetProfileList($"VisionData\\ModelTemp");
-                    ModelItem item = tuple.Item1 as ModelItem;
-                    int nCamID = tuple.Item2;
+                    int nCamID = CurrentSelectedCamera;
                     if (fileList.Count == 0)
                     {
                         if (item != null)
@@ -411,15 +449,14 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
-        public RelayCommand<Tuple<RoiModelBase, int>> SaveModelParaCommand
+        public RelayCommand<ModelItem> SaveModelParaCommand
         {
             get
             {
-                return new RelayCommand<Tuple<RoiModelBase, int>>(tuple =>
+                return new RelayCommand<ModelItem>(item =>
                 {
                     List<string> fileList = FileHelper.GetProfileList($"VisionData\\ModelTemp");
-                    ModelItem item = tuple.Item1 as ModelItem;
-                    int nCamID = tuple.Item2;
+                    int nCamID = CurrentSelectedCamera;
                     if (fileList.Count == 0)
                     {
                         if (item != null)
@@ -432,7 +469,6 @@ namespace JPT_TosaTest.ViewModel
                                 UpdateModelCollect(nCamID);   //只更新这一个相机的Roi文件
                             }
                         }
-
                     }
                     else
                     {
@@ -530,6 +566,10 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
+
+        /// <summary>
+        /// 停止采集
+        /// </summary>
         public RelayCommand StopGrabCommand
         {
             get
@@ -541,6 +581,10 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
+
+        /// <summary>
+        /// 保存图片命令
+        /// </summary>
         public RelayCommand<IntPtr> SaveImagerCommand
         {
             get
@@ -555,6 +599,10 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
+
+        /// <summary>
+        /// 打开图片命令
+        /// </summary>
         public RelayCommand<IntPtr> OpenImageCommand
         {
             get
@@ -576,8 +624,35 @@ namespace JPT_TosaTest.ViewModel
         }
 
         /// <summary>
-         /// Model与Roi切换动画
-         /// </summary>
+        /// 调整相应相机的光源亮度
+        /// 参数为传出的光源亮度设定值
+        /// </summary>
+        public RelayCommand BrightnessChangedCommand
+        {
+            get
+            {
+                return new RelayCommand(() => {
+                    if (CurrentSelectedCamera >= 0)
+                    {
+                        //调整相应相机的光源
+                        int LightChannel = ConfigMgr.Instance.HardwareCfgMgr.Cameras[CurrentSelectedCamera].LightPortChannel;
+                        LightBase lightControl= LigtMgr.Instance.FindInstrumentByChannelIndex(LightChannel);
+                        if (lightControl != null)
+                        {
+                            lightControl.SetLightValue(LightChannel, LightBrightness);
+                        }
+                    }
+                    else
+                    {
+                        //doNothing
+                    }
+                });
+            }
+        }
+
+        /// <summary>
+        /// Model与Roi切换动画
+        /// </summary>
         public RelayCommand<FrameworkElement> SwitchRoiModelCommand
         {
             get
@@ -593,10 +668,10 @@ namespace JPT_TosaTest.ViewModel
                         if (TemplateSb != null)
                             TemplateSb.Completed += TemplateSb_Completed;
                     }
-                    CurrentSelectRoiModel ^= 1;
+                    RoiOrModelPanel = (Convert.ToInt32(RoiOrModelPanel) ^ 1)==0? EnumRoiModelType.ROI : EnumRoiModelType.MODEL;
                     if (RoiSb != null && TemplateSb != null)
                     {
-                        if (CurrentSelectRoiModel == 0)
+                        if (RoiOrModelPanel == EnumRoiModelType.ROI)
                             TemplateSb.Begin();
                         else
                             RoiSb.Begin();

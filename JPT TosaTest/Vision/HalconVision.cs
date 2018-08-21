@@ -80,6 +80,7 @@ namespace JPT_TosaTest.Vision
         public Enum_REGION_OPERATOR RegionOperator = Enum_REGION_OPERATOR.ADD;
         public Enum_REGION_TYPE RegionType = Enum_REGION_TYPE.CIRCLE;
         private AutoResetEvent SyncEvent = new AutoResetEvent(false);
+        private string DebugWindowName = "CameraDebug";
         #endregion
 
         public bool AttachCamWIndow(int nCamID, string Name, HTuple hWindow)
@@ -244,6 +245,8 @@ namespace JPT_TosaTest.Vision
                         return;
 
                     HOperatorSet.GrabImage(out image, AcqHandleList[nCamID]);
+                    HOperatorSet.GetImageSize(image, out HTuple width, out HTuple height);
+                  
                     HOperatorSet.GenEmptyObj(out Region);
 
                     if (HoImageList[nCamID] != null)
@@ -256,7 +259,10 @@ namespace JPT_TosaTest.Vision
                     {
                         foreach (var it in HwindowDic[nCamID])
                             if (it.Value != -1)
+                            {
+                                HOperatorSet.SetPart(it.Value, 0, 0, height, width);
                                 HOperatorSet.DispObj(HoImageList[nCamID], it.Value);
+                            }
                     }
                 }
             }
@@ -346,9 +352,9 @@ namespace JPT_TosaTest.Vision
                             string[] strList = fileName.Split('.');
                             if (strList.Length == 2)
                             {
-                                if (HwindowDic.Keys.Contains(nCamID) && HwindowDic[nCamID].Keys.Contains("CameraViewCam"))
+                                if (HwindowDic.Keys.Contains(nCamID) && HwindowDic[nCamID].Keys.Contains(DebugWindowName))
                                 {
-                                    HTuple window = HwindowDic[nCamID]["CameraViewCam"];
+                                    HTuple window = HwindowDic[nCamID][DebugWindowName];
                                     HTuple row, column, phi, length1, length2, radius;
                                     HObject newRegion = null;
                                     HOperatorSet.SetColor(window, "green");
@@ -393,9 +399,9 @@ namespace JPT_TosaTest.Vision
                         }
                         else  //如果是新建的Model
                         {
-                            if (HwindowDic.Keys.Contains(nCamID) && HwindowDic[nCamID].Keys.Contains("CameraViewCam"))
+                            if (HwindowDic.Keys.Contains(nCamID) && HwindowDic[nCamID].Keys.Contains(DebugWindowName))
                             {
-                                HTuple window = HwindowDic[nCamID]["CameraViewCam"];
+                                HTuple window = HwindowDic[nCamID][DebugWindowName];
                                 HTuple row, column, phi, length1, length2, radius;
                                 HObject newRegion = null;
                                 HOperatorSet.SetColor(window, "green");
@@ -465,9 +471,9 @@ namespace JPT_TosaTest.Vision
 
             try
             {
-                if (HwindowDic.Keys.Contains(nCamID) && HwindowDic[nCamID].Keys.Contains("CameraViewCam"))
+                if (HwindowDic.Keys.Contains(nCamID) && HwindowDic[nCamID].Keys.Contains(DebugWindowName))
                 {
-                    HTuple window = HwindowDic[nCamID]["CameraViewCam"];
+                    HTuple window = HwindowDic[nCamID][DebugWindowName];
                     HOperatorSet.SetWindowAttr("background_color", "black");
                     HOperatorSet.SetDraw(window, "margin");
                     disp_message(window, "请绘制第一个ROI，以右键结束绘制", "window",
@@ -1149,11 +1155,11 @@ namespace JPT_TosaTest.Vision
             }
             catch (HalconException hex)
             {
-                throw hex;
+                throw;
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
         public bool GetAngleTune2(int nCamID, out double fAngle, HTuple hwindow = null)
@@ -1287,9 +1293,9 @@ namespace JPT_TosaTest.Vision
         {
             if (nCamID < 0 || MaxThre < MinThre)
                 return false;
-            if (HwindowDic.Keys.Contains(nCamID) && HwindowDic[nCamID].Keys.Contains("CameraViewCam"))
+            if (HwindowDic.Keys.Contains(nCamID) && HwindowDic[nCamID].Keys.Contains(DebugWindowName))
             {
-                HTuple window = HwindowDic[nCamID]["CameraViewCam"];
+                HTuple window = HwindowDic[nCamID][DebugWindowName];
                 switch (modelType)
                 {
                     case EnumShapeModelType.Gray:
@@ -1298,8 +1304,7 @@ namespace JPT_TosaTest.Vision
                         break;
                     case EnumShapeModelType.XLD:
                         HObject region = regionIn as HObject;
-                        break;
-                        //return LdsFuncSet.PreProcessShapeMode(HoImageList[nCamID], window, MinThre, MaxThre, region, regionFilePath, true);
+                        return PreProcessShapeMode(HoImageList[nCamID], window, MinThre, MaxThre, region, regionFilePath, true);
                     default:
                         return false;
                 }
@@ -1310,9 +1315,9 @@ namespace JPT_TosaTest.Vision
         {
             if (nCamID < 0 || MaxThre < MinThre)
                 return false;
-            if (HwindowDic.Keys.Contains(nCamID) && HwindowDic[nCamID].Keys.Contains("CameraViewCam"))
+            if (HwindowDic.Keys.Contains(nCamID) && HwindowDic[nCamID].Keys.Contains(DebugWindowName))
             {
-                HTuple window = HwindowDic[nCamID]["CameraViewCam"];
+                HTuple window = HwindowDic[nCamID][DebugWindowName];
                 switch (modelType)
                 {
                     case EnumShapeModelType.Gray:
@@ -1321,8 +1326,7 @@ namespace JPT_TosaTest.Vision
                         break;
                     case EnumShapeModelType.XLD:
                         HObject region = regionIn as HObject;
-                        break;
-                        //return LdsFuncSet.PreProcessShapeMode(HoImageList[nCamID], window, MinThre, MaxThre, region, regionFilePath, false);
+                        return PreProcessShapeMode(HoImageList[nCamID], window, MinThre, MaxThre, region, regionFilePath, false);
                     default:
                         return false;
                 }
@@ -1345,6 +1349,8 @@ namespace JPT_TosaTest.Vision
             }
             return null;
         }
+
+        #region Private method
         private void FindLine(HObject ho_Image, HTuple hv_CaliperNum, HTuple hv_EdgeGrayValue, HTuple hv_RoiRow, HTuple hv_RoiCol, HTuple hv_RoiPhi, HTuple hv_RoiL1, HTuple hv_RoiL2, out HTuple hv_OutRowStart, out HTuple hv_OutColStart, out HTuple hv_OutRowEnd, out HTuple hv_OutColEnd)
         {
             // Local iconic variables 
@@ -1713,6 +1719,78 @@ namespace JPT_TosaTest.Vision
 
             return;
         }
+        private bool PreProcessShapeMode(HObject ImageIn, HTuple window, HTuple MinThre, HTuple MaxThre, HObject RegionDomain, string strRegionPath, bool bPreView = true)
+        {
+            try
+            {
+                if (RegionDomain == null)
+                    HOperatorSet.GetDomain(ImageIn, out RegionDomain);
+
+                // Local iconic variables 
+                HObject ho_ImageReduced, ho_Regions2, ho_RegionFillUp1;
+                HObject ho_Contours1;
+                HObject emptObject = null;
+                // Local control variables 
+                HTuple hv_Width, hv_Height, hv_ModelID;
+
+                // Initialize local and output iconic variables 
+                HOperatorSet.GenEmptyObj(out ho_ImageReduced);
+                HOperatorSet.GenEmptyObj(out ho_Regions2);
+                HOperatorSet.GenEmptyObj(out ho_RegionFillUp1);
+                HOperatorSet.GenEmptyObj(out ho_Contours1);
+
+
+                HOperatorSet.GetImageSize(ImageIn, out hv_Width, out hv_Height);
+                ho_ImageReduced.Dispose();
+                HOperatorSet.ReduceDomain(ImageIn, RegionDomain, out ho_ImageReduced);
+
+                ho_Regions2.Dispose();
+                HOperatorSet.Threshold(ho_ImageReduced, out ho_Regions2, MinThre, MaxThre);
+                ho_RegionFillUp1.Dispose();
+                HOperatorSet.FillUpShape(ho_Regions2, out ho_RegionFillUp1, "area", 1, 500);
+                ho_Contours1.Dispose();
+                HOperatorSet.GenContourRegionXld(ho_RegionFillUp1, out ho_Contours1, "border");
+                if (bPreView == false)
+                {
+                    HOperatorSet.CreateShapeModelXld(ho_Contours1, "auto", (new HTuple(0)).TupleRad(), (new HTuple(360)).TupleRad(), "auto", "auto", "ignore_local_polarity", 5, out hv_ModelID);
+                    HOperatorSet.FindShapeModel(ImageIn, hv_ModelID, (new HTuple(0)).TupleRad(), (new HTuple(360)).TupleRad(), 0.5, 1, 0.5, "least_squares", 0, 0.9, out HTuple hv_Row, out HTuple hv_Column, out HTuple hv_Angle, out HTuple hv_Score);
+
+                    HTuple hv_ModelPos = new HTuple();
+                    hv_ModelPos[0] = hv_Row;
+                    hv_ModelPos[1] = hv_Column;
+                    hv_ModelPos[2] = hv_Angle;
+                    string[] strList = strRegionPath.Split('.');
+                    HOperatorSet.WriteShapeModel(hv_ModelID, $"{strList[0]}.shm");
+                    HOperatorSet.WriteTuple(hv_ModelPos, $"{strList[0]}.tup");
+                    HOperatorSet.WriteRegion(RegionDomain, $"{strList[0]}.reg");
+                }
+
+                HOperatorSet.SetDraw(window, "fill");
+                HOperatorSet.SetColor(window, "red");
+                HOperatorSet.SetSystem("flush_graphic", "false");
+                HOperatorSet.ClearWindow(window);
+                HOperatorSet.DispObj(ImageIn, window);
+                HOperatorSet.DispObj(ho_Contours1, window); //显示模板轮廓
+                HOperatorSet.SetSystem("flush_graphic", "true");
+                HOperatorSet.GenEmptyObj(out emptObject);
+                HOperatorSet.DispObj(emptObject, window);
+
+
+                emptObject.Dispose();
+                RegionDomain.Dispose();
+                ho_ImageReduced.Dispose();
+                ho_Regions2.Dispose();
+                ho_RegionFillUp1.Dispose();
+                ho_Contours1.Dispose();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+        #endregion
+
     }
 
     public class VisionDataHelper

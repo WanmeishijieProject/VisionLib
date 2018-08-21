@@ -40,12 +40,6 @@ namespace JPT_TosaTest
                 StationInfoGrid.Children[i].SetValue(Grid.MarginProperty, new Thickness(10,0,0,0));
                 Grid.SetColumn(tb,i++);                
             }
-
-            List<ResourceDictionary> dictionaryList = new List<ResourceDictionary>();
-            foreach (ResourceDictionary dictionary in Application.Current.Resources.MergedDictionaries)
-            {
-                dictionaryList.Add(dictionary);
-            }
         }
     }
 }

@@ -43,7 +43,7 @@ namespace JPT_TosaTest.Instrument
             comportData.Timeout = comportCfg.TimeOut;
             switch (comportCfg.Parity.ToLower())
             {
-                case "none":
+                case "n":
                     comportData.parity = System.IO.Ports.Parity.None;
                     break;
                 case "o":
