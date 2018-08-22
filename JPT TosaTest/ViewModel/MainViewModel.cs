@@ -9,6 +9,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Windows;
 
+
 namespace JPT_TosaTest.ViewModel
 {
     public class MainViewModel : ViewModelBase
@@ -21,7 +22,7 @@ namespace JPT_TosaTest.ViewModel
         private object[] stationLock = new object[10];
         private bool _showSnakeInfoBar = false;
         private string _snakeLastError = "";
-
+   
         public MainViewModel(IDataService dataService)
         {
             TestItemCollection = new ObservableCollection<TestItemModel>()
@@ -37,6 +38,8 @@ namespace JPT_TosaTest.ViewModel
             };
             SystemErrorMessageCollection = new ObservableCollection<MessageItem>();
             SystemErrorMessageCollection.CollectionChanged += SystemErrorMessageCollection_CollectionChanged;
+
+            //加载配置文件
             Config.ConfigMgr.Instance.LoadConfig(out ErrList);
             StationInfoCollection = new ObservableCollection<string>();
             foreach (var stationCfg in Config.ConfigMgr.Instance.SoftwareCfgMgr.WorkFlowConfigs)
@@ -49,6 +52,8 @@ namespace JPT_TosaTest.ViewModel
             }
             for (int i = 0; i < 10; i++)
                 stationLock[i] = new object();
+
+           
         }
 
         private void Value_OnStationInfoChanged1(int Index, string StationName, string Msg)
@@ -309,6 +314,14 @@ namespace JPT_TosaTest.ViewModel
         }
 
         /// <summary>
+        /// IO监控界面
+        /// </summary>
+        public RelayCommand BtnMonitorCommand
+        {
+            get { return new RelayCommand(() => ViewIndex = 5); }
+        }
+        
+        /// <summary>
         /// 主界面运行按钮
         /// </summary>
         public RelayCommand StartStationCommand
@@ -330,7 +343,7 @@ namespace JPT_TosaTest.ViewModel
         {
             get
             {
-                return new RelayCommand(() => ViewIndex = 5);
+                return new RelayCommand(() => ViewIndex = 6);
             }
         }
 

@@ -27,6 +27,8 @@
             <Convert:UserName2Visibility x:Key="UserName2Visibility"/>
             <Convert:Level2Boolean x:Key="Level2Boolean"/>
             <Convert:Bool2Image x:Key="Bool2Image"/>
+            <Convert:Bool2IoColor x:Key="Bool2IoColor"/>
+            <Convert:Int2String x:Key="Int2String"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resource/MDStyle.xaml"/>
                 <ResourceDictionary Source="Resource/StylesResourceDictionary.xaml"/>

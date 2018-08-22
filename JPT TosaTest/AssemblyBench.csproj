@@ -22,7 +22,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS, TEST_IO</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>true</RunCodeAnalysis>
@@ -130,9 +130,11 @@
     <Compile Include="Config\UserManager\UserCfgManager.cs" />
     <Compile Include="Config\UserManager\UserModel.cs" />
     <Compile Include="Converter\Bool2Image.cs" />
+    <Compile Include="Converter\Bool2IoColor.cs" />
     <Compile Include="Converter\Bool2Visibility.cs" />
     <Compile Include="Converter\EnumCamSnapState2SnapButtonEnable.cs" />
     <Compile Include="Converter\Int2BackgroundBrush.cs" />
+    <Compile Include="Converter\Int2String.cs" />
     <Compile Include="Converter\Level2Boolean.cs" />
     <Compile Include="Converter\int2Visibility.cs" />
     <Compile Include="Converter\IsChecked2RegionOperator.cs" />
@@ -153,6 +155,7 @@
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\HardwareParaModel.cs" />
     <Compile Include="Model\IDataService.cs" />
+    <Compile Include="Model\IOModel.cs" />
     <Compile Include="Model\MessageItem.cs" />
     <Compile Include="Model\ResultItem.cs" />
     <Compile Include="Model\RoiItem.cs" />
@@ -166,6 +169,9 @@
     <Compile Include="Rules\NotEmptyValidationRule.cs" />
     <Compile Include="UserCtrl\UC_AxisPos.xaml.cs">
       <DependentUpon>UC_AxisPos.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserCtrl\UC_AxisStateListItem.xaml.cs">
+      <DependentUpon>UC_AxisStateListItem.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserCtrl\UC_CameraDebug.xaml.cs">
       <DependentUpon>UC_CameraDebug.xaml</DependentUpon>
@@ -188,6 +194,9 @@
     <Compile Include="UserCtrl\UC_ModelSettingPanel.xaml.cs">
       <DependentUpon>UC_ModelSettingPanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserCtrl\UC_Monitor.xaml.cs">
+      <DependentUpon>UC_Monitor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserCtrl\UC_Para.xaml.cs">
       <DependentUpon>UC_Para.xaml</DependentUpon>
     </Compile>
@@ -206,6 +215,7 @@
     <Compile Include="ViewModel\CamDebugViewModel.cs" />
     <Compile Include="ViewModel\LogInViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
+    <Compile Include="ViewModel\MonitorViewModel.cs" />
     <Compile Include="ViewModel\SettingVM.cs" />
     <Compile Include="ViewModel\TeachBoxViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
@@ -255,6 +265,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="UserCtrl\UC_AxisStateListItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserCtrl\UC_CameraDebug.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -280,6 +294,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserCtrl\UC_ModelSettingPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserCtrl\UC_Monitor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -404,6 +422,9 @@
   <ItemGroup>
     <Resource Include="Images\lightOff.png" />
     <Resource Include="Images\lightOn.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Monitor.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

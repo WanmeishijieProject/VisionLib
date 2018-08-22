@@ -11,7 +11,7 @@
         WindowStartupLocation="CenterScreen"    
         mc:Ignorable="d"
         DataContext="{Binding TeachBoxVM, Source={StaticResource Locator}}"
-        Title="{DynamicResource TeachBox_Title}" Height="800" Width="600">
+        Height="800" Width="600">
     <Window.InputBindings>
         <KeyBinding Key="Left" Command="{Binding LeftCommand}"/>
         <KeyBinding Key="Right" Command="{Binding RightCommand}"/>
@@ -24,7 +24,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Border Grid.RowSpan="2" CornerRadius="20" Background="Blue" Opacity="0.3"/>
-        <TextBlock Text="TeachBox" FontSize="25" Margin="10,10,0,0" Foreground="White"/>
+        <TextBlock Text="{DynamicResource TeachBox_Title}" FontSize="25" Margin="10,10,0,0" Foreground="White"/>
         <Button VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,10,10,0" Background="Transparent" Width="50" Height="40" BorderThickness="0" Click="Button_Click">
             <Image Source="/JPT TosaTest;component/Images/close_1.png"/>
         </Button>
@@ -154,7 +154,7 @@
                             <Image  Source="/JPT TosaTest;component/Images/Right.png" />
                         </StackPanel>
                     </Button>
-                    <TextBox materialDesign:HintAssist.Hint="{DynamicResource TeachBox_Step}" Text="{Binding Content}" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="2"
+                    <TextBox materialDesign:HintAssist.Hint="{DynamicResource TeachBox_Step}" Text="" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="2"
                              VerticalAlignment="Center" HorizontalAlignment="Center"  FontSize="20" materialDesign:HintAssist.FloatingOffset="0,-20" materialDesign:HintAssist.FloatingScale="3"/>
                 </Grid>
                 <Button  Background="Transparent" BorderThickness="0" Width="65" Height="100" Margin="375,247,25,153" Style="{StaticResource RoundButtonStyle1}">

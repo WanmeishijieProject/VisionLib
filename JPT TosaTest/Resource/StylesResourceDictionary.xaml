@@ -144,4 +144,97 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <!--DataGrid样式--><!--
+    <Style x:Key="DataGridStyle" TargetType="DataGrid">
+        <Setter Property="RowHeaderWidth" Value="0"></Setter>
+        <Setter Property="AutoGenerateColumns" Value="False"></Setter>
+        <Setter Property="CanUserAddRows" Value="False"></Setter>
+        <Setter Property="CanUserResizeColumns" Value="False"></Setter>
+        <Setter Property="CanUserResizeRows" Value="False"></Setter>
+        <Setter Property="HorizontalGridLinesBrush" Value="LightGray"></Setter>
+        <Setter Property="VerticalGridLinesBrush" Value="LightGray"></Setter>
+        <Setter Property="IsReadOnly" Value="True"></Setter>
+        <Setter Property="BorderThickness" Value="1,0"></Setter>
+        <Setter Property="BorderBrush" Value="LightGray"></Setter>
+        <Setter Property="RowHeight" Value="30"></Setter>
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto"></Setter>
+    </Style>
+
+    --><!--DataGrid表头样式--><!--
+    <Style TargetType="DataGridColumnHeader">
+        <Setter Property="FontSize" Value="16"></Setter>
+        <Setter Property="Background" Value="LightGray"></Setter>
+        <Setter Property="BorderThickness" Value="0,0,1,1"></Setter>
+        <Setter Property="BorderBrush" Value="LightGray"></Setter>
+        <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
+    </Style>
+
+    --><!--DataGrid复选框样式--><!--
+    <Style TargetType="CheckBox" x:Key="VerticalCheckBox">
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="FontSize" Value="16"></Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type CheckBox}">
+                    <StackPanel Name="sp" HorizontalAlignment="Center" >
+                        <ContentPresenter HorizontalAlignment="Center" Margin="2"></ContentPresenter>
+                        <Border x:Name="bd" BorderThickness="1.5" Height="20" Width="20" BorderBrush="Gray" >
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0"  EndPoint="1,1">
+                                    <GradientStop Color="LightGray" Offset="0.05"/>
+                                    <GradientStop Color="White" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Path Name="checkPath" Width="18" Height="16" Stroke="Black"  StrokeThickness="2"></Path>
+                        </Border>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="checkPath" Property="Data" Value="M 1.5,5 L 7,13 17,0"></Setter>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="LightGray"></Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    --><!--DataGrid单元格选中样式--><!--
+    <Style TargetType="DataGridCell">
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="#FFC7CBCA"/>
+                <Setter Property="BorderThickness" Value="0"></Setter>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    --><!--DataGrid按钮样式 蓝--><!--
+    <Style x:Key="btnInfo" TargetType="Button">
+        <Setter Property="Width" Value="70"></Setter>
+        <Setter Property="Foreground" Value="White"></Setter>
+        <Setter Property="FontSize" Value="12"></Setter>
+        <Setter Property="Margin" Value="0,2"></Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Name="bd" CornerRadius="3" BorderThickness="1" BorderBrush="LightGray" Background="#FF2F6DC1">
+                        <ContentPresenter Content="{TemplateBinding ContentControl.Content}" HorizontalAlignment="Center" VerticalAlignment="Center"  />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Button.IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Opacity" Value="0.6"></Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="#FF9BCEF7"></Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>-->
+
 </ResourceDictionary>

@@ -14,7 +14,7 @@ namespace JPT_TosaTest.IOCards
         {
             get { return _instance.Value; }
         }
-        private Dictionary<string, IOBase> IOCardDic = new Dictionary<string, IOBase>();
+        public Dictionary<string, IOBase> IOCardDic = new Dictionary<string, IOBase>();
 
         public void AddIOCard(string CardName, IOBase IOCard)
         {
@@ -113,5 +113,8 @@ namespace JPT_TosaTest.IOCards
                 return card.WriteIoOutWord(StartIndex,value);
             return false;
         }
+
+
+
     }
 }

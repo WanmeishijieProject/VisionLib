@@ -36,7 +36,8 @@ namespace JPT_TosaTest.Config.HardwareManager
         public string Name { get; set; }
         public bool NeedInit { get; set; }
         public string ConnectMode { get; set; }
-        public string IOName { get; set; }
+        public string IOName_Input { get; set; }
+        public string IOName_Output { get; set; }
     }
 
     public class CameraCfg

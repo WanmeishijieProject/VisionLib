@@ -10,5 +10,6 @@ namespace CJPT_TosaTestPAS.Config.SoftwareManager
     public class SoftwareCfgManager
     {
         public WorkFlowConfig[] WorkFlowConfigs { get; set; }
+        public IoNameCfg[] IONames { get; set; }
     }
 }

@@ -12,6 +12,7 @@
         <system:String x:Key="Menu_Home">主页</system:String>
         <system:String x:Key="Menu_Setting">设置</system:String>
         <system:String x:Key="Menu_Camera">相机</system:String>
+        <system:String x:Key="Menu_Monitor">监控</system:String>
         <system:String x:Key="Menu_Teach">示教</system:String>
         <system:String x:Key="Menu_User">用户</system:String>
         <system:String x:Key="Snake_OK">确定</system:String>

@@ -13,6 +13,7 @@
     <system:String x:Key="Menu_Home">Home</system:String>
     <system:String x:Key="Menu_Setting">Setting</system:String>
     <system:String x:Key="Menu_Camera">Camera</system:String>
+    <system:String x:Key="Menu_Monitor">Monitor</system:String>
     <system:String x:Key="Menu_Teach">Teach</system:String>
     <system:String x:Key="Menu_User">User</system:String>
     <system:String x:Key="Snake_OK">OK</system:String>

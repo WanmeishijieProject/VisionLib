@@ -196,16 +196,19 @@ namespace JPT_TosaTest.Config
             WorkFlowBase workFlowBase = null;
             foreach (PropertyInfo pi in pis)
             {
-                WorkFlowCfgs = pi.GetValue(SoftwareCfgMgr) as SoftwareManager.WorkFlowConfig[];
-                foreach (var it in WorkFlowCfgs)
+                if (pi.Name == "WorkFlowConfigs")
                 {
-                    if (it.Enable)
+                    WorkFlowCfgs = pi.GetValue(SoftwareCfgMgr) as SoftwareManager.WorkFlowConfig[];
+                    foreach (var it in WorkFlowCfgs)
                     {
-                        workFlowBase = tStationCfg.Assembly.CreateInstance("JPT_TosaTest.WorkFlow." + it.Name, true, BindingFlags.CreateInstance, null, new object[] { it }, null, null) as WorkFlowBase;
-                        if (workFlowBase == null)
-                            errList.Add($"Station: {it.Name} Create instance failed!");
-                        else
-                            WorkFlowMgr.Instance.AddStation(it.Name, workFlowBase);
+                        if (it.Enable)
+                        {
+                            workFlowBase = tStationCfg.Assembly.CreateInstance("JPT_TosaTest.WorkFlow." + it.Name, true, BindingFlags.CreateInstance, null, new object[] { it }, null, null) as WorkFlowBase;
+                            if (workFlowBase == null)
+                                errList.Add($"Station: {it.Name} Create instance failed!");
+                            else
+                                WorkFlowMgr.Instance.AddStation(it.Name, workFlowBase);
+                        }
                     }
                 }
             }

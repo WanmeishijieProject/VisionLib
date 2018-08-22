@@ -69,6 +69,19 @@ namespace JPT_TosaTest.UserCtrl
 
         private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+            //if (Lock != null)
+            //{
+            //    lock (Lock)
+            //    {
+            //        if (SyncEvent != null)
+            //            SyncEvent.Set();
+            //    }
+            //}
+
+        }
+
+        private void Cam2_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
             if (Lock != null)
             {
                 lock (Lock)
@@ -77,7 +90,6 @@ namespace JPT_TosaTest.UserCtrl
                         SyncEvent.Set();
                 }
             }
-
         }
     }
 }

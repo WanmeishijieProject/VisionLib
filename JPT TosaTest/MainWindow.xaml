@@ -81,6 +81,11 @@
                             Command="{Binding BtnCameraCommand}"
                             IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Boolean}, ConverterParameter=0}"/>
                         <dxb:BarButtonItem 
+                            Content="{DynamicResource Menu_Monitor}" 
+                            RibbonStyle="Large" Glyph="Images/Monitor.png"
+                            Command="{Binding BtnMonitorCommand}"
+                            IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Boolean}, ConverterParameter=0}"/>
+                        <dxb:BarButtonItem 
                             Content="{DynamicResource Menu_Teach}" 
                             RibbonStyle="Large" Glyph="Images/joypad.png"
                             Command="{Binding BtnTeachCommand}"
@@ -102,20 +107,13 @@
         <useCtrl:UC_Setting Grid.Row="1"  Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=2}"/>
         <useCtrl:UC_ErrorInfo Grid.Row="1"  Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=3}"/>
         <useCtrl:UC_CameraDebug Grid.Row="1"  Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=4}"/>
-        <useCtrl:UC_LogIn Grid.Row="1"  Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility}, ConverterParameter=5}"/>
-
-        <!--<materialDesign:Snackbar Grid.Row="1" HorizontalAlignment="Stretch" x:Name="SnackbarFive" IsActive="True">
-            <materialDesign:SnackbarMessage>
-                <Grid>
-                    <TextBlock Text="Error"/>
-                </Grid>
-            </materialDesign:SnackbarMessage>
-        </materialDesign:Snackbar>-->
-        <materialDesign:Snackbar Grid.Row="1" IsActive="{Binding ShowSnakeInfoBar}" x:Name="SnackbarTwo" Background="Black" Width="{Binding Width, ElementName=StationInfoGrid}">
+        <useCtrl:UC_Monitor Grid.Row="1"  Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility}, ConverterParameter=5}"/>
+        <useCtrl:UC_LogIn Grid.Row="1"  Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility}, ConverterParameter=6}"/>
+        <materialDesign:Snackbar Grid.Row="0" IsActive="{Binding ShowSnakeInfoBar}" x:Name="SnackbarTwo" Background="Black" Width="{Binding Width, ElementName=StationInfoGrid}">
             <materialDesign:SnackbarMessage ActionContent="{DynamicResource Snake_OK}" Foreground="White" ActionCommand="{Binding SnackBarActionCommand}">
                 <materialDesign:SnackbarMessage.Content>
                     <Grid>
-                        <TextBlock Text="{Binding SnakeLastError}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding SnakeLastError}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="Red"/>
                     </Grid>
                 </materialDesign:SnackbarMessage.Content>
             </materialDesign:SnackbarMessage>

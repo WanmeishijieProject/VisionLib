@@ -1,0 +1,108 @@
+﻿<UserControl x:Class="JPT_TosaTest.UserCtrl.UC_Monitor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:JPT_TosaTest.UserCtrl"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid DataContext="{Binding MonitorVM, Source={StaticResource Locator}}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="300"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <GroupBox Header="输入" Margin="16">
+            <Grid>
+                <TextBlock RenderTransformOrigin="0.5,0.5" FontSize="70" Text="{Binding CurrentIoCardCollectionInput[0].CardName}"  HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.1"/>
+                <ListView ItemsSource="{Binding CurrentIoCardCollectionInput}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Width="80" Height="110">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="30"/>
+                                </Grid.RowDefinitions>
+                                <Border Margin="15" CornerRadius="10"  Background="{Binding IsChecked, Converter={StaticResource Bool2IoColor}}"/>
+                                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Index, Converter={StaticResource Int2String}}"/>
+                                <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding IOName}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </GroupBox>
+        <GroupBox Header="输出" Margin="16" Grid.Column="1">
+            <Grid>
+                <TextBlock RenderTransformOrigin="0.5,0.5" FontSize="70" Text="{Binding CurrentIoCardCollectionOutput[0].CardName}"  HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.1"/>
+                <ListView ItemsSource="{Binding CurrentIoCardCollectionOutput}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Width="80" Height="110" Cursor="Hand">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="30"/>
+                                </Grid.RowDefinitions>
+                                <Border Margin="15" CornerRadius="10"  Background="{Binding IsChecked, Converter={StaticResource Bool2IoColor}}"/>
+                                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Index, Converter={StaticResource Int2String}}"/>
+                                <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding IOName}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </GroupBox>
+       
+        <Button Grid.Column="0" Style="{DynamicResource MaterialDesignFloatingActionMiniButton}" 
+                    Command="{Binding PreIoCardInputCommand}"
+                    VerticalAlignment="Center" HorizontalAlignment="Left" 
+                    Opacity="0.3">
+            <materialDesign:PackIcon Kind="StepBackward" />
+        </Button>
+        <Button Grid.Column="0" Style="{DynamicResource MaterialDesignFloatingActionMiniButton}" 
+                    Command="{Binding NextIoCardInputCommand}"
+                    VerticalAlignment="Center" HorizontalAlignment="Right" 
+                    Opacity="0.3">
+            <materialDesign:PackIcon Kind="StepForward" />
+        </Button>
+
+        <Button Grid.Column="1" Style="{DynamicResource MaterialDesignFloatingActionMiniButton}" 
+                    Command="{Binding PreIoCardOutputCommand}"
+                    VerticalAlignment="Center" HorizontalAlignment="Left" 
+                    Opacity="0.3">
+            <materialDesign:PackIcon Kind="StepBackward" />
+        </Button>
+        <Button Grid.Column="1" Style="{DynamicResource MaterialDesignFloatingActionMiniButton}" 
+                    Command="{Binding NextIoCardOutputCommand}"
+                    VerticalAlignment="Center" HorizontalAlignment="Right" 
+                    Opacity="0.3">
+            <materialDesign:PackIcon Kind="StepForward" />
+        </Button>
+        <GridSplitter Height="5" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch"/>
+        <GroupBox Header="轴状态" Margin="16" Grid.Row="2" Grid.ColumnSpan="2">
+            <ListBox>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <local:UC_AxisStateListItem/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </GroupBox>
+    </Grid>
+</UserControl>
