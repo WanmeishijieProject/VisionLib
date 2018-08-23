@@ -1,5 +1,4 @@
-﻿using CJPT_TosaTestPAS.Config.SoftwareManager;
-using GalaSoft.MvvmLight.Messaging;
+﻿using JPT_TosaTestPAS.Config.SoftwareManager;
 using JPT_TosaTest.Classes;
 using JPT_TosaTest.Config.HardwareManager;
 using JPT_TosaTest.Config.SoftwareManager;
@@ -63,7 +62,6 @@ namespace JPT_TosaTest.Config
             {
                 errList.Add($"Unable to load config file { File_HardwareCfg}, { ex.Message}");
             }
-
             MotionBase motionBase = null;
             IOBase ioBase = null;
             InstrumentBase instrumentBase = null;
@@ -85,13 +83,30 @@ namespace JPT_TosaTest.Config
                                 motionBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.MotionCards." + motionCfg.Name.Substring(0, motionCfg.Name.IndexOf("[")), true, BindingFlags.CreateInstance, null, /*new object[] { motionCfg }*/null, null, null) as MotionBase;
                                 if (motionBase != null)
                                 {
-                                    if (motionCfg.NeedInit)
+  
+                                    if (motionCfg.ConnectMode.ToLower() != "none")
                                     {
-                                        if (motionBase.Init(motionCfg))
+                                        var p = hardWareMgrType.GetProperty($"{motionCfg.ConnectMode}s");
+                                        var portCfgs = p.GetValue(HardwareCfgMgr) as ICommunicationPortCfg[];
+                                        var ports = from portCfg in portCfgs where portCfg.PortName == motionCfg.PortName select portCfg;
+                                        if (ports != null && ports.Count() > 0)
+                                        {
+                                            if ( motionBase.Init(motionCfg, ports.ElementAt(0)))
+                                                MotionMgr.Instance.AddMotionCard(motionCfg.Name, motionBase);
+                                            else
+                                                errList.Add($"{motionCfg.Name} init failed");
+                                        }
+                                        else
+                                            errList.Add($"{motionCfg.Name} init failed");
+                                    }
+                                    else  //无需选择通信端口
+                                    {
+                                        if (motionBase.Init(motionCfg,null))
                                             MotionMgr.Instance.AddMotionCard(motionCfg.Name, motionBase);
                                         else
                                             errList.Add($"{motionCfg.Name} init failed");
                                     }
+                                    
                                 }
                                 else
                                 {
@@ -111,9 +126,24 @@ namespace JPT_TosaTest.Config
                                 ioBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.IOCards." + ioCfg.Name.Substring(0, ioCfg.Name.IndexOf("[")), true, BindingFlags.CreateInstance, null, null, null, null) as IOBase;
                                 if (ioBase != null)
                                 {
-                                    if (ioCfg.NeedInit)
+                                    ioBase.ioCfg = ioCfg;
+                                    if (ioCfg.ConnectMode.ToLower() != "none")
                                     {
-                                        if (ioBase.Init(ioCfg))
+                                        var p = hardWareMgrType.GetProperty($"{ioCfg.ConnectMode}s");
+                                        var portCfgs = p.GetValue(HardwareCfgMgr) as ICommunicationPortCfg[];
+                                        var ports = from portCfg in portCfgs where portCfg.PortName == ioCfg.Name select portCfg;
+                                        if (ports != null && ports.Count() > 0)
+                                        {
+                                            if (ioBase.Init(ioCfg, ports.ElementAt(0)))
+                                                IOCardMgr.Instance.AddIOCard(ioCfg.Name, ioBase);
+                                            else
+                                                errList.Add($"{ioCfg.Name} init failed");
+                                        }
+                                        errList.Add($"{ioCfg.Name} init failed");
+                                    }
+                                    else  //无需选择通信端口
+                                    {
+                                        if (ioBase.Init(ioCfg,null))
                                             IOCardMgr.Instance.AddIOCard(ioCfg.Name, ioBase);
                                         else
                                             errList.Add($"{ioCfg.Name} init failed");
@@ -135,6 +165,13 @@ namespace JPT_TosaTest.Config
                             if (instrumentCfg.Enabled)
                             {
                                 instrumentBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.Instruments." + instrumentCfg.InstrumentName.Substring(0, instrumentCfg.InstrumentName.IndexOf("[")), true, BindingFlags.CreateInstance, null, null, null, null) as InstrumentBase;
+                                if (instrumentBase != null)
+                                {
+                                    if (instrumentBase.Init())
+                                    {
+
+                                    }
+                                }
                             }
                         }
                         break;
@@ -148,11 +185,29 @@ namespace JPT_TosaTest.Config
                             if (lightCfg.Enabled)
                             {
                                 lightBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.Vision.Light." + lightCfg.Name.Substring(0, lightCfg.Name.IndexOf("[")), true, BindingFlags.CreateInstance, null, null, null, null) as LightBase;
-                                if (ioBase != null)
+                                if (lightBase != null)
                                 {
-                                    if (lightCfg.NeedInit)
+                                  
+                                    if (lightCfg.ConnectMode.ToLower() != "none")
                                     {
-                                        if (lightBase.Init(lightCfg))
+                                        var p = hardWareMgrType.GetProperty($"{lightCfg.ConnectMode}s");
+                                        var portCfgs = p.GetValue(HardwareCfgMgr) as ICommunicationPortCfg[];
+                                        var ports = from portCfg in portCfgs where portCfg.PortName == lightCfg.PortName select portCfg;
+                                        if (ports != null && ports.Count() > 0)
+                                        {
+                                            if (lightBase.Init(lightCfg, ports.ElementAt(0))) //如果不需要初始化就直接加入字典
+                                                LigtMgr.Instance.AddLight(lightCfg.Name, lightBase);
+                                            else
+                                                errList.Add($"{lightCfg.Name} init failed");
+                                        }
+                                        else
+                                        {
+                                            errList.Add($"{lightCfg.Name} init failed");
+                                        }
+                                    }
+                                    else //无需选择通信端口
+                                    {
+                                        if (lightBase.Init(lightCfg, null))
                                             LigtMgr.Instance.AddLight(lightCfg.Name, lightBase);
                                         else
                                             errList.Add($"{lightCfg.Name} init failed");
@@ -166,12 +221,12 @@ namespace JPT_TosaTest.Config
                         }
                         break;
                     case "Comports":
-                    case "EtherNets":
-                    case "GPIBs":
-                    case "NIVisas":
+                    case "Ethernets":
+                    case "Gpibs":
+                    case "Visas":
                         break;
                     default:
-                        errList.Add("Invalid hardwaer type!");
+                        errList.Add("Invalid hardware type!");
                         break;
 
                 }

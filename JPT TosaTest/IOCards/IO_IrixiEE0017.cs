@@ -12,10 +12,16 @@ namespace JPT_TosaTest.IOCards
             return true;
         }
 
-        public override bool Init(IOCardCfg ioCfg)
+        public override bool Init(IOCardCfg ioCfg, ICommunicationPortCfg communicationPortCfg)
         {
-            _controller = new IrixiMotionController();
-            return true;
+            this.ioCfg = ioCfg;
+            if (ioCfg.NeedInit)
+            {
+                _controller = new IrixiMotionController();
+                return true;
+            }
+            else
+                return true;
         }
 
         public override bool ReadIoInBit(int Index)

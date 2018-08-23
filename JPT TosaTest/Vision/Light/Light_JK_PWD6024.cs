@@ -22,38 +22,34 @@ namespace JPT_TosaTest.Vision.Light
             MAXCH = 1;
             MINCH = 4;
         }
-        public override bool Init(LightCfg cfg)
+        public override bool Init(LightCfg cfg, ICommunicationPortCfg communicationPort)
         {
             try
             {
-                this.cfg = cfg;
-                MAXCH = this.cfg.MaxChannelNo;
-                MINCH = this.cfg.MinChannelNo;
-                if (Comport == null)
-                    Comport = new SerialPort();
-                Comport.BaudRate = 9600;
-                Comport.StopBits = StopBits.One;
-                Comport.Parity = Parity.None;
-                Comport.DataBits = 8;
-
-                ComportCfg portCfg = null;
-                foreach (var it in ConfigMgr.Instance.HardwareCfgMgr.Comports)
+                this.lightCfg = cfg;
+                MAXCH = this.lightCfg.MaxChannelNo;
+                MINCH = this.lightCfg.MinChannelNo;
+                if (lightCfg.NeedInit)
                 {
-                    if (it.PortName == cfg.PortName)
-                    {
-                        portCfg = it;
-                        break;
-                    }
+                    if (Comport == null)
+                        Comport = new SerialPort();
+                    ComportCfg portCfg = communicationPort as ComportCfg;
+                    if (portCfg == null)
+                        return false;
+                    Comport.BaudRate = portCfg.BaudRate;
+                    Comport.StopBits = StopBits.One;
+                    Comport.Parity = Parity.None;
+                    Comport.DataBits = 8;
+                    Comport.PortName = string.IsNullOrEmpty(portCfg.Port.ToUpper()) ? Comport.PortName : portCfg.Port.ToUpper();
+                    Comport.ReadTimeout = 1000;
+                    Comport.WriteTimeout = 1000;
+                    if (Comport.IsOpen)
+                        Comport.Close();
+                    Comport.Open();
+                    return GetLightValue(MINCH) >= 0;
                 }
-                if (portCfg == null)
-                    return false;
-                Comport.PortName = string.IsNullOrEmpty(portCfg.Port.ToUpper()) ? Comport.PortName : portCfg.Port.ToUpper();
-                Comport.ReadTimeout = 1000;
-                Comport.WriteTimeout = 1000;
-                if (Comport.IsOpen)
-                    Comport.Close();
-                Comport.Open();
-                return GetLightValue(MINCH)>=0;    
+                else
+                    return true;
             }
             catch(Exception ex)
             {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CJPT_TosaTestPAS.Config.SoftwareManager
+namespace JPT_TosaTestPAS.Config.SoftwareManager
 {
     public class SoftwareCfgManager
     {

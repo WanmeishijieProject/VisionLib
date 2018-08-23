@@ -10,10 +10,10 @@ namespace JPT_TosaTest.Vision.Light
     public abstract class LightBase
     {
         protected object _lock = new object();
-        protected LightCfg cfg = null;
+        protected LightCfg lightCfg = null;
         protected int MAXCH, MINCH;
         public int Index = 0;
-        public abstract bool Init(LightCfg cfg);
+        public abstract bool Init(LightCfg cfg, ICommunicationPortCfg communicationPort);
         public abstract bool Deint();
         public abstract bool OpenLight(int nCh,int nValue=0);
         public abstract bool CloseLight(int nCh,int nValue=0);

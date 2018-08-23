@@ -10,12 +10,12 @@ namespace JPT_TosaTest.IOCards
     public abstract class IOBase
     {
 
-        protected IOCardCfg ioCfg = null;
+        public IOCardCfg ioCfg = null;
         /// <summary>
         /// 初始化IO卡
         /// </summary>
         /// <returns></returns>
-        public abstract bool Init(IOCardCfg ioCfg);
+        public abstract bool Init(IOCardCfg ioCfg, ICommunicationPortCfg communicationPortCfg);
 
         /// <summary>
         /// 释放资源

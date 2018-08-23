@@ -15,21 +15,26 @@ namespace JPT_TosaTest.MotionCards
         private bool IsInitialized = false;
         private AxisArgs[] AxisStateList = new AxisArgs[16];
         
-        public override bool Init(MotionCardCfg motionCfg)
+        public override bool Init(MotionCardCfg motionCfg, ICommunicationPortCfg communicationPortCfg)
         {
             this.motionCfg = motionCfg;
             MAX_AXIS = motionCfg.MaxAxisNo;
             MIN_AXIS = motionCfg.MinAxisNo;
 
-            _controller = new IrixiMotionController(motionCfg.SN);
-            _controller.Open();
-            _controller.OnConnectionStatusChanged += _controller_OnConnectionProgressChanged;
-            _controller.OnReportUpdated += _controller_OnReportUpdated;
+            if (this.motionCfg.NeedInit)
+            {
+                _controller = new IrixiMotionController(motionCfg.SN);
+                _controller.Open();
+                _controller.OnConnectionStatusChanged += _controller_OnConnectionProgressChanged;
+                _controller.OnReportUpdated += _controller_OnReportUpdated;
 
-            for (int i = 0; i < 16; i++)
-                AxisStateList[i]=new AxisArgs();
+                for (int i = 0; i < 16; i++)
+                    AxisStateList[i] = new AxisArgs();
 
-            return _controller.IsConnected;
+                return _controller.IsConnected;
+            }
+            else
+                return true;
         }
 
         public override bool Deinit()

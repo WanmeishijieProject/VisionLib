@@ -66,4 +66,8 @@
     <system:String x:Key="TeachBox_Speed">Speed(mm/s)</system:String>
     <system:String x:Key="TeachBox_Position">Position(mm)</system:String>
     <system:String x:Key="TeachBox_Step">Step(mm)</system:String>
+
+    <system:String x:Key="MonitorPage_Input">Input</system:String>
+    <system:String x:Key="MonitorPage_Output">Output</system:String>
+    <system:String x:Key="MonitorPage_MotionState">AxisState</system:String>
 </ResourceDictionary>

@@ -17,7 +17,7 @@ namespace JPT_TosaTest.UserCtrl
     /// <summary>
     /// UC_AxisStateListItem.xaml 的交互逻辑
     /// </summary>
-    public partial class UC_AxisStateListItem : Window
+    public partial class UC_AxisStateListItem : UserControl
     {
         public UC_AxisStateListItem()
         {

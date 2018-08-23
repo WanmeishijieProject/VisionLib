@@ -38,6 +38,8 @@ namespace JPT_TosaTest.Config.HardwareManager
         public string ConnectMode { get; set; }
         public string IOName_Input { get; set; }
         public string IOName_Output { get; set; }
+        public string PortName { get; set; }
+
     }
 
     public class CameraCfg
@@ -61,8 +63,19 @@ namespace JPT_TosaTest.Config.HardwareManager
     }
 
 
-
-    public class ComportCfg
+    public interface ICommunicationPortCfg
+    {
+        string PortName { get; set; }
+        EnumConnectType GetTypeString();
+    }
+    public enum EnumConnectType
+    {
+        Comport,
+        Ethernet,
+        GPIB,
+        NIVisa
+    }
+    public class ComportCfg : ICommunicationPortCfg
     {
         public string PortName { get; set; }
         public string Port { get; set; }
@@ -71,9 +84,14 @@ namespace JPT_TosaTest.Config.HardwareManager
         public int DataBits { get; set; }
         public int StopBits { get; set; }
         public int TimeOut { get; set; }
+
+        public EnumConnectType GetTypeString()
+        {
+            return EnumConnectType.Comport;
+        }
     }
  
-    public class EtherNetCfg
+    public class EthernetCfg : ICommunicationPortCfg
     {
         public string PortName { get; set; }
         public string Mode { get; set; }
@@ -81,18 +99,30 @@ namespace JPT_TosaTest.Config.HardwareManager
         public int Port { get; set; }
         public string EOL { get; set; }
         public int TimeOut { get; set; }
+        public EnumConnectType GetTypeString()
+        {
+            return EnumConnectType.Ethernet;
+        }
     }
-    public class GPIBConfig
+    public class GpibCfg : ICommunicationPortCfg
     {
         public string PortName { get; set; }
         public int BoardAddress { get; set; }
         public int Address { get; set; }
+        public EnumConnectType GetTypeString()
+        {
+            return EnumConnectType.GPIB;
+        }
     }
-    public class NIVasaCfg
+    public class VisaCfg : ICommunicationPortCfg
     {
         public string PortName { get; set; }
         public string KeyWord1 { get; set; }
         public string KeyWord2 { get; set; }
+        public EnumConnectType GetTypeString()
+        {
+            return EnumConnectType.NIVisa;
+        }
     }
 
 }

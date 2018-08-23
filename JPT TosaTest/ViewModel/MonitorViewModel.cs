@@ -113,7 +113,7 @@ namespace JPT_TosaTest.ViewModel
             //界面显示
             IOCollectionListInput = new List<ObservableCollection<IOModel>>();
             IOCollectionListOutput = new List<ObservableCollection<IOModel>>();
-            foreach (var iocard in ConfigMgr.Instance.HardwareCfgMgr.IOCards)
+            foreach (var iocard in IOCardMgr.Instance.IOCardDic)
             {
                 ObservableCollection<IOModel> collect_input = new ObservableCollection<IOModel>();
                 ObservableCollection<IOModel> collect_output = new ObservableCollection<IOModel>();
@@ -126,17 +126,17 @@ namespace JPT_TosaTest.ViewModel
                     var piStartIndex = ionamecfgType.GetProperty("StartIndex");
                     int startIndex = Convert.ToInt16(piStartIndex.GetValue(ConfigMgr.Instance.SoftwareCfgMgr.IONames[i], null));
                     
-                    if (ioname.Name == iocard.IOName_Input)
+                    if (ioname.Name == iocard.Value.ioCfg.IOName_Input)
                     {
                         //便利每一个IObit名称
                         for (int j=0;j<16;j++)
                         {
-                            var piIoName = ionamecfgType.GetProperty($"_{j + 1}");
+                            var piIoName = ionamecfgType.GetProperty($"GP_{j + 1}");
                             string strIoName = piIoName.GetValue(ConfigMgr.Instance.SoftwareCfgMgr.IONames[i], null).ToString();
                             
                             IOModel iomodel = new IOModel()
                             {
-                                CardName = iocard.Name,
+                                CardName = iocard.Value.ioCfg.Name,
                                 Index =startIndex+ j,
                                 IsChecked = false,
                                 IOName = strIoName,
@@ -146,15 +146,15 @@ namespace JPT_TosaTest.ViewModel
                         }
                       
                     }
-                    if (ioname.Name == iocard.IOName_Output)
+                    if (ioname.Name == iocard.Value.ioCfg.IOName_Output)
                     {
                         for (int j = 0; j < 16; j++)
                         {
-                            var pi = ionamecfgType.GetProperty($"_{j + 1}");
+                            var pi = ionamecfgType.GetProperty($"GP_{j + 1}");
                             string strIoName = pi.GetValue(ConfigMgr.Instance.SoftwareCfgMgr.IONames[i], null).ToString();
                             IOModel iomodel = new IOModel()
                             {
-                                CardName = iocard.Name,
+                                CardName = iocard.Value.ioCfg.Name,
                                 Index = startIndex+j,
                                 IsChecked = false,
                                 IOName = strIoName,
@@ -170,8 +170,8 @@ namespace JPT_TosaTest.ViewModel
             }
 
             //初始化当前显示的IO板卡
-            CurrentIoCardCollectionInput = IOCollectionListInput[CurrentIoCardIndex_Input];
-            CurrentIoCardCollectionOutput = IOCollectionListOutput[CurrentIoCardIndex_Output];
+            CurrentIoCardCollectionInput = IOCollectionListInput.Count > 0 ? IOCollectionListInput.First() : null;
+            CurrentIoCardCollectionOutput = IOCollectionListOutput.Count > 0 ? IOCollectionListOutput.First() : null;
         }
 
 

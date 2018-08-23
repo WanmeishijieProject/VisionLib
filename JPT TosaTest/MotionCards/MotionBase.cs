@@ -11,12 +11,12 @@ namespace JPT_TosaTest.MotionCards
     {
         protected int MAX_AXIS;
         protected int MIN_AXIS;
-        protected MotionCardCfg motionCfg=null;
+        public MotionCardCfg motionCfg=null;
         /// <summary>
         /// 板卡初始化
         /// </summary>
         /// <returns></returns>
-        public abstract bool Init(MotionCardCfg motionCfg);
+        public abstract bool Init(MotionCardCfg motionCfg, ICommunicationPortCfg communicationPort);
 
         /// <summary>
         /// 释放板卡资源

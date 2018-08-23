@@ -14,8 +14,11 @@ namespace JPT_TosaTest.Config.HardwareManager
         public CameraCfg[] Cameras { get; set; }
         public LightCfg[] Lights { get; set; }
 
+
+        //通信方式
         public ComportCfg[] Comports { get; set; }
-        public EtherNetCfg[] EtherNets { get; set; }
-        public NIVasaCfg[] NIVisas { get; set; }
+        public EthernetCfg[] Ethernets { get; set; }
+        public VisaCfg[] Visas { get; set; }
+        public GpibCfg[] Gpibs { get; set; }
     }
 }

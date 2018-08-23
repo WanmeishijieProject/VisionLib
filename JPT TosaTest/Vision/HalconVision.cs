@@ -63,7 +63,7 @@ namespace JPT_TosaTest.Vision
         }
         #endregion
 
-        #region  var
+        #region  Field
         public List<object> _lockList = new List<object>();
         public enum IMAGEPROCESS_STEP
         {
@@ -936,8 +936,6 @@ namespace JPT_TosaTest.Vision
                 throw new Exception($"处理图片是发生错误{ex.Message}");
             }
         }
-
-
         public bool GetAngleTune1(int nCamID, string ModelFileName, string RectParaFileName, out double fAngle, HTuple hwindow = null)
         {
 

@@ -67,4 +67,8 @@
         <system:String x:Key="TeachBox_Position">位置(mm)</system:String>
         <system:String x:Key="TeachBox_Step">步进(mm)</system:String>
 
+        <system:String x:Key="MonitorPage_Input">输入</system:String>
+        <system:String x:Key="MonitorPage_Output">输出</system:String>
+        <system:String x:Key="MonitorPage_MotionState">轴状态</system:String>
+
 </ResourceDictionary>

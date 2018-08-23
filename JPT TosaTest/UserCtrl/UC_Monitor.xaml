@@ -18,7 +18,7 @@
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <GroupBox Header="输入" Margin="16">
+        <GroupBox Header="{DynamicResource MonitorPage_Input}" Margin="16">
             <Grid>
                 <TextBlock RenderTransformOrigin="0.5,0.5" FontSize="70" Text="{Binding CurrentIoCardCollectionInput[0].CardName}"  HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.1"/>
                 <ListView ItemsSource="{Binding CurrentIoCardCollectionInput}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -43,7 +43,7 @@
                 </ListView>
             </Grid>
         </GroupBox>
-        <GroupBox Header="输出" Margin="16" Grid.Column="1">
+        <GroupBox Header="{DynamicResource MonitorPage_Output}" Margin="16" Grid.Column="1">
             <Grid>
                 <TextBlock RenderTransformOrigin="0.5,0.5" FontSize="70" Text="{Binding CurrentIoCardCollectionOutput[0].CardName}"  HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.1"/>
                 <ListView ItemsSource="{Binding CurrentIoCardCollectionOutput}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -71,31 +71,35 @@
        
         <Button Grid.Column="0" Style="{DynamicResource MaterialDesignFloatingActionMiniButton}" 
                     Command="{Binding PreIoCardInputCommand}"
-                    VerticalAlignment="Center" HorizontalAlignment="Left" 
+                    VerticalAlignment="Bottom" HorizontalAlignment="Left" 
+                    Margin="25"
                     Opacity="0.3">
             <materialDesign:PackIcon Kind="StepBackward" />
         </Button>
         <Button Grid.Column="0" Style="{DynamicResource MaterialDesignFloatingActionMiniButton}" 
                     Command="{Binding NextIoCardInputCommand}"
-                    VerticalAlignment="Center" HorizontalAlignment="Right" 
+                    VerticalAlignment="Bottom" HorizontalAlignment="Left" 
+                    Margin="100,25,25,25"
                     Opacity="0.3">
             <materialDesign:PackIcon Kind="StepForward" />
         </Button>
 
         <Button Grid.Column="1" Style="{DynamicResource MaterialDesignFloatingActionMiniButton}" 
                     Command="{Binding PreIoCardOutputCommand}"
-                    VerticalAlignment="Center" HorizontalAlignment="Left" 
+                    VerticalAlignment="Bottom" HorizontalAlignment="Left" 
+                    Margin="25"
                     Opacity="0.3">
             <materialDesign:PackIcon Kind="StepBackward" />
         </Button>
         <Button Grid.Column="1" Style="{DynamicResource MaterialDesignFloatingActionMiniButton}" 
                     Command="{Binding NextIoCardOutputCommand}"
-                    VerticalAlignment="Center" HorizontalAlignment="Right" 
+                    VerticalAlignment="Bottom" HorizontalAlignment="Left" 
+                    Margin="100,25,25,25"
                     Opacity="0.3">
             <materialDesign:PackIcon Kind="StepForward" />
         </Button>
         <GridSplitter Height="5" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch"/>
-        <GroupBox Header="轴状态" Margin="16" Grid.Row="2" Grid.ColumnSpan="2">
+        <GroupBox Header="{DynamicResource MonitorPage_MotionState}" Margin="16" Grid.Row="2" Grid.ColumnSpan="2">
             <ListBox>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
