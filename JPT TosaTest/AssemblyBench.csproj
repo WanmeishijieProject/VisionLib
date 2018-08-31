@@ -17,7 +17,7 @@
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -56,7 +56,7 @@
     </Reference>
     <Reference Include="halcondotnet, Version=10.0.0.0, Culture=neutral, PublicKeyToken=4973bed59ddbf2b8, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Debug\halcondotnet.dll</HintPath>
+      <HintPath>ExDll\halcondotnet.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -120,6 +120,10 @@
     <Compile Include="Classes\LogExcel.cs" />
     <Compile Include="Classes\PasswordBoxBehavior.cs" />
     <Compile Include="Classes\PSSWraper.cs" />
+    <Compile Include="Classes\UniteHelper.cs" />
+    <Compile Include="Communication\CommunicationMgr.cs" />
+    <Compile Include="Communication\Comport.cs" />
+    <Compile Include="Communication\CommunicationPortBase.cs" />
     <Compile Include="Config\ConfigMgr.cs" />
     <Compile Include="Config\HardwareManager\HardwareCfgLevelManager1.cs" />
     <Compile Include="Config\HardwareManager\HardwareCfgManager.cs" />
@@ -163,6 +167,7 @@
     <Compile Include="Model\RoiModelBase.cs" />
     <Compile Include="Model\TestItemModel.cs" />
     <Compile Include="MotionCards\AxisArgs.cs" />
+    <Compile Include="MotionCards\AxsiCommand.cs" />
     <Compile Include="MotionCards\MotionBase.cs" />
     <Compile Include="MotionCards\MotionMgr.cs" />
     <Compile Include="MotionCards\Motion_IrixiEE0017.cs" />

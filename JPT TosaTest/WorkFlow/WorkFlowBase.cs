@@ -42,7 +42,7 @@ namespace JPT_TosaTest.WorkFlow
             if (strInfo == null || strInfo.Trim().ToString() == "")
                 strInfo = nStep.ToString();
             DateTime dt = DateTime.Now;
-            OnStationInfoChanged(StationIndex, cfg.Name, string.Format("{0:D2}:{1:D2}:{2:D2}  {3:D2}", dt.Hour, dt.Minute, dt.Second, strInfo));
+            OnStationInfoChanged?.Invoke(StationIndex, cfg.Name, string.Format("{0:D2}:{1:D2}:{2:D2}  {3:D2}", dt.Hour, dt.Minute, dt.Second, strInfo));
         }
         public bool Start()
         {

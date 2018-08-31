@@ -30,14 +30,14 @@ namespace JPT_TosaTest.IOCards
         /// 从0开始
         /// </param>
         /// <returns></returns>
-        public abstract bool ReadIoInBit(int Index);
+        public abstract bool ReadIoInBit(int Index, out bool value);
 
         /// <summary>
         /// 读取输出位的状态
         /// </summary>
         /// <param name="Index">从0开始</param>
         /// <returns></returns>
-        public abstract bool ReadIoOutBit(int Index);
+        public abstract bool ReadIoOutBit(int Index, out bool value);
 
         /// <summary>
         /// 写输出位的状态值
@@ -50,16 +50,16 @@ namespace JPT_TosaTest.IOCards
         /// <summary>
         /// 读取输入字的值
         /// </summary>
-        /// <param name="StartIndex">起始位，默认从0开始</param>
+        /// <param name="StartIndex">起始位</param>
         /// <returns></returns>
-        public abstract int ReadIoInWord(int StartIndex=0);
+        public abstract bool ReadIoInWord(int StartIndex, out int value);
 
         /// <summary>
         /// 读取输出字的值
         /// </summary>
         /// <param name="StartIndex">其实位的，默认从0开始</param>
         /// <returns></returns>
-        public abstract int ReadIoOutWord(int StartIndex=0);
+        public abstract bool ReadIoOutWord(int StartIndex, out int value);
 
         /// <summary>
         /// 一次写16位的状态值

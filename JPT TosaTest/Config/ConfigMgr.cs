@@ -16,6 +16,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.IO.Ports;
+using JPT_TosaTest.Communication;
 
 namespace JPT_TosaTest.Config
 {
@@ -42,10 +44,13 @@ namespace JPT_TosaTest.Config
         private readonly string File_SystemParaCfg = FileHelper.GetCurFilePathString() + "Config\\SystemParaCfg.json";
         private readonly string File_UserCfg = FileHelper.GetCurFilePathString() + "User.json";
 
+
+
         public  HardwareCfgManager HardwareCfgMgr = null;
         public  SoftwareCfgManager SoftwareCfgMgr = null;
         public  SystemParaCfgManager SystemParaCfgMgr =null;
         public UserCfgManager UserCfgMgr = null;
+       
 
 
         //public static 
@@ -68,10 +73,33 @@ namespace JPT_TosaTest.Config
             LightBase lightBase = null;
 
             Type hardWareMgrType = HardwareCfgMgr.GetType();
+
+            //先初始化通信端口
             foreach (var it in hardWareMgrType.GetProperties())
             {
                 switch (it.Name)
                 {
+
+                    case "Comports":
+                        foreach (var comportCfg in HardwareCfgMgr.Comports)
+                        {
+                            CommunicationPortBase port = new Comport(comportCfg);
+                            CommunicationMgr.Instance.AddCommunicationPort(comportCfg.PortName, port);
+                        }
+                        break;
+                    case "Ethernets":
+                    case "Gpibs":
+                    case "Visas":
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            foreach (var it in hardWareMgrType.GetProperties())
+            {
+                switch (it.Name)
+                {             
                     case "MotionCards":
                         var motionCfgs = it.GetValue(HardwareCfgMgr) as MotionCardCfg[];
                         if (motionCfgs == null)
@@ -220,13 +248,8 @@ namespace JPT_TosaTest.Config
                             }
                         }
                         break;
-                    case "Comports":
-                    case "Ethernets":
-                    case "Gpibs":
-                    case "Visas":
-                        break;
+                   
                     default:
-                        errList.Add("Invalid hardware type!");
                         break;
 
                 }

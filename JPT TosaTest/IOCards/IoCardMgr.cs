@@ -66,19 +66,21 @@ namespace JPT_TosaTest.IOCards
             return false;  
         }
      
-        public bool ReadIoInBit(string CardName, int Index)
+        public bool ReadIoInBit(string CardName, int Index, out bool value)
         {
+            value = false;
             var card = FindIOCardByCardName(CardName);
             if (card != null)
-                return card.ReadIoInBit(Index);
+                return card.ReadIoInBit(Index, out bool retValue);
             return false;
         }
 
-        public bool ReadIoOutBit(string CardName, int Index)
+        public bool ReadIoOutBit(string CardName, int Index, out bool value)
         {
+            value = false;
             var card = FindIOCardByCardName(CardName);
             if (card != null)
-                return card.ReadIoOutBit(Index);
+                return card.ReadIoOutBit(Index, out value);
             return false;
         }
   
@@ -90,20 +92,22 @@ namespace JPT_TosaTest.IOCards
             return false;
         }
 
-        public int ReadIoInWord(string CardName, int StartIndex = 0)
+        public bool ReadIoInWord(string CardName, int StartIndex, out int value)
         {
+            value = 0;
             var card = FindIOCardByCardName(CardName);
             if (card != null)
-                return card.ReadIoInWord(StartIndex);
-            return -1;
+                return card.ReadIoInWord(StartIndex, out value);
+            return false;
         }
 
-        public int ReadIoOutWord(string CardName, int StartIndex = 0)
+        public bool ReadIoOutWord(string CardName, int StartIndex, out int value)
         {
+            value = 0;
             var card = FindIOCardByCardName(CardName);
             if (card != null)
-                return card.ReadIoOutWord(StartIndex);
-            return -1;
+                return card.ReadIoOutWord(StartIndex, out value);
+            return false;
         }
 
         public bool WriteIoOutWord(string CardName, int StartIndex, UInt16 value)

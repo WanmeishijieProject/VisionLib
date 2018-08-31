@@ -58,58 +58,7 @@ namespace JPT_TosaTest.ViewModel
         #endregion
         public MonitorViewModel()
         {
-            //启动后台扫描IO线程
-            if (IoScanTask == null || IoScanTask.IsCanceled || IoScanTask.IsCompleted)
-            {
-                cts = new CancellationTokenSource();
-                int[] OlddataArrInput = new int[10];
-                int[] OlddataArrOutput = new int[10];
-
-                IoScanTask = new Task(() =>
-                {
-                    while (!cts.IsCancellationRequested)
-                    {
-                        Thread.Sleep(30);
-                        int i = 0;
-
-                        //更新状态
-                        foreach (var card in IOCardMgr.Instance.IOCardDic)
-                        {
-#if TEST_IO
-                            int dataInput = new int[] { 23451,87,90}[i];
-                            int dataOutput = new int[] { 23, 567, 45356 }[i];
-#else
-                            int dataInput = card.Value.ReadIoInWord();
-                            int dataOutput = card.Value.ReadIoOutWord();
-#endif
-                            if (dataInput != OlddataArrInput[i])
-                            {
-                                OlddataArrInput[i] = dataInput;
-                                for (int j = 0; j < 16; j++)
-                                {
-                                    IOCollectionListInput[i][j].IsChecked = ((dataInput >> j) & 0x01) == 1 ? true : false;
-                                }
-                                if ((dataInput & 0x01) == 1)
-                                    Console.WriteLine("急停按钮被按下");
-                                if (((dataInput >> 1) & 0x01) == 1)
-                                    Console.WriteLine("复位按钮被按下");
-                                if (((dataInput >> 2) & 0x01) == 1)
-                                    Console.WriteLine("启动按钮被按下");
-                            }
-                            if (dataOutput != OlddataArrOutput[i])
-                            {
-                                OlddataArrOutput[i] = dataOutput;
-                                for (int j = 0; j < 16; j++)
-                                {
-                                    IOCollectionListOutput[i][j].IsChecked = ((dataOutput >> j) & 0x01) == 1 ? true : false;
-                                }
-                            }
-                            i++;
-                        }
-                    }
-                }, cts.Token);             
-            }
-            IoScanTask.Start();
+ 
             //界面显示
             IOCollectionListInput = new List<ObservableCollection<IOModel>>();
             IOCollectionListOutput = new List<ObservableCollection<IOModel>>();
@@ -172,6 +121,59 @@ namespace JPT_TosaTest.ViewModel
             //初始化当前显示的IO板卡
             CurrentIoCardCollectionInput = IOCollectionListInput.Count > 0 ? IOCollectionListInput.First() : null;
             CurrentIoCardCollectionOutput = IOCollectionListOutput.Count > 0 ? IOCollectionListOutput.First() : null;
+
+            //启动后台扫描IO线程
+            if (IoScanTask == null || IoScanTask.IsCanceled || IoScanTask.IsCompleted)
+            {
+                cts = new CancellationTokenSource();
+                int[] OlddataArrInput = new int[10];
+                int[] OlddataArrOutput = new int[10];
+                int[] fakedata = new int[] { 23451, 87, 90, 975, 345, 853 };
+                IoScanTask = new Task(() =>
+                {
+                    while (!cts.IsCancellationRequested)
+                    {
+                        Thread.Sleep(30);
+                        int i = 0;
+
+                        //更新状态
+                        foreach (var card in IOCardMgr.Instance.IOCardDic)
+                        {
+#if TEST_IO
+                            int dataInput = fakedata[i];
+                            int dataOutput = fakedata[i + 1];
+#else
+                            int dataInput = card.Value.ReadIoInWord();
+                            int dataOutput = card.Value.ReadIoOutWord();
+#endif
+                            if (dataInput != OlddataArrInput[i])
+                            {
+                                OlddataArrInput[i] = dataInput;
+                                for (int j = 0; j < 16; j++)
+                                {
+                                    IOCollectionListInput[i][j].IsChecked = ((dataInput >> j) & 0x01) == 1 ? true : false;
+                                }
+                                if ((dataInput & 0x01) == 1)
+                                    Console.WriteLine("急停按钮被按下");
+                                if (((dataInput >> 1) & 0x01) == 1)
+                                    Console.WriteLine("复位按钮被按下");
+                                if (((dataInput >> 2) & 0x01) == 1)
+                                    Console.WriteLine("启动按钮被按下");
+                            }
+                            if (dataOutput != OlddataArrOutput[i])
+                            {
+                                OlddataArrOutput[i] = dataOutput;
+                                for (int j = 0; j < 16; j++)
+                                {
+                                    IOCollectionListOutput[i][j].IsChecked = ((dataOutput >> j) & 0x01) == 1 ? true : false;
+                                }
+                            }
+                            i++;
+                        }
+                    }
+                }, cts.Token);
+            }
+            IoScanTask.Start();
         }
 
 
