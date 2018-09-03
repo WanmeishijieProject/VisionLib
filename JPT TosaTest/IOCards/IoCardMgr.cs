@@ -14,9 +14,9 @@ namespace JPT_TosaTest.IOCards
         {
             get { return _instance.Value; }
         }
-        public Dictionary<string, IOBase> IOCardDic = new Dictionary<string, IOBase>();
+        public Dictionary<string, IIO> IOCardDic = new Dictionary<string, IIO>();
 
-        public void AddIOCard(string CardName, IOBase IOCard)
+        public void AddIOCard(string CardName, IIO IOCard)
         {
             bool bFind = false;
             foreach (var it in IOCardDic)
@@ -38,7 +38,7 @@ namespace JPT_TosaTest.IOCards
                     IOCardDic.Remove(CardName);
             }
         }
-        public IOBase FindIOCardByCardName(string CardName)
+        public IIO FindIOCardByCardName(string CardName)
         {
             foreach (var it in IOCardDic)
             {
@@ -47,7 +47,7 @@ namespace JPT_TosaTest.IOCards
             }
             return null;
         }
-        public IOBase FindIOCardByCardNo(int CardIndex)
+        public IIO FindIOCardByCardNo(int CardIndex)
         {
             int i = 0;
             foreach (var it in IOCardDic)
@@ -117,8 +117,6 @@ namespace JPT_TosaTest.IOCards
                 return card.WriteIoOutWord(StartIndex,value);
             return false;
         }
-
-
 
     }
 }

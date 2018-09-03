@@ -22,7 +22,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS, TEST_IO</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;CODE_ANALYSIS, _TEST_IO</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>true</RunCodeAnalysis>
@@ -125,7 +125,16 @@
     <Compile Include="Communication\Comport.cs" />
     <Compile Include="Communication\CommunicationPortBase.cs" />
     <Compile Include="Config\ConfigMgr.cs" />
-    <Compile Include="Config\HardwareManager\HardwareCfgLevelManager1.cs" />
+    <Compile Include="Config\HardwareManager\GpibCfg.cs" />
+    <Compile Include="Config\HardwareManager\VisaCfg.cs" />
+    <Compile Include="Config\HardwareManager\EthernetCfg.cs" />
+    <Compile Include="Config\HardwareManager\InstrumentCfg.cs" />
+    <Compile Include="Config\HardwareManager\IOCardCfg.cs" />
+    <Compile Include="Config\HardwareManager\LightCfg.cs" />
+    <Compile Include="Config\HardwareManager\ICommunicationPortCfg.cs" />
+    <Compile Include="Config\HardwareManager\ComportCfg.cs" />
+    <Compile Include="Config\HardwareManager\CameraCfg.cs" />
+    <Compile Include="Config\HardwareManager\MotionCardCfg.cs" />
     <Compile Include="Config\HardwareManager\HardwareCfgManager.cs" />
     <Compile Include="Config\SoftwareManager\SoftwareCfgLevelManager1.cs" />
     <Compile Include="Config\SoftwareManager\SoftwareCfgManager.cs" />
@@ -151,7 +160,7 @@
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Instrument\InstrumentBase.cs" />
     <Compile Include="Instrument\InstrumentMgr.cs" />
-    <Compile Include="IOCards\IOBase.cs" />
+    <Compile Include="IOCards\IIO.cs" />
     <Compile Include="IOCards\IOCardMgr.cs" />
     <Compile Include="IOCards\IO_IrixiEE0017.cs" />
     <Compile Include="Model\CameraItem.cs" />
@@ -166,9 +175,7 @@
     <Compile Include="Model\ModelItem.cs" />
     <Compile Include="Model\RoiModelBase.cs" />
     <Compile Include="Model\TestItemModel.cs" />
-    <Compile Include="MotionCards\AxisArgs.cs" />
-    <Compile Include="MotionCards\AxsiCommand.cs" />
-    <Compile Include="MotionCards\MotionBase.cs" />
+    <Compile Include="MotionCards\IMotion.cs" />
     <Compile Include="MotionCards\MotionMgr.cs" />
     <Compile Include="MotionCards\Motion_IrixiEE0017.cs" />
     <Compile Include="Rules\NotEmptyValidationRule.cs" />
@@ -430,6 +437,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Monitor.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\IrixiMotionLib\IrixiMotionLib.csproj">
+      <Project>{d58caf83-e372-4051-9819-d2752aac3e41}</Project>
+      <Name>IrixiMotionLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

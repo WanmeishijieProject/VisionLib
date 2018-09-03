@@ -35,14 +35,23 @@ namespace JPT_TosaTest.WorkFlow
             //motion.MoveAbs(4, 0, 5000, 10000);
             //motion.SetTrigConfig(0xFF);
             //motion.ClearMem();
-            //motion.MoveAbs(4, 0, 5000, 1000, EnumTriggerType.ADC, 100);
+            //motion.MoveRel(4, 0, 5000, 1000, EnumTriggerType.ADC, 100);
             //motion.ClearMem();
 
             motion.GetMemLength(out UInt32 Len);
-            motion.ReadMem(0, (UInt32)Len, out List<Int16> RawData);
+            motion.ReadMem(0, Len, out List<Int16> RawData);
+
+            io.WriteIoOutBit(1, false);
+            io.WriteIoOutBit(2, false);
+            io.WriteIoOutBit(4, false);
+            io.WriteIoOutBit(3, false);
+
             io.WriteIoOutBit(1, true);
+            io.WriteIoOutBit(2, true);
+            io.WriteIoOutBit(4, true);
             io.WriteIoOutBit(3, true);
-            io.ReadIoInWord(0, out int value);
+
+            io.ReadIoOutWord(0, out int value);
            
             return false;
         }

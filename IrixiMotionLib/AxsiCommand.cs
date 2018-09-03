@@ -111,6 +111,7 @@ namespace JPT_TosaTest.MotionCards
                     break;
                 case Enumcmd.SetDout:
                     writer.Write(GPIOChannelFlags);
+                    writer.Write(GPIOStatus);
                     break;
                 case Enumcmd.ReadMem:
                     writer.Write(MemOffset);

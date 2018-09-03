@@ -54,6 +54,7 @@ namespace JPT_TosaTest.Model
                 {
                     _isChecked = value;
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsChecked"));
+
                 }
             }
         }

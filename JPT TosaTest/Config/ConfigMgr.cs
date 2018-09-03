@@ -67,8 +67,8 @@ namespace JPT_TosaTest.Config
             {
                 errList.Add($"Unable to load config file { File_HardwareCfg}, { ex.Message}");
             }
-            MotionBase motionBase = null;
-            IOBase ioBase = null;
+            IMotion motionBase = null;
+            IIO ioBase = null;
             InstrumentBase instrumentBase = null;
             LightBase lightBase = null;
 
@@ -108,7 +108,7 @@ namespace JPT_TosaTest.Config
                         {
                             if (motionCfg.Enabled)
                             {
-                                motionBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.MotionCards." + motionCfg.Name.Substring(0, motionCfg.Name.IndexOf("[")), true, BindingFlags.CreateInstance, null, /*new object[] { motionCfg }*/null, null, null) as MotionBase;
+                                motionBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.MotionCards." + motionCfg.Name.Substring(0, motionCfg.Name.IndexOf("[")), true, BindingFlags.CreateInstance, null, /*new object[] { motionCfg }*/null, null, null) as IMotion;
                                 if (motionBase != null)
                                 {
   
@@ -151,15 +151,15 @@ namespace JPT_TosaTest.Config
                         {
                             if (ioCfg.Enabled)
                             {
-                                ioBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.IOCards." + ioCfg.Name.Substring(0, ioCfg.Name.IndexOf("[")), true, BindingFlags.CreateInstance, null, null, null, null) as IOBase;
+                                ioBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.IOCards." + ioCfg.Name.Substring(0, ioCfg.Name.IndexOf("[")), true, BindingFlags.CreateInstance, null, null, null, null) as IIO;
                                 if (ioBase != null)
                                 {
                                     ioBase.ioCfg = ioCfg;
-                                    if (ioCfg.ConnectMode.ToLower() != "none")
+                                    if (ioCfg.ConnectMode.ToLower() != "none")  //没有屏蔽端口
                                     {
                                         var p = hardWareMgrType.GetProperty($"{ioCfg.ConnectMode}s");
                                         var portCfgs = p.GetValue(HardwareCfgMgr) as ICommunicationPortCfg[];
-                                        var ports = from portCfg in portCfgs where portCfg.PortName == ioCfg.Name select portCfg;
+                                        var ports = from portCfg in portCfgs where portCfg.PortName == ioCfg.PortName select portCfg;
                                         if (ports != null && ports.Count() > 0)
                                         {
                                             if (ioBase.Init(ioCfg, ports.ElementAt(0)))
@@ -167,7 +167,10 @@ namespace JPT_TosaTest.Config
                                             else
                                                 errList.Add($"{ioCfg.Name} init failed");
                                         }
-                                        errList.Add($"{ioCfg.Name} init failed");
+                                        else
+                                        {
+                                            errList.Add($"{ioCfg.Name} init failed");
+                                        }
                                     }
                                     else  //无需选择通信端口
                                     {

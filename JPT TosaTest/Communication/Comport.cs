@@ -13,7 +13,7 @@ namespace JPT_TosaTest.Communication
     {
         private SerialPort sp = new SerialPort();
         private object ComportLock = new object();
-        public delegate void DataReceived(SerialPort sp);
+        public delegate void DataReceived();
         public event DataReceived OnDataReceived;
         public ComportCfg portCfg = null;
 
@@ -26,7 +26,7 @@ namespace JPT_TosaTest.Communication
 
         private void Sp_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            OnDataReceived?.Invoke(sp);
+            OnDataReceived?.Invoke();
         }
         public int Read(byte[] buffer, int offset, int count)
         {
@@ -43,6 +43,13 @@ namespace JPT_TosaTest.Communication
             }
         }
 
+        public int GetBytesToRead()
+        {
+            lock (ComportLock)
+            {
+                return sp.BytesToRead;
+            }
+        }
         public override bool OpenPort()
         {
             try
@@ -112,6 +119,11 @@ namespace JPT_TosaTest.Communication
             {
                 return sp.IsOpen;
             }
+        }
+
+        public override string ToString()
+        {
+            return portCfg.Port;
         }
     }
 }

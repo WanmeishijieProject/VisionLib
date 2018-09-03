@@ -18,9 +18,9 @@ namespace JPT_TosaTest.MotionCards
             get { return _instance.Value; }
         }
 
-        private Dictionary<string, MotionBase> MotionDic = new Dictionary<string, MotionBase>();
+        private Dictionary<string, IMotion> MotionDic = new Dictionary<string, IMotion>();
 
-        public void AddMotionCard(string CardName, MotionBase MotionCard)
+        public void AddMotionCard(string CardName, IMotion MotionCard)
         {
             bool bFind = false;
             foreach (var it in MotionDic)
@@ -44,7 +44,7 @@ namespace JPT_TosaTest.MotionCards
         }
 
 
-        public MotionBase FindMotionCardByAxisIndex(int AxisNo)
+        public IMotion FindMotionCardByAxisIndex(int AxisNo)
         {
             foreach (var it in MotionDic)
             {
@@ -53,7 +53,7 @@ namespace JPT_TosaTest.MotionCards
             }
             return null;         
         }
-        public MotionBase FindMotionCardByCardName(string CardName)
+        public IMotion FindMotionCardByCardName(string CardName)
         {
             foreach (var it in MotionDic)
             {
@@ -62,7 +62,7 @@ namespace JPT_TosaTest.MotionCards
             }
             return null;
         }
-        public MotionBase FindMotionCardByCardNo(int CardIndex)
+        public IMotion FindMotionCardByCardNo(int CardIndex)
         {
             int i = 0;
             foreach (var it in MotionDic)

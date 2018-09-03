@@ -77,7 +77,7 @@ namespace JPT_TosaTest.ViewModel
                     
                     if (ioname.Name == iocard.Value.ioCfg.IOName_Input)
                     {
-                        //便利每一个IObit名称
+                        //遍历每一个IObit名称
                         for (int j=0;j<16;j++)
                         {
                             var piIoName = ionamecfgType.GetProperty($"GP_{j + 1}");
@@ -143,8 +143,8 @@ namespace JPT_TosaTest.ViewModel
                             int dataInput = fakedata[i];
                             int dataOutput = fakedata[i + 1];
 #else
-                            int dataInput = card.Value.ReadIoInWord();
-                            int dataOutput = card.Value.ReadIoOutWord();
+                            card.Value.ReadIoInWord(0,out int dataInput);
+                            card.Value.ReadIoOutWord(0,out int dataOutput);
 #endif
                             if (dataInput != OlddataArrInput[i])
                             {
