@@ -40,8 +40,8 @@ namespace JPT_TosaTest.WorkFlow
 
             motion.GetMemLength(out UInt32 Len);
             motion.ReadMem(0, Len, out List<Int16> RawData);
-
-            io.WriteIoOutBit(1, false);
+            motion.GetCurrentPos(4, out double pos);
+            /*io.WriteIoOutBit(1, false);
             io.WriteIoOutBit(2, false);
             io.WriteIoOutBit(4, false);
             io.WriteIoOutBit(3, false);
@@ -49,9 +49,12 @@ namespace JPT_TosaTest.WorkFlow
             io.WriteIoOutBit(1, true);
             io.WriteIoOutBit(2, true);
             io.WriteIoOutBit(4, true);
-            io.WriteIoOutBit(3, true);
-
+            io.WriteIoOutBit(3, true);*/
+            io.ReadIoInWord(0, out int inValue);
+            io.WriteIoOutBit(0, false);
+            io.WriteIoOutBit(1, false);
             io.ReadIoOutWord(0, out int value);
+
            
             return false;
         }

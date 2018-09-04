@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using IrixiStepperControllerHelper;
 using JPT_TosaTest.Communication;
 using JPT_TosaTest.Config.HardwareManager;
+using JPT_TosaTest.MotionCards.IrixiCommand;
 
 namespace JPT_TosaTest.MotionCards
 {

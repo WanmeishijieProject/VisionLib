@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D58CAF83-E372-4051-9819-D2752AAC3E41}</ProjectGuid>
+    <ProjectGuid>{D6E8DA7F-3970-4AD8-B24B-0B918FE64C80}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>IrixiMotionLib</RootNamespace>
-    <AssemblyName>IrixiMotionLib</AssemblyName>
+    <RootNamespace>PackageParse</RootNamespace>
+    <AssemblyName>PackageParse</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -41,31 +41,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AxisArgs.cs" />
-    <Compile Include="IrixiCommand\Irixi_ClearMem.cs" />
-    <Compile Include="IrixiCommand\Irixi_CommandEnum.cs" />
-    <Compile Include="IrixiCommand\Irixi_ConfigAdcTrig.cs" />
-    <Compile Include="IrixiCommand\Irixi_GetMcsuSta.cs" />
-    <Compile Include="IrixiCommand\Irixi_GetMemLen.cs" />
-    <Compile Include="IrixiCommand\Irixi_GetSysSta.cs" />
-    <Compile Include="IrixiCommand\Irixi_Home.cs" />
-    <Compile Include="IrixiCommand\Irixi_Move.cs" />
-    <Compile Include="IrixiCommand\Irixi_MoveTrigger.cs" />
-    <Compile Include="IrixiCommand\Irixi_ReadAD.cs" />
-    <Compile Include="IrixiCommand\Irixi_ReadDin.cs" />
-    <Compile Include="IrixiCommand\Irixi_ReadDout.cs" />
-    <Compile Include="IrixiCommand\Irixi_ReadMem.cs" />
-    <Compile Include="IrixiCommand\Irixi_RunBlindSearch.cs" />
-    <Compile Include="IrixiCommand\Irixi_SetDout.cs" />
-    <Compile Include="IrixiCommand\Irixi_Stop.cs" />
-    <Compile Include="IrixiEE0017.cs" />
+    <Compile Include="IPackage.cs" />
+    <Compile Include="PackageParse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\PackageParse\PackageParse.csproj">
-      <Project>{d6e8da7f-3970-4ad8-b24b-0b918fe64c80}</Project>
-      <Name>PackageParse</Name>
-    </ProjectReference>
+    <Compile Include="ZigBeePackage.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

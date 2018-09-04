@@ -215,6 +215,19 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
-#endregion
+
+        public RelayCommand<int> ClickOutputCommand
+        {
+            get
+            {
+                return new RelayCommand<int>(index => {
+                    Console.WriteLine(index);
+                    IIO io = IOCards.IOCardMgr.Instance.FindIOCardByCardNo(CurrentIoCardIndex_Output);
+                    bool value = IOCollectionListOutput[CurrentIoCardIndex_Output][index-1].IsChecked;
+                    io.WriteIoOutBit(index - 1, !value);
+                });
+            }
+        }
+        #endregion
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JPT_TosaTest.ViewModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,11 @@ namespace JPT_TosaTest.UserCtrl
         public UC_Monitor()
         {
             InitializeComponent();
+        }
+
+        private void Border_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            (rootGrid.DataContext as MonitorViewModel).ClickOutputCommand.Execute(((Grid)sender).Tag);
         }
     }
 }

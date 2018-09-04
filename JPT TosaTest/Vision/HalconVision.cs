@@ -324,7 +324,7 @@ namespace JPT_TosaTest.Vision
                     return true;
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 result = null;
                 if (image != null)
@@ -332,7 +332,7 @@ namespace JPT_TosaTest.Vision
                     image.Dispose();
                     image = null;
                 }
-                throw ex;
+                throw;
             }
 
         }

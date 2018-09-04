@@ -6,15 +6,6 @@ using System.Threading.Tasks;
 
 namespace JPT_TosaTest.Config.SoftwareManager
 {
-    public class SoftwareCfgLevelManager1
-    {
-
-    }
-    public class WorkFlowConfig
-    {
-        public bool Enable { get; set; }
-        public string Name { get; set; }
-    }
     public class IoNameCfg
     {
         public string Name { get; set; }

@@ -114,10 +114,28 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Classes\CheckSet.cs" />
     <Compile Include="Classes\NotifyPropertyChangedExtension.cs" />
     <Compile Include="Classes\FileHelper.cs" />
     <Compile Include="Classes\ListBoxBehavior.cs" />
     <Compile Include="Classes\LogExcel.cs" />
+    <Compile Include="Classes\PackageParseMgr\IrixiCommand\Irixi_CommandEnum.cs" />
+    <Compile Include="Classes\PackageParseMgr\IrixiCommand\Irixi_GetSysSta.cs" />
+    <Compile Include="Classes\PackageParseMgr\IrixiCommand\Irixi_GetMemLen.cs" />
+    <Compile Include="Classes\PackageParseMgr\IrixiCommand\Irixi_ReadMem.cs" />
+    <Compile Include="Classes\PackageParseMgr\IrixiCommand\Irixi_ClearMem.cs" />
+    <Compile Include="Classes\PackageParseMgr\IrixiCommand\Irixi_SetDout.cs" />
+    <Compile Include="Classes\PackageParseMgr\IrixiCommand\Irixi_ReadDout.cs" />
+    <Compile Include="Classes\PackageParseMgr\IrixiCommand\Irixi_ReadDin.cs" />
+    <Compile Include="Classes\PackageParseMgr\IrixiCommand\Irixi_ReadAD.cs" />
+    <Compile Include="Classes\PackageParseMgr\IrixiCommand\Irixi_GetMcsuSta.cs" />
+    <Compile Include="Classes\PackageParseMgr\IrixiCommand\Irixi_ConfigAdcTrig.cs" />
+    <Compile Include="Classes\PackageParseMgr\IrixiCommand\Irixi_RunBlindSearch.cs" />
+    <Compile Include="Classes\PackageParseMgr\IrixiCommand\Irixi_Stop.cs" />
+    <Compile Include="Classes\PackageParseMgr\IrixiCommand\Irixi_MoveTrigADC.cs" />
+    <Compile Include="Classes\PackageParseMgr\IrixiCommand\Irixi_MoveTriggOut.cs" />
+    <Compile Include="Classes\PackageParseMgr\IrixiCommand\Irixi_Home.cs" />
+    <Compile Include="Classes\PackageParseMgr\IrixiCommand\Irixi_Move.cs" />
     <Compile Include="Classes\PasswordBoxBehavior.cs" />
     <Compile Include="Classes\PSSWraper.cs" />
     <Compile Include="Classes\UniteHelper.cs" />
@@ -136,7 +154,8 @@
     <Compile Include="Config\HardwareManager\CameraCfg.cs" />
     <Compile Include="Config\HardwareManager\MotionCardCfg.cs" />
     <Compile Include="Config\HardwareManager\HardwareCfgManager.cs" />
-    <Compile Include="Config\SoftwareManager\SoftwareCfgLevelManager1.cs" />
+    <Compile Include="Config\SoftwareManager\IoNameCfg.cs" />
+    <Compile Include="Config\SoftwareManager\WorkFlowConfig.cs" />
     <Compile Include="Config\SoftwareManager\SoftwareCfgManager.cs" />
     <Compile Include="Config\SystemCfgManager\SystemCfgManager.cs" />
     <Compile Include="Config\SystemCfgManager\SystemParaModel.cs" />
@@ -442,6 +461,10 @@
     <ProjectReference Include="..\IrixiMotionLib\IrixiMotionLib.csproj">
       <Project>{d58caf83-e372-4051-9819-d2752aac3e41}</Project>
       <Name>IrixiMotionLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PackageParse\PackageParse.csproj">
+      <Project>{d6e8da7f-3970-4ad8-b24b-0b918fe64c80}</Project>
+      <Name>PackageParse</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
