@@ -17,7 +17,10 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
             writer.Write(Distance);
             writer.Write(SpeedPercent);
         }
-
+        public override ZigBeePackage ByteArrToPackage(byte[] RawData)
+        {
+            return base.ByteArrToPackage(RawData);
+        }
         public byte AxisNo { get; set; }
         public Int32 Distance { get; set; }
         public byte SpeedPercent { get; set; }

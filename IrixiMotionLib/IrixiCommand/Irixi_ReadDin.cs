@@ -13,6 +13,10 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
         {
             writer.Write((byte)Enumcmd.ReadDin);
         }
-
+        public override ZigBeePackage ByteArrToPackage(byte[] RawData)
+        {
+            ReturnObject = RawData[RawData.Length - 5];
+            return base.ByteArrToPackage(RawData);
+        }
     }
 }

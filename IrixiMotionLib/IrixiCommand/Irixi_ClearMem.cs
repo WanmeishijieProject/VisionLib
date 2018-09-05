@@ -14,6 +14,5 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
         {
             writer.Write((byte)Enumcmd.ClearMem);
         }
-
     }
 }

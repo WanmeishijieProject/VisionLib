@@ -14,7 +14,6 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
             writer.Write((byte)Enumcmd.ConfigAdcTrigger);
             writer.Write(ADCChannelFlags);
         }
-
         public byte ADCChannelFlags { get; set; }
 
     }

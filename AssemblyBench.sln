@@ -5,11 +5,11 @@ VisualStudioVersion = 15.0.27428.2011
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyBench", "JPT TosaTest\AssemblyBench.csproj", "{2A22E9D0-9C11-463F-99A1-BA273996CE37}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTest.csproj", "{8EDF4429-251A-416D-BB68-93F227191BCF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IrixiMotionLib", "IrixiMotionLib\IrixiMotionLib.csproj", "{D58CAF83-E372-4051-9819-D2752AAC3E41}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageParse", "PackageParse\PackageParse.csproj", "{D6E8DA7F-3970-4AD8-B24B-0B918FE64C80}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyBenchTests", "AssemblyBenchTests\AssemblyBenchTests.csproj", "{97CF67D9-C262-4637-9D70-F19FDFE91121}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,9 +21,6 @@ Global
 		{2A22E9D0-9C11-463F-99A1-BA273996CE37}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A22E9D0-9C11-463F-99A1-BA273996CE37}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2A22E9D0-9C11-463F-99A1-BA273996CE37}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8EDF4429-251A-416D-BB68-93F227191BCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8EDF4429-251A-416D-BB68-93F227191BCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8EDF4429-251A-416D-BB68-93F227191BCF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D58CAF83-E372-4051-9819-D2752AAC3E41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D58CAF83-E372-4051-9819-D2752AAC3E41}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D58CAF83-E372-4051-9819-D2752AAC3E41}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -32,6 +29,10 @@ Global
 		{D6E8DA7F-3970-4AD8-B24B-0B918FE64C80}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6E8DA7F-3970-4AD8-B24B-0B918FE64C80}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6E8DA7F-3970-4AD8-B24B-0B918FE64C80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97CF67D9-C262-4637-9D70-F19FDFE91121}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97CF67D9-C262-4637-9D70-F19FDFE91121}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97CF67D9-C262-4637-9D70-F19FDFE91121}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97CF67D9-C262-4637-9D70-F19FDFE91121}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

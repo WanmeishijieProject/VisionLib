@@ -20,6 +20,7 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
             writer.Write(SpeedPercent);
             writer.Write(Interval);
         }
+
         public byte HAxisNo { get; set; }
         public byte VAxisNo { get; set; }
         public UInt32 Range { get; set; }

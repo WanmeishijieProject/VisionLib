@@ -14,6 +14,7 @@ namespace Package
     {
         protected MemoryStream stream = null;
         protected BinaryWriter writer = null;
+        private CRC32 Crc32Ins = new CRC32();
         public ZigBeePackage()
         {
             ReturnObject = new object();
@@ -25,12 +26,12 @@ namespace Package
         }
         private AutoResetEvent SyncEvent = new AutoResetEvent(false);
         public byte[] Header { get; set; }
-        protected Int16 FrameLength { get; set; }
+        public Int16 FrameLength { get; set; }
         protected byte APIIdentifier { get; set; }
         protected Int16 FrameID { get; set; }
         protected byte Cmd { get; set; }
         public object ReturnObject { get; set; }
-
+        
         public String GetPackageType()
         {
             return APIIdentifier.ToString();
@@ -38,7 +39,10 @@ namespace Package
 
         public byte[] ToBytes()
         {
-            ResetSyncFlag();
+            APIIdentifier = 0x4D;
+            FrameID = 0x00;
+
+            ResetSyncFlag();    
             byte[] data = new byte[30];
 
             stream = new MemoryStream(data);
@@ -49,19 +53,28 @@ namespace Package
             writer.Write((byte)APIIdentifier);  //1
             writer.Write(FrameID);  //2
             WriteData();
-            writer.Write(CheckSum(data, 0, data.Length));
+            writer.Write(Crc32Ins.Calculate(data, 0, data.Length));
             writer.Close();
             stream.Close();
-            int len = data.Length-4;
-            data[1] = (byte)(len & 0xFF);
-            data[2] = (byte)((len >> 8) & 0xFF);
             return data;
         }
         protected virtual void WriteData()
         {
-            
+            return;
         }
-         
+
+        public virtual ZigBeePackage ByteArrToPackage(byte[] RawData)
+        {
+            if (RawData != null && RawData.Length >= 7) //固定结构
+            {
+                this.FrameLength = (short)(RawData[1] + (RawData[2] << 8));
+                this.APIIdentifier = RawData[3];
+                this.FrameID = (short)(RawData[4] + (RawData[5] << 8));
+                this.Cmd = RawData[6];
+            }
+            return this;
+        }
+
         public override string ToString()
         {
             return GetType().Name;
@@ -82,16 +95,11 @@ namespace Package
             return SyncEvent.WaitOne(TimeOut);
         }
 
-        private byte CheckSum(byte[] buf, int offset, int count)
+
+
+        public IPackage GetPackage(byte[] RawData)
         {
-            if (buf.Length < count)
-                return 0;
-            byte checksum = 0;
-            for (int i = offset; i < offset + count; i++)
-            {
-                checksum += buf[i];
-            }
-            return (byte)(checksum & 0xFF);
+            return ByteArrToPackage(RawData);
         }
     }
 }

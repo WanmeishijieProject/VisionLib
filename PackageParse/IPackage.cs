@@ -10,6 +10,8 @@ namespace Package
     {
         byte[] Header { get; set; }
         String GetPackageType();
+        IPackage GetPackage(byte[] RawData);
+
 
         //供读取返回值使用
         void SetSyncFlag();

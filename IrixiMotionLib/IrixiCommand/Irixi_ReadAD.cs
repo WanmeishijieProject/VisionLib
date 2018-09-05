@@ -14,6 +14,11 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
             writer.Write((byte)Enumcmd.ReadAd);
             writer.Write(ADChannelFlags);
         }
+        public override ZigBeePackage ByteArrToPackage(byte[] RawData)
+        {
+           return base.ByteArrToPackage(RawData);
+   
+        }
         public byte ADChannelFlags { get; set; }
     }
 }

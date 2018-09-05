@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Package;
 
 namespace JPT_TosaTest.MotionCards
 {
@@ -24,8 +25,6 @@ namespace JPT_TosaTest.MotionCards
         public event OutputStateChanged OnOutputStateChanged;
 
 
-
-
         private Irixi_Home CommandHome = new Irixi_Home();
         private Irixi_Move CommandMove = new Irixi_Move();
         private Irixi_MoveTrigger CommandMoveTrigger = new Irixi_MoveTrigger();
@@ -36,81 +35,29 @@ namespace JPT_TosaTest.MotionCards
         private Irixi_ReadMem CommandReadMem = new Irixi_ReadMem();
         private Irixi_ClearMem CommandClearMem = new Irixi_ClearMem();
         private Irixi_ReadAD CommandReadAd = new Irixi_ReadAD();
-        
+
         private Irixi_ConfigAdcTrig CommandConfigAdcTrigger = new Irixi_ConfigAdcTrig();
         private Irixi_SetDout CommandSetDout = new Irixi_SetDout();
         private Irixi_ReadDout CommandReadDout = new Irixi_ReadDout();
         private Irixi_ReadDin CommandReadDin = new Irixi_ReadDin();
         private Irixi_RunBlindSearch CommandRunBlindSearch = new Irixi_RunBlindSearch();
 
+
+        //解析包
+        private AutoResetEvent ParsePackageEvent = new AutoResetEvent(false);
+        private Task TaskParsePackage = null;
+        private CancellationTokenSource ctsParsePackage = null;
+        private object PackageQueueLock = new object();
+        private CRC32 Crc32Instance = new CRC32();
+        private UInt16 PACKAGE_HEADER = 0x7E;
+
+
         private IrixiEE0017()
         {
             for (int i = 0; i < AXIS_NUM; i++)
                 AxisStateList.Add(new AxisArgs());
-            OnFrameDataRecieved += IrixiEE0017_OnFrameDataRecieved;  
         }
 
-        /// <summary>
-        /// Just for test
-        /// </summary>
-        /// <param name="data"></param>
-        private void IrixiEE0017_OnFrameDataRecieved(byte[] data)
-        {
-            byte Cmd = data[6];
-            int RealLen = data.Length;
-            switch (Cmd)
-            {
-                case (byte)Enumcmd.GetMcsuSta:      //读取状态值
-                    byte AxisState = data[8];  //AxisState
-                    byte Error = data[RealLen - 2];
-                    Int16 Acc = (Int16)(data[RealLen - 4] + (data[RealLen - 3] << 8));
-                    Int32 AbsPos = (Int32)((data[RealLen - 8]) + (data[RealLen - 7] << 8) + (data[RealLen - 6] << 16) + (data[RealLen - 5] << 24));
-                    byte axisIndex = data[7];
-                    lock (AxisStateList[axisIndex - 1].AxisLock)
-                    {
-                        AxisStateList[axisIndex - 1].IsHomed = ((AxisState >> 1) & 0x01) == 1;
-                        AxisStateList[axisIndex - 1].IsBusy = ((AxisState >> 2) & 0x01) == 1;
-                        AxisStateList[axisIndex - 1].ErrorCode = Error;
-                        AxisStateList[axisIndex - 1].CurAbsPos = (double)AbsPos / (double)AxisStateList[axisIndex - 1].GainFactor;
-                        CommandGetMcsuSta.SetSyncFlag();
-                    }
-                    break;
-                case (byte)Enumcmd.GetMemLength:
-                    UInt32 DataLengthRecv = 0;
-                    for (int i = 0; i < 4; i++)
-                    {
-                        DataLengthRecv += (UInt32)(data[7 + i] << (8 * i));
-                    }
-                    CommandGetMemLen.ReturnObject = DataLengthRecv;
-                    CommandGetMemLen.SetSyncFlag();
-                    break;
-                case (byte)Enumcmd.ReadMem:
-                    int PackageID = data[7] + (data[8] << 8);
-                    int DataLength = data[9] + (data[10] << 8);
-                    int nStartPos = 11;
-                    for (int i = 0; i < DataLength; i++)
-                    {
-                        short value = (short)(data[2 * i + nStartPos] + (data[2 * i + 1 + nStartPos] << 8));
-                        ADCRawDataList.Add(value);
-                    }
-                    CommandReadMem.ReturnObject = ADCRawDataList;
-                    CommandReadMem.SetSyncFlag();
-                    break;
-                case (byte)Enumcmd.ReadDin:
-                    CommandReadDin.ReturnObject = data[7];
-                    CommandReadDin.SetSyncFlag();
-                    break;
-                case (byte)Enumcmd.ReadDout:
-                    UInt16 OldValue = 0;
-                    if (!UInt16.TryParse(CommandReadDout.ReturnObject.ToString(), out OldValue))
-                        OldValue = 0;
-                    OnOutputStateChanged(OldValue, data[7]);
-                    CommandReadDout.ReturnObject = data[7];
-                    CommandReadDout.SetSyncFlag();
-                    break;
-                
-            }
-        }
 
         public static IrixiEE0017 CreateInstance(string token)
         {
@@ -152,9 +99,14 @@ namespace JPT_TosaTest.MotionCards
                     if (Sp.IsOpen)
                         Sp.Close();
                     Sp.Open();
-                    return Sp.IsOpen;
+                    if (Sp.IsOpen)
+                    {
+                        StartParsePackage();
+                        return true;
+                    }
+                    return false;
                 }
-                catch
+                catch (Exception ex)
                 {
                     return false;
                 }
@@ -168,6 +120,7 @@ namespace JPT_TosaTest.MotionCards
                 try
                 {
                     Sp.Close();
+                    StopParsePackage();
                     return true;
                 }
                 catch (Exception ex)
@@ -213,7 +166,7 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public bool Home(int AxisNo, int Dir, double Acc, double Speed1, double Speed2)    //
         {
-   
+
             try
             {
                 if (AxisNo > 12 || AxisNo < 1)
@@ -221,6 +174,7 @@ namespace JPT_TosaTest.MotionCards
                     return false;
                 }
                 CommandHome.AxisNo = (byte)AxisNo;
+                CommandHome.FrameLength = 0x05;
                 byte[] cmd = CommandHome.ToBytes();
                 this.ExcuteCmd(cmd);
                 return true;
@@ -229,7 +183,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            
+
 
         }
 
@@ -248,7 +202,7 @@ namespace JPT_TosaTest.MotionCards
                 }
             }
             return false;
-            
+
         }
 
         public bool IsNormalStop(int AxisNo)
@@ -266,7 +220,7 @@ namespace JPT_TosaTest.MotionCards
                 }
             }
             return false;
-            
+
         }
 
         /// <summary>
@@ -312,7 +266,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            
+
         }
 
         /// <summary>
@@ -325,7 +279,7 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public bool MoveAbs(int AxisNo, double Acc, double Speed, double Pos, EnumTriggerType TriggerType, UInt16 Interval)
         {
-           
+
             try
             {
                 if (AxisNo > 12 || AxisNo < 1)
@@ -361,7 +315,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            
+
 
         }
 
@@ -375,28 +329,30 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public bool MoveRel(int AxisNo, double Acc, double Speed, double Distance)
         {
-            try
+            lock (ComportLock)
             {
-                if (AxisNo > 12 || AxisNo < 1)
+                try
+                {
+                    if (AxisNo > 12 || AxisNo < 1)
+                    {
+                        return false;
+                    }
+                    var speedPuse = Speed * AxisStateList[AxisNo - 1].GainFactor;
+                    byte speedPer = Convert.ToByte(Math.Floor(speedPuse / 100));
+                    int distancePuse = Convert.ToInt32(Distance * AxisStateList[AxisNo - 1].GainFactor);
+                    CommandMove.FrameLength = 0x0C;
+                    CommandMove.AxisNo = (byte)AxisNo;
+                    CommandMove.Distance = distancePuse;
+                    CommandMove.SpeedPercent = speedPer;
+                    byte[] cmd = CommandMove.ToBytes();
+                    this.ExcuteCmd(cmd);
+                    return true;
+                }
+                catch (Exception ex)
                 {
                     return false;
                 }
-                var speedPuse = Speed * AxisStateList[AxisNo - 1].GainFactor;
-                byte speedPer = Convert.ToByte(Math.Floor(speedPuse / 100));
-                int distancePuse = Convert.ToInt32(Distance * AxisStateList[AxisNo - 1].GainFactor);
-
-                CommandMove.AxisNo = (byte)AxisNo;
-                CommandMove.Distance = distancePuse;
-                CommandMove.SpeedPercent = speedPer;
-                byte[] cmd = CommandMove.ToBytes();
-                this.ExcuteCmd(cmd);
-                return true;
             }
-            catch (Exception ex)
-            {
-                return false;
-            }
-           
         }
 
         /// <summary>
@@ -409,126 +365,147 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public bool MoveRel(int AxisNo, double Acc, double Speed, double Distance, EnumTriggerType TriggerType, UInt16 Interval)
         {
-            try
+            lock (ComportLock)
             {
-                if (AxisNo > 12 || AxisNo < 1)
+                try
+                {
+                    if (AxisNo > 12 || AxisNo < 1)
+                    {
+                        return false;
+                    }
+                    var speedPuse = Speed * AxisStateList[AxisNo - 1].GainFactor;
+                    byte speedPer = Convert.ToByte(Math.Floor(speedPuse / 100));
+                    int distancePuse = Convert.ToInt32(Distance * AxisStateList[AxisNo - 1].GainFactor);
+                    CommandMoveTrigger.FrameLength = 0x0E;
+                    CommandMoveTrigger.TriggerType = TriggerType == EnumTriggerType.ADC ? Enumcmd.MoveTrigAdc : Enumcmd.MoveTrigOut;
+                    CommandMoveTrigger.AxisNo = (byte)AxisNo;
+                    CommandMoveTrigger.Distance = distancePuse;
+                    CommandMoveTrigger.SpeedPercent = speedPer;
+                    CommandMoveTrigger.TriggerInterval = Interval;
+                    byte[] cmd = CommandMoveTrigger.ToBytes();
+                    this.ExcuteCmd(cmd);
+                    return true;
+                }
+                catch (Exception ex)
                 {
                     return false;
                 }
-                var speedPuse = Speed * AxisStateList[AxisNo - 1].GainFactor;
-                byte speedPer = Convert.ToByte(Math.Floor(speedPuse / 100));
-                int distancePuse = Convert.ToInt32(Distance * AxisStateList[AxisNo - 1].GainFactor);
+            }
 
-                CommandMoveTrigger.TriggerType = TriggerType == EnumTriggerType.ADC ? Enumcmd.MoveTrigAdc : Enumcmd.MoveTrigOut;
-                CommandMoveTrigger.AxisNo = (byte)AxisNo;
-                CommandMoveTrigger.Distance = distancePuse;
-                CommandMoveTrigger.SpeedPercent = speedPer;
-                CommandMoveTrigger.TriggerInterval = Interval;
-                byte[] cmd = CommandMoveTrigger.ToBytes();
-                this.ExcuteCmd(cmd);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-            
         }
 
         public bool ReadIoInBit(int Index, out bool value)
         {
-            value = false;
-            bool bRet = ReadIoInWord(1, out int wordValue);
-            value = (wordValue & (1 << (Index - 1))) == 1;
-            return bRet;
+            lock (ComportLock)
+            {
+                value = false;
+                bool bRet = ReadIoInWord(1, out int wordValue);
+                value = (wordValue & (1 << (Index - 1))) == 1;
+                return bRet;
+            }
         }
 
         public bool ReadIoInWord(int StartIndex, out int value)
         {
-            value = 0;
-            try
+            lock (ComportLock)
             {
-                byte[] cmd = CommandReadDin.ToBytes();
-                this.ExcuteCmd(cmd);
-                bool bRet = CommandReadDin.WaitFinish(1000);
-                bRet &= Int32.TryParse(CommandReadDin.ReturnObject.ToString(), out value);
-                return bRet;
+                value = 0;
+                try
+                {
+                    CommandReadDin.FrameLength = 0x04;
+                    byte[] cmd = CommandReadDin.ToBytes();
+                    this.ExcuteCmd(cmd);
+                    bool bRet = CommandReadDin.WaitFinish(3000);
+                    bRet &= Int32.TryParse(CommandReadDin.ReturnObject.ToString(), out value);
+                    return bRet;
+                }
+                catch
+                {
+                    return false;
+                }
             }
-            catch
-            {
-                return false;
-            }
-            
         }
 
         public bool ReadIoOutBit(int Index, out bool value)
         {
+            lock (ComportLock)
+            {
+                value = false;
+                try
+                {
+                    bool bRet = ReadIoOutWord(1, out int wordValue);
+                    value = (wordValue & (1 << (Index - 1))) != 0;
+                    return bRet;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
 
-            value = false;
-            try
-            {
-                bool bRet = ReadIoOutWord(1, out int wordValue);
-                value = (wordValue & (1 << (Index-1))) != 0;
-                return bRet;
-            }
-            catch
-            {
-                return false;
-            }
-            
         }
 
         public bool ReadIoOutWord(int StartIndex, out int value)
         {
-
-            value = 0;
-            try
+            lock (ComportLock)
             {
-                byte[] cmd = CommandReadDout.ToBytes();
-                Sp.Write(cmd, 0, cmd.Length);
-                bool bRet = CommandReadDout.WaitFinish(500);
-                bRet &= Int32.TryParse(CommandReadDout.ReturnObject.ToString(),out value);
-                return bRet;
+                value = 0;
+                try
+                {
+                    CommandReadDout.FrameLength = 0x04;
+                    byte[] cmd = CommandReadDout.ToBytes();
+                    lock (ComportLock)
+                    {
+                        this.ExcuteCmd(cmd);
+                    }
+                    bool bRet = CommandReadDout.WaitFinish(3000);
+                    Console.WriteLine("---------ReadOutWaitOne-----------");
+                    bRet &= Int32.TryParse(CommandReadDout.ReturnObject.ToString(), out value);
+                    return bRet;
+                }
+                catch (Exception ex)
+                {
+                    return false;
+                }
             }
-            catch(Exception ex)
-            {
-                return false;
-            }
-            
         }
 
         public bool WriteIoOutBit(int Index, bool value)
         {
-
-            try
+            lock (ComportLock)
             {
-                    
-                CommandSetDout.GPIOChannel = (byte)Index;
-                CommandSetDout.GPIOState = value ? (byte)1 : (byte)0;
-                byte[] cmd = CommandSetDout.ToBytes();
-                this.ExcuteCmd(cmd);
-                return true;
+                try
+                {
+                    CommandSetDout.FrameLength = 0x06;
+                    CommandSetDout.GPIOChannel = (byte)Index;
+                    CommandSetDout.GPIOState = value ? (byte)1 : (byte)0;
+                    byte[] cmd = CommandSetDout.ToBytes();
+                    this.ExcuteCmd(cmd);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
             }
-            catch
-            {
-                return false;
-            }
-            
         }
 
         public bool WriteIoOutWord(int StartIndex, ushort value)
         {
-           
             try
             {
                 for (int i = StartIndex; i < StartIndex + 8; i++)
                 {
-                    CommandSetDout.GPIOChannel = (byte)StartIndex;
-                    CommandSetDout.GPIOState = (byte)((value >> (i - StartIndex)) & 0x01);
                     lock (ComportLock)
                     {
-                        byte[] cmd = CommandSetDout.ToBytes();
-                        this.ExcuteCmd(cmd);
+                        CommandSetDout.GPIOChannel = (byte)StartIndex;
+                        CommandSetDout.GPIOState = (byte)((value >> (i - StartIndex)) & 0x01);
+                        lock (ComportLock)
+                        {
+                            CommandSetDout.FrameLength = 0x06;
+                            byte[] cmd = CommandSetDout.ToBytes();
+                            this.ExcuteCmd(cmd);
+                        }
                     }
                 }
                 return true;
@@ -537,7 +514,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            
+
         }
 
         /// <summary>
@@ -551,6 +528,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 try
                 {
+                    CommandConfigAdcTrigger.FrameLength = 0x05;
                     CommandConfigAdcTrigger.ADCChannelFlags = ChannelFlags;
                     byte[] cmd = CommandConfigAdcTrigger.ToBytes();
                     this.ExcuteCmd(cmd);
@@ -570,6 +548,7 @@ namespace JPT_TosaTest.MotionCards
                 Length = 0;
                 try
                 {
+                    CommandGetMemLen.FrameLength = 0x04;
                     byte[] cmd = CommandGetMemLen.ToBytes();
                     this.ExcuteCmd(cmd);
                     CommandGetMemLen.WaitFinish(1000);
@@ -592,6 +571,7 @@ namespace JPT_TosaTest.MotionCards
                 try
                 {
                     ADCRawDataList.Clear();
+                    CommandReadMem.FrameLength = 0x0C;
                     CommandReadMem.MemOffset = Offset;
                     CommandReadMem.MemLength = Length;
                     byte[] cmd = CommandReadMem.ToBytes();
@@ -610,35 +590,40 @@ namespace JPT_TosaTest.MotionCards
 
         public bool ClearMem()
         {
-            try
+            lock (ComportLock)
             {
-                byte[] cmd = CommandClearMem.ToBytes();
-                Sp.Write(cmd, 0, cmd.Length);
-                return true;
+                try
+                {
+                    CommandClearMem.FrameLength = 0x04;
+                    byte[] cmd = CommandClearMem.ToBytes();
+                    Sp.Write(cmd, 0, cmd.Length);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    return false;
+                }
             }
-            catch (Exception ex)
-            {
-                return false;
-            }
-            
         }
 
         public bool ReadAD(byte ChannelFlags)
         {
-            
-            try
+            lock (ComportLock)
             {
-                CommandReadAd.ADChannelFlags = ChannelFlags;
-                byte[] cmd = CommandReadAd.ToBytes();
-                this.ExcuteCmd(cmd);
-                return true;
+                try
+                {
+                    CommandReadAd.FrameLength = 0x05;
+                    CommandReadAd.ADChannelFlags = ChannelFlags;
+                    byte[] cmd = CommandReadAd.ToBytes();
+                    this.ExcuteCmd(cmd);
+                    return true;
 
+                }
+                catch (Exception ex)
+                {
+                    return false;
+                }
             }
-            catch (Exception ex)
-            {
-                return false;
-            }
-            
         }
 
         public bool SetCurrentPos(int AxisNo, double Pos)
@@ -652,50 +637,54 @@ namespace JPT_TosaTest.MotionCards
 
         public bool Stop()
         {
-           
-            try
+            lock (ComportLock)
             {
-                CommandStop.AxisNo = (byte)0x00;
-                byte[] cmd = CommandStop.ToBytes();
-                this.ExcuteCmd(cmd);
-                return true;
+                try
+                {
+                    CommandStop.FrameLength = 0x05;
+                    CommandStop.AxisNo = (byte)0x00;
+                    byte[] cmd = CommandStop.ToBytes();
+                    this.ExcuteCmd(cmd);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    return false;
+                }
             }
-            catch (Exception ex)
-            {
-                return false;
-            }
-            
-
         }
 
         public bool DoBindSearch(uint HAxis, uint VAxis, double Range, double Gap, double Speed, double Interval)
         {
-          
-            try
+            lock (ComportLock)
             {
-                CommandRunBlindSearch.HAxisNo = (byte)HAxis;
-                CommandRunBlindSearch.VAxisNo = (byte)VAxis;
-                int AxisIndex = (int)HAxis;
-                CommandRunBlindSearch.Range = (uint)(Range * AxisStateList[AxisIndex].GainFactor);
-                CommandRunBlindSearch.Gap= (uint)(Gap * AxisStateList[AxisIndex].GainFactor);
-                CommandRunBlindSearch.SpeedPercent = (byte)((Speed * AxisStateList[AxisIndex].GainFactor)/10000);
-                CommandRunBlindSearch.Interval= (UInt16)(Interval * AxisStateList[AxisIndex].GainFactor);
-                byte[] cmd = CommandStop.ToBytes();
-                this.ExcuteCmd(cmd);
-                return true;
+                try
+                {
+                    CommandRunBlindSearch.FrameLength = 0x11;
+                    CommandRunBlindSearch.HAxisNo = (byte)HAxis;
+                    CommandRunBlindSearch.VAxisNo = (byte)VAxis;
+                    int AxisIndex = (int)HAxis;
+                    CommandRunBlindSearch.Range = (uint)(Range * AxisStateList[AxisIndex].GainFactor);
+                    CommandRunBlindSearch.Gap = (uint)(Gap * AxisStateList[AxisIndex].GainFactor);
+                    CommandRunBlindSearch.SpeedPercent = (byte)((Speed * AxisStateList[AxisIndex].GainFactor) / 10000);
+                    CommandRunBlindSearch.Interval = (UInt16)(Interval * AxisStateList[AxisIndex].GainFactor);
+                    byte[] cmd = CommandStop.ToBytes();
+                    this.ExcuteCmd(cmd);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    return false;
+                }
             }
-            catch (Exception ex)
-            {
-                return false;
-            }
-            
         }
 
 
         #region Private
         private bool GetMcsuState(int AxisNo, out AxisArgs axisargs)
         {
-          
+            lock (ComportLock)
+            {
                 axisargs = null;
                 try
                 {
@@ -704,6 +693,7 @@ namespace JPT_TosaTest.MotionCards
                         return false;
                     }
                     //Command
+                    CommandGetMcsuSta.FrameLength = 0x05;
                     CommandGetMcsuSta.AxisNo = (byte)AxisNo;
                     byte[] cmd = CommandGetMcsuSta.ToBytes();
                     this.ExcuteCmd(cmd);
@@ -715,49 +705,21 @@ namespace JPT_TosaTest.MotionCards
                 {
                     return false;
                 }
-            
+            }
         }
 
 
 
         private void Comport_DataReceived1(object sender, SerialDataReceivedEventArgs e)
         {
-            int n = Sp.BytesToRead;
-            byte[] RecvTemp = new byte[n];
-            Sp.Read(RecvTemp, 0, n);
-            foreach(var bt in RecvTemp)
-                FrameRecvByteQueue.Enqueue(bt);
-            while (FrameRecvByteQueue.Count > 3)  //寻找包头  7E + L + H //有包头与长度
+            int Len = Sp.BytesToRead;
+            for (int i = 0; i < Len; i++)
             {
-                byte bt0 = FrameRecvByteQueue.Dequeue();
-                if (bt0 == 0x7E)
+                lock (PackageQueueLock)
                 {
-                    byte bt1 = FrameRecvByteQueue.Dequeue();
-                    byte bt2 = FrameRecvByteQueue.Dequeue();
-                    int Framelength = bt1 + (bt2 << 8);
-                    if (FrameRecvByteQueue.Count < Framelength + 1)   //data + SUM
-                    {
-                        break;  //没有接收完继续接收，否则就解析数据
-                    }
-                    byte[] ByteRecvShort = new byte[Framelength + 4];  //为了计算Sum需要把头信息加上
-                    ByteRecvShort[0] = bt0;
-                    ByteRecvShort[1] = bt1;
-                    ByteRecvShort[2] = bt2;
-                    //FrameRecvByteQueue.CopyTo(ByteRecvShort, 3);    //将其放入数组
-                    for (int i = 0; i < Framelength+1; i++) //全部取出一帧
-                    {
-                        ByteRecvShort[3 + i] = FrameRecvByteQueue.Dequeue();
-                    }
-
-                    byte Sum = ByteRecvShort[ByteRecvShort.Length - 1];
-                    int CalcSum = CheckSum(ByteRecvShort, 0, ByteRecvShort.Length - 1);
-                    if (Sum == CalcSum) //和校验成功
-                    {
-                        OnFrameDataRecieved?.Invoke(ByteRecvShort);
-                    } 
+                    FrameRecvByteQueue.Enqueue((byte)Sp.ReadByte());
                 }
             }
-
         }
 
         private byte CheckSum(byte[] buf, int offset, int count)
@@ -774,12 +736,204 @@ namespace JPT_TosaTest.MotionCards
 
         private void ExcuteCmd(byte[] Cmd)
         {
-            lock (ComportLock)
+
+            Sp.Write(Cmd, 0, Cmd.Length);
+
+        }
+        //解析收到的字节
+        //private void StartParsePackage()
+        //{
+
+        //    if (TaskParsePackage == null || TaskParsePackage.IsCanceled || TaskParsePackage.IsCompleted)
+        //    {
+        //        ctsParsePackage = new CancellationTokenSource();
+        //        byte[] TempDataList = null;
+        //        List<byte> tempList = new List<byte>();
+        //        TaskParsePackage = new Task(() =>
+        //        {
+        //            while (!ctsParsePackage.IsCancellationRequested)
+        //            {
+        //                ParsePackageEvent.WaitOne();
+        //                //Thread.Sleep(50);
+        //                while (true)  //寻找包头  7E + L + H //有包头与长度
+        //                {
+        //                    if (FrameRecvByteQueue.Peek() == 0x7E)
+        //                    {
+        //                        lock (PackageQueueLock)
+        //                        {
+        //                            TempDataList = FrameRecvByteQueue.ToArray();    //Queue是线程不安全的
+        //                        }
+        //                        byte bt1 = TempDataList.ToArray()[1];
+        //                        byte bt2 = TempDataList.ToArray()[2];
+        //                        int Framelength = bt1 + (bt2 << 8);
+        //                        if (FrameRecvByteQueue.Count < Framelength + 4)   //data + SUM
+        //                        {
+        //                            break;  //没有接收完继续接收，否则就解析数据
+        //                        }
+        //                        byte[] ByteRecvShort = new byte[Framelength + 4];
+        //                        for (int i = 0; i < Framelength + 4; i++) //全部取出一帧
+        //                        {
+        //                            ByteRecvShort[i] = FrameRecvByteQueue.Dequeue();
+        //                        }
+
+        //                        byte Sum = ByteRecvShort[ByteRecvShort.Length - 1];
+        //                        int CalcSum = CheckSum(ByteRecvShort, 0, ByteRecvShort.Length - 1);
+        //                        if (Sum == CalcSum) //和校验成功
+        //                        {
+        //                            //OnFrameDataRecieved?.Invoke(ByteRecvShort); //将包扔出去
+        //                            ProcessPackage(ByteRecvShort);
+        //                        }
+        //                    }
+        //                    else
+        //                    {
+        //                        FrameRecvByteQueue.Dequeue();   //不是0x7E就丢掉
+        //                    }
+        //                }
+        //            }
+
+        //        }, ctsParsePackage.Token);
+        //        TaskParsePackage.Start();
+        //    }
+        //}
+        private void StartParsePackage()
+        {
+            long TickStart = 0;
+            if (TaskParsePackage == null || TaskParsePackage.IsCanceled || TaskParsePackage.IsCompleted)
             {
-                Sp.Write(Cmd, 0, Cmd.Length);
+                ctsParsePackage = new CancellationTokenSource();
+                
+                TaskParsePackage = new Task(() =>
+                {
+                    TickStart = DateTime.Now.Ticks;
+                    List<byte> TempList = new List<byte>();
+                    int ExpectLength = 0;
+                    while (!ctsParsePackage.IsCancellationRequested)
+                    {
+                        Thread.Sleep(10);
+                        if (FrameRecvByteQueue.Count > 0)
+                        {
+                            byte data = 0x00;
+                            lock (PackageQueueLock)
+                            {
+                                try
+                                {
+                                    data = FrameRecvByteQueue.Dequeue();
+                                }
+                                catch (InvalidOperationException ex)
+                                {
+                                    continue;
+                                }
+                            }
+                            if (data == PACKAGE_HEADER && TempList.Count == 0)
+                            {
+                                TempList.Add(data);
+                            }
+                            else if (TempList.Count > 0)
+                            {
+                                TempList.Add(data);
+                                if (TempList.Count == 3)
+                                {
+                                    ExpectLength = TempList[1] + (TempList[2] << 8);
+                                }
+                                else if (ExpectLength > 0)
+                                {
+                                    if (TempList.Count == ExpectLength + 7)
+                                    {
+                                        byte[] dataList = TempList.ToArray();
+                                        UInt32[] uintList = Byte2Uint32(dataList, 0, dataList.Length - 4);
+                                        UInt32 Crc32 = (UInt32)(dataList[dataList.Length - 4] + (dataList[dataList.Length - 3] << 8) + (dataList[dataList.Length - 2] << 16) + (dataList[dataList.Length - 1] << 24));
+                                        UInt32 CalcCrc32 = Crc32Instance.Calculate(uintList, uintList.Length);
+                                        if (Crc32 == CalcCrc32) //校验成功
+                                        {
+                                            ProcessPackage(dataList);
+                                        }
+                                        ExpectLength = 0;
+                                        TempList = new List<byte>();
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+
+                        }
+                    }
+                
+                }, ctsParsePackage.Token);
+                TaskParsePackage.Start();
             }
         }
-        
+        //处理收到的包
+        private void ProcessPackage(byte[] data)
+        {
+            byte Cmd = data[6];
+            int RealLen = data.Length;
+            switch (Cmd)
+            {
+                case (byte)Enumcmd.GetMcsuSta:      //读取状态值
+                    CommandGetMcsuSta.ByteArrToPackage(data);
+                    MCSUS_STATE returnValue = CommandGetMcsuSta.ReturnObject as MCSUS_STATE;
+                    int axisIndex = returnValue.AxisIndex;
+                    lock (AxisStateList[axisIndex - 1].AxisLock)
+                    {
+                        AxisStateList[axisIndex - 1].IsHomed = returnValue.IsHomed;
+                        AxisStateList[axisIndex - 1].IsBusy = returnValue.IsBusy;
+                        AxisStateList[axisIndex - 1].ErrorCode = returnValue.Error;
+                        AxisStateList[axisIndex - 1].CurAbsPos = (double)returnValue.AbsPosition / (double)AxisStateList[axisIndex - 1].GainFactor;
+                    }
+                    CommandGetMcsuSta.SetSyncFlag();
+                    break;
+                case (byte)Enumcmd.GetMemLength:
+                    CommandGetMemLen.ByteArrToPackage(data);
+                    CommandGetMemLen.SetSyncFlag();
+                    break;
+                case (byte)Enumcmd.ReadMem:
+                    CommandReadMem.ByteArrToPackage(data);
+                    CommandReadMem.SetSyncFlag();
+                    break;
+                case (byte)Enumcmd.ReadDin:
+                    CommandReadDin.ByteArrToPackage(data);  //解析包
+                    CommandReadDin.SetSyncFlag();   //通知读取完毕
+                    Console.WriteLine("---------ReadInOver-----------");
+                    break;
+                case (byte)Enumcmd.ReadDout:
+                    CommandReadDout.ByteArrToPackage(data);
+                    CommandReadDout.SetSyncFlag();
+                    Console.WriteLine("---------ReadOutSetOver-----------");
+                    break;
+            }
+
+        }
+
+        private void StopParsePackage()
+        {
+            ParsePackageEvent.Set();
+            if (ctsParsePackage != null)
+                ctsParsePackage.Cancel();
+        }
+
+        private uint[] Byte2Uint32(byte[] data,int offset,int length)
+        {
+            List<UInt32> result = new List<uint>();
+            int len = (length-offset) / 4;
+
+            if ((length - offset) % 4 != 0)
+            {
+                len = len + 1;
+            }
+            for (int i = 0; i < len; i++)
+            {
+                UInt32 ret = 0;
+                for (int j = 0; j < 4; j++)
+                {
+                    int index = 4 * i + j+ offset;
+                    if (index < data.Length)
+                        ret += (UInt32)(data[index] << (j * 8));
+                }
+                result.Add(ret);
+            }
+            return result.ToArray();
+        }
         #endregion
 
 

@@ -2,6 +2,7 @@
 using JPT_TosaTest.Config.SoftwareManager;
 using JPT_TosaTest.IOCards;
 using JPT_TosaTest.MotionCards;
+using JPT_TosaTest.MotionCards.IrixiCommand;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,9 +39,9 @@ namespace JPT_TosaTest.WorkFlow
             //motion.MoveRel(4, 0, 5000, 1000, EnumTriggerType.ADC, 100);
             //motion.ClearMem();
 
-            motion.GetMemLength(out UInt32 Len);
-            motion.ReadMem(0, Len, out List<Int16> RawData);
-            motion.GetCurrentPos(4, out double pos);
+            //motion.GetMemLength(out UInt32 Len);
+            //motion.ReadMem(0, Len, out List<Int16> RawData);
+            //motion.GetCurrentPos(4, out double pos);
             /*io.WriteIoOutBit(1, false);
             io.WriteIoOutBit(2, false);
             io.WriteIoOutBit(4, false);
@@ -50,12 +51,16 @@ namespace JPT_TosaTest.WorkFlow
             io.WriteIoOutBit(2, true);
             io.WriteIoOutBit(4, true);
             io.WriteIoOutBit(3, true);*/
-            io.ReadIoInWord(0, out int inValue);
-            io.WriteIoOutBit(0, false);
-            io.WriteIoOutBit(1, false);
-            io.ReadIoOutWord(0, out int value);
+            //io.ReadIoInWord(0, out int inValue);
+            //io.WriteIoOutBit(0, false);
+            //io.WriteIoOutBit(1, false);
+            //io.ReadIoInWord(0, out int value);
+            
+            bool bRet=io.ReadIoOutWord(0, out int value1);
+            io.ReadIoInWord(0, out value1);
+            if(!bRet)
+                Console.WriteLine("----------------------Failed------------------------");
 
-           
             return false;
         }
         public WorkTemplate(WorkFlowConfig cfg) : base(cfg)

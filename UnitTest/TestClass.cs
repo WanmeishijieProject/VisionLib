@@ -26,5 +26,8 @@ namespace UnitTest
             Console.WriteLine($"Name:{Name}, Version:{Version}");
         }
 
+        [Test]
+ 
+
     }
 }

@@ -17,16 +17,22 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="700"/>
-            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <halcon:HWindowControlWPF Name="Cam1" Grid.Row="0" Margin="1"/>
-        <halcon:HWindowControlWPF Name="Cam2" Grid.Row="1" Margin="1" SizeChanged="Cam2_SizeChanged"/>
-        <GridSplitter Width="5" Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" VerticalAlignment="Stretch"/>
+        <Grid Grid.Column="0" Grid.RowSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <halcon:HWindowControlWPF Name="Cam1" Grid.Row="0" Margin="1"/>
+            <halcon:HWindowControlWPF Name="Cam2" Grid.Row="1" Margin="1" SizeChanged="Cam2_SizeChanged"/>
+        </Grid>
+        
+       
 
-        <DataGrid Grid.Column="2" Background="Transparent" CanUserAddRows="False" IsReadOnly="True" ItemsSource="{Binding ResultCollection}"/>
-        <Grid Grid.Row="2" Grid.Column="2" >
+        <DataGrid Grid.Column="1" Background="Transparent" CanUserAddRows="False" IsReadOnly="True" ItemsSource="{Binding ResultCollection}"/>
+        <Grid Grid.Row="2" Grid.Column="1" >
             <DataGrid Name="DatagridPos" CanUserAddRows="False" ItemsSource="{Binding TestItemCollection}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Hidden" Cursor="Arrow" Background="Transparent"/>
             <materialDesign:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionPopupBox}"
                                      PlacementMode="LeftAndAlignMiddles"

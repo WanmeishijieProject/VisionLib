@@ -133,19 +133,21 @@ namespace JPT_TosaTest.ViewModel
                 {
                     while (!cts.IsCancellationRequested)
                     {
-                        Thread.Sleep(30);
+                        Thread.Sleep(200);
                         int i = 0;
 
                         //更新状态
-                        foreach (var card in IOCardMgr.Instance.IOCardDic)
+                        foreach (var it in IOCardMgr.Instance.IOCardDic)
                         {
 #if TEST_IO
                             int dataInput = fakedata[i];
                             int dataOutput = fakedata[i + 1];
 #else
-                            card.Value.ReadIoInWord(0,out int dataInput);
-                            card.Value.ReadIoOutWord(0,out int dataOutput);
-#endif
+                            bool bRet= it.Value.ReadIoInWord(0,out int dataInput);
+                            bRet &= it.Value.ReadIoOutWord(0,out int dataOutput);
+                            if(!bRet)
+                                Console.WriteLine("--------------------------Read failed--------------------------");
+#endif  
                             if (dataInput != OlddataArrInput[i])
                             {
                                 OlddataArrInput[i] = dataInput;
@@ -153,12 +155,6 @@ namespace JPT_TosaTest.ViewModel
                                 {
                                     IOCollectionListInput[i][j].IsChecked = ((dataInput >> j) & 0x01) == 1 ? true : false;
                                 }
-                                if ((dataInput & 0x01) == 1)
-                                    Console.WriteLine("急停按钮被按下");
-                                if (((dataInput >> 1) & 0x01) == 1)
-                                    Console.WriteLine("复位按钮被按下");
-                                if (((dataInput >> 2) & 0x01) == 1)
-                                    Console.WriteLine("启动按钮被按下");
                             }
                             if (dataOutput != OlddataArrOutput[i])
                             {

@@ -14,7 +14,11 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
             writer.Write((byte)Enumcmd.GetSysSta);
             writer.Write(AxisNo);
         }
+        public override ZigBeePackage ByteArrToPackage(byte[] RawData)
+        {
 
+            return base.ByteArrToPackage(RawData);
+        }
         public byte AxisNo { get; set; }
 
     }
