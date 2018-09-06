@@ -67,6 +67,7 @@ namespace Package
             UInt32[] data = Byte2Uint32(Buffer, Offset, Length);
             return Calculate(data, data.Length);
         }
+     
         /// <summary>
         /// Computes the 32-bit CRC of 32-bit data buffer using combination of the previous CRC value and the new one.
         /// </summary>
@@ -133,5 +134,6 @@ namespace Package
             }
             return result.ToArray();
         }
+
     }
 }

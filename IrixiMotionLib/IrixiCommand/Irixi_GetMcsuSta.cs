@@ -22,9 +22,9 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
 
             byte axisIndex = RawData[7];    //AxisNo
             byte AxisState = RawData[8];  //AxisState
-            Int32 AbsPos = (Int32)((RawData[RealLen - 8]) + (RawData[RealLen - 7] << 8) + (RawData[RealLen - 6] << 16) + (RawData[RealLen - 5] << 24));
-            Int16 Acc = (Int16)(RawData[RealLen - 4] + (RawData[RealLen - 3] << 8));
-            byte Error = RawData[RealLen - 2];
+            Int32 AbsPos = (Int32)((RawData[RealLen - 11]) + (RawData[RealLen - 10] << 8) + (RawData[RealLen - 9] << 16) + (RawData[RealLen - 8] << 24));
+            Int16 Acc = (Int16)(RawData[RealLen - 7] + (RawData[RealLen - 6] << 8));
+            byte Error = RawData[RealLen - 5];
 
             this.ReturnObject = new MCSUS_STATE()
             {

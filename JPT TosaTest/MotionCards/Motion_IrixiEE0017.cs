@@ -38,6 +38,7 @@ namespace JPT_TosaTest.MotionCards
             _controller = IrixiEE0017.CreateInstance(motionCfg.PortName);
             if (_controller != null)
             {
+                _controller.OnAxisPositionChanged += OnAxisPositionChanged;
                 if (motionCfg.NeedInit)
                 {
                     return _controller.Init(Int32.Parse(comport.ToString().ToLower().Replace("com", "")));
@@ -241,6 +242,11 @@ namespace JPT_TosaTest.MotionCards
         public bool IsAxisInRange(int AxisNo)
         {
             return AxisNo >= MIN_AXIS && AxisNo <= MAX_AXIS;
+        }
+
+        private void OnAxisPositionChanged(object sender, Tuple<byte, AxisArgs> e)
+        {
+            Console.WriteLine(e.Item2.CurAbsPos);
         }
     }
 }

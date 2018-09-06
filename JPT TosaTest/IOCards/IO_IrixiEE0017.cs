@@ -13,7 +13,7 @@ namespace JPT_TosaTest.IOCards
         private IrixiEE0017 _controller = null;
 
         public IOCardCfg ioCfg { get; set; }
-        private UInt16 OutputValue = 0;
+        private UInt16? OutputValue = 0;
         public bool Deinit()
         {
             if (comport != null)
@@ -46,9 +46,9 @@ namespace JPT_TosaTest.IOCards
             }
         }
 
-        private void _controller_OnOutputStateChanged(ushort OldValue, ushort NewValue)
+        private void _controller_OnOutputStateChanged( object sender,UInt16? e)
         {
-            OutputValue= NewValue;
+             OutputValue= e;
         }
 
         //Input
@@ -69,18 +69,30 @@ namespace JPT_TosaTest.IOCards
         public  bool ReadIoOutBit(int Index, out bool value)
         {
             value = false;
-            return _controller.ReadIoOutBit(Index+1, out value);
+            if (OutputValue.HasValue)
+            {
+                value = ((OutputValue >> Index) & 0x01) == 1;
+                return true;
+            }
+            return false ;
+            
         }
 
         public  bool ReadIoOutWord(int StartIndex, out int value)
         {
             value = 0;
-            return _controller.ReadIoOutWord(StartIndex+1, out value);
+            if (OutputValue.HasValue)
+            {
+                value = (int)OutputValue;
+                return true;
+            }
+            return false;
         }
 
         public  bool WriteIoOutBit(int Index, bool value)
         {
-            return _controller.WriteIoOutBit(Index+1, value);
+            
+            return  _controller.WriteIoOutBit(Index + 1, value); ;
         }
 
         public  bool WriteIoOutWord(int StartIndex, ushort value)

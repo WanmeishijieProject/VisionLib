@@ -45,6 +45,10 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="DevExpress.Printing.v17.1.Core, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.Xpf.Charts.v17.1, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.Xpf.Charts.v17.1.dll</HintPath>
+    </Reference>
     <Reference Include="DevExpress.Xpf.Core.v17.1, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
     <Reference Include="DevExpress.Xpf.PropertyGrid.v17.1, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
     <Reference Include="DevExpress.Xpf.Ribbon.v17.1, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
@@ -72,6 +76,10 @@
     </Reference>
     <Reference Include="MaterialDesignThemes.Wpf">
       <HintPath>ExDll\MaterialDesignThemes.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="MathNet.Numerics, Version=4.4.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\MathNet.Numerics.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
@@ -120,10 +128,20 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Classes\AlimentClass\AlimentArgs\BlindSearchArgs.cs" />
+    <Compile Include="Classes\AlimentClass\AlimentArgs\CenterAligmentArgs.cs" />
+    <Compile Include="Classes\AlimentClass\AlimentArgs\IAligmentArgs.cs" />
+    <Compile Include="Classes\AlimentClass\ChartTypeSelector.cs" />
+    <Compile Include="Classes\AlimentClass\ScanCurve\IScanCurve.cs" />
+    <Compile Include="Classes\AlimentClass\ScanCurve\ScanCurve2D.cs" />
+    <Compile Include="Classes\AlimentClass\ScanCurve\ScanCurve3D.cs" />
+    <Compile Include="Classes\AlimentClass\ScanCurve\ScanCurveBase.cs" />
+    <Compile Include="Classes\AlimentClass\ScanCurve\ScanCurveGroup.cs" />
     <Compile Include="Classes\NotifyPropertyChangedExtension.cs" />
     <Compile Include="Classes\FileHelper.cs" />
     <Compile Include="Classes\ListBoxBehavior.cs" />
     <Compile Include="Classes\LogExcel.cs" />
+    <Compile Include="Classes\ObservableCollectionThreadSafe.cs" />
     <Compile Include="Classes\PasswordBoxBehavior.cs" />
     <Compile Include="Classes\PSSWraper.cs" />
     <Compile Include="Classes\UniteHelper.cs" />
@@ -186,6 +204,12 @@
     <Compile Include="MotionCards\MotionMgr.cs" />
     <Compile Include="MotionCards\Motion_IrixiEE0017.cs" />
     <Compile Include="Rules\NotEmptyValidationRule.cs" />
+    <Compile Include="UserCtrl\UC_Aligment.xaml.cs">
+      <DependentUpon>UC_Aligment.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserCtrl\UC_AligmentView.xaml.cs">
+      <DependentUpon>UC_AligmentView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserCtrl\UC_AxisPos.xaml.cs">
       <DependentUpon>UC_AxisPos.xaml</DependentUpon>
     </Compile>
@@ -231,6 +255,7 @@
     <Compile Include="UserCtrl\Window_TeachBox.xaml.cs">
       <DependentUpon>Window_TeachBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModel\AligmentViewModel.cs" />
     <Compile Include="ViewModel\CamDebugViewModel.cs" />
     <Compile Include="ViewModel\LogInViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
@@ -279,6 +304,14 @@
     <Page Include="Skins\MainSkin.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserCtrl\UC_Aligment.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserCtrl\UC_AligmentView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserCtrl\UC_AxisPos.xaml">
       <SubType>Designer</SubType>
@@ -455,6 +488,7 @@
       <Name>PackageParse</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

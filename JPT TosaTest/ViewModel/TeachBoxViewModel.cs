@@ -1,5 +1,6 @@
 ﻿using DevExpress.Mvvm;
 using GalaSoft.MvvmLight.Command;
+using JPT_TosaTest.MotionCards;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,7 @@ namespace JPT_TosaTest.ViewModel
                 {
                     Console.WriteLine("Left");
                     //Thread.Sleep(1000);
+                    MotionMgr.Instance.MoveRel(4, 0, 10000, -10);
                 });
             }
         }
@@ -31,6 +33,7 @@ namespace JPT_TosaTest.ViewModel
                 {
                     Console.WriteLine("Right");
                     //Thread.Sleep(1000);
+                    MotionMgr.Instance.MoveRel(4, 0, 10000, 10);
                 });
             }
         }
@@ -41,6 +44,7 @@ namespace JPT_TosaTest.ViewModel
                 return new RelayCommand(() =>
                 {
                     Console.WriteLine("Up");
+                    MotionMgr.Instance.Home(4, 0, 0, 0, 0);
                     //Thread.Sleep(1000);
                 });
             }

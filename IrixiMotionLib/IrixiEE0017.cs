@@ -14,15 +14,14 @@ namespace JPT_TosaTest.MotionCards
     {
         private int AXIS_NUM = 12;
         private List<AxisArgs> AxisStateList = new List<AxisArgs>();
-        private static object ComportLock = new object();   //是有问题的
+        private static object ComportLock = new object();  
         SerialPort Sp = null;
         private Queue<byte> FrameRecvByteQueue = new Queue<byte>();
         private List<short> ADCRawDataList = new List<short>();
         private static Dictionary<string, IrixiEE0017> InstanceDic = new Dictionary<string, IrixiEE0017>();
-        public delegate void FrameDataRecieved(byte[] data);
-        public delegate void OutputStateChanged(UInt16 OldValue, UInt16 NewValue);
-        public event FrameDataRecieved OnFrameDataRecieved;
-        public event OutputStateChanged OnOutputStateChanged;
+
+        public EventHandler<UInt16?>  OnOutputStateChanged;
+        public EventHandler<Tuple<byte,AxisArgs>> OnAxisPositionChanged;
 
 
         private Irixi_Home CommandHome = new Irixi_Home();
@@ -50,6 +49,11 @@ namespace JPT_TosaTest.MotionCards
         private object PackageQueueLock = new object();
         private CRC32 Crc32Instance = new CRC32();
         private UInt16 PACKAGE_HEADER = 0x7E;
+
+
+        //查询轴状态线程
+        Task TaskAxisStateCheck = null;
+
 
 
         private IrixiEE0017()
@@ -260,6 +264,7 @@ namespace JPT_TosaTest.MotionCards
                 {
                     return false;
                 }
+
                 return MoveRel(AxisNo, Acc, Speed, RelPos);
             }
             catch (Exception ex)
@@ -346,6 +351,7 @@ namespace JPT_TosaTest.MotionCards
                     CommandMove.SpeedPercent = speedPer;
                     byte[] cmd = CommandMove.ToBytes();
                     this.ExcuteCmd(cmd);
+                    CheckAxisState(Enumcmd.Move, AxisNo - 1);
                     return true;
                 }
                 catch (Exception ex)
@@ -384,6 +390,7 @@ namespace JPT_TosaTest.MotionCards
                     CommandMoveTrigger.TriggerInterval = Interval;
                     byte[] cmd = CommandMoveTrigger.ToBytes();
                     this.ExcuteCmd(cmd);
+                    CheckAxisState(Enumcmd.Move, AxisNo - 1);
                     return true;
                 }
                 catch (Exception ex)
@@ -481,6 +488,12 @@ namespace JPT_TosaTest.MotionCards
                     CommandSetDout.GPIOState = value ? (byte)1 : (byte)0;
                     byte[] cmd = CommandSetDout.ToBytes();
                     this.ExcuteCmd(cmd);
+                    UInt16? data = null;
+                    if (ReadIoOutWord(Index, out int outputValue))
+                    {
+                        data = (UInt16)outputValue;
+                    }
+                    OnOutputStateChanged?.Invoke(this, data);
                     return true;
                 }
                 catch
@@ -498,14 +511,9 @@ namespace JPT_TosaTest.MotionCards
                 {
                     lock (ComportLock)
                     {
-                        CommandSetDout.GPIOChannel = (byte)StartIndex;
-                        CommandSetDout.GPIOState = (byte)((value >> (i - StartIndex)) & 0x01);
-                        lock (ComportLock)
-                        {
-                            CommandSetDout.FrameLength = 0x06;
-                            byte[] cmd = CommandSetDout.ToBytes();
-                            this.ExcuteCmd(cmd);
-                        }
+                        byte GPIOChannel = (byte)StartIndex;
+                        byte GPIOState = (byte)((value >> (i - StartIndex)) & 0x01);
+                        WriteIoOutBit(GPIOChannel, GPIOState!=0);
                     }
                 }
                 return true;
@@ -715,9 +723,12 @@ namespace JPT_TosaTest.MotionCards
             int Len = Sp.BytesToRead;
             for (int i = 0; i < Len; i++)
             {
+                byte bt = (byte)Sp.ReadByte();
                 lock (PackageQueueLock)
                 {
-                    FrameRecvByteQueue.Enqueue((byte)Sp.ReadByte());
+                    FrameRecvByteQueue.Enqueue(bt);
+                    //if (bt == PACKAGE_HEADER)
+                    //    ParsePackageEvent.Set();
                 }
             }
         }
@@ -740,61 +751,7 @@ namespace JPT_TosaTest.MotionCards
             Sp.Write(Cmd, 0, Cmd.Length);
 
         }
-        //解析收到的字节
-        //private void StartParsePackage()
-        //{
-
-        //    if (TaskParsePackage == null || TaskParsePackage.IsCanceled || TaskParsePackage.IsCompleted)
-        //    {
-        //        ctsParsePackage = new CancellationTokenSource();
-        //        byte[] TempDataList = null;
-        //        List<byte> tempList = new List<byte>();
-        //        TaskParsePackage = new Task(() =>
-        //        {
-        //            while (!ctsParsePackage.IsCancellationRequested)
-        //            {
-        //                ParsePackageEvent.WaitOne();
-        //                //Thread.Sleep(50);
-        //                while (true)  //寻找包头  7E + L + H //有包头与长度
-        //                {
-        //                    if (FrameRecvByteQueue.Peek() == 0x7E)
-        //                    {
-        //                        lock (PackageQueueLock)
-        //                        {
-        //                            TempDataList = FrameRecvByteQueue.ToArray();    //Queue是线程不安全的
-        //                        }
-        //                        byte bt1 = TempDataList.ToArray()[1];
-        //                        byte bt2 = TempDataList.ToArray()[2];
-        //                        int Framelength = bt1 + (bt2 << 8);
-        //                        if (FrameRecvByteQueue.Count < Framelength + 4)   //data + SUM
-        //                        {
-        //                            break;  //没有接收完继续接收，否则就解析数据
-        //                        }
-        //                        byte[] ByteRecvShort = new byte[Framelength + 4];
-        //                        for (int i = 0; i < Framelength + 4; i++) //全部取出一帧
-        //                        {
-        //                            ByteRecvShort[i] = FrameRecvByteQueue.Dequeue();
-        //                        }
-
-        //                        byte Sum = ByteRecvShort[ByteRecvShort.Length - 1];
-        //                        int CalcSum = CheckSum(ByteRecvShort, 0, ByteRecvShort.Length - 1);
-        //                        if (Sum == CalcSum) //和校验成功
-        //                        {
-        //                            //OnFrameDataRecieved?.Invoke(ByteRecvShort); //将包扔出去
-        //                            ProcessPackage(ByteRecvShort);
-        //                        }
-        //                    }
-        //                    else
-        //                    {
-        //                        FrameRecvByteQueue.Dequeue();   //不是0x7E就丢掉
-        //                    }
-        //                }
-        //            }
-
-        //        }, ctsParsePackage.Token);
-        //        TaskParsePackage.Start();
-        //    }
-        //}
+     
         private void StartParsePackage()
         {
             long TickStart = 0;
@@ -809,7 +766,8 @@ namespace JPT_TosaTest.MotionCards
                     int ExpectLength = 0;
                     while (!ctsParsePackage.IsCancellationRequested)
                     {
-                        Thread.Sleep(10);
+                        Thread.Sleep(1);
+                        //ParsePackageEvent.WaitOne();    用事件阻塞小行程延迟比较厉害
                         if (FrameRecvByteQueue.Count > 0)
                         {
                             byte data = 0x00;
@@ -840,9 +798,8 @@ namespace JPT_TosaTest.MotionCards
                                     if (TempList.Count == ExpectLength + 7)
                                     {
                                         byte[] dataList = TempList.ToArray();
-                                        UInt32[] uintList = Byte2Uint32(dataList, 0, dataList.Length - 4);
                                         UInt32 Crc32 = (UInt32)(dataList[dataList.Length - 4] + (dataList[dataList.Length - 3] << 8) + (dataList[dataList.Length - 2] << 16) + (dataList[dataList.Length - 1] << 24));
-                                        UInt32 CalcCrc32 = Crc32Instance.Calculate(uintList, uintList.Length);
+                                        UInt32 CalcCrc32 = Crc32Instance.Calculate(dataList, 0, dataList.Length-4);
                                         if (Crc32 == CalcCrc32) //校验成功
                                         {
                                             ProcessPackage(dataList);
@@ -890,6 +847,7 @@ namespace JPT_TosaTest.MotionCards
                 case (byte)Enumcmd.ReadMem:
                     CommandReadMem.ByteArrToPackage(data);
                     CommandReadMem.SetSyncFlag();
+
                     break;
                 case (byte)Enumcmd.ReadDin:
                     CommandReadDin.ByteArrToPackage(data);  //解析包
@@ -899,6 +857,7 @@ namespace JPT_TosaTest.MotionCards
                 case (byte)Enumcmd.ReadDout:
                     CommandReadDout.ByteArrToPackage(data);
                     CommandReadDout.SetSyncFlag();
+                    
                     Console.WriteLine("---------ReadOutSetOver-----------");
                     break;
             }
@@ -912,28 +871,48 @@ namespace JPT_TosaTest.MotionCards
                 ctsParsePackage.Cancel();
         }
 
-        private uint[] Byte2Uint32(byte[] data,int offset,int length)
-        {
-            List<UInt32> result = new List<uint>();
-            int len = (length-offset) / 4;
 
-            if ((length - offset) % 4 != 0)
+        //触发轴状态事件
+        private void CheckAxisState(Enumcmd Command,int Index)
+        {
+            AxisStateList[Index].ReqStartTime = DateTime.Now.Ticks;
+            if (TaskAxisStateCheck == null || TaskAxisStateCheck.IsCanceled || TaskAxisStateCheck.IsCompleted)
             {
-                len = len + 1;
+                AxisStateList[Index].IsInRequest = true;
+                TaskAxisStateCheck=new Task(()=> {              
+                    while (true)
+                    {
+                        if (this.GetMcsuState(Index + 1, out AxisArgs state))   //更新状态
+                        {
+                            OnAxisPositionChanged?.Invoke(this, new Tuple<byte, AxisArgs>((byte)(Index + 1), state));
+                        }
+                        Thread.Sleep(200);
+                        if (TimeSpan.FromTicks(DateTime.Now.Ticks - AxisStateList[Index].ReqStartTime).TotalSeconds > 100)
+                        {
+                            break; ;
+                        }
+
+                        if (Command == Enumcmd.Home)
+                        {
+                            if (!AxisStateList[Index].IsBusy && AxisStateList[Index].IsHomed)
+                                break;
+                        }
+                        else if (Command == Enumcmd.Move || Command == Enumcmd.MoveTrigAdc || Command == Enumcmd.MoveTrigOut)
+                        {
+                            if (!AxisStateList[Index].IsBusy)
+                                break;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    AxisStateList[Index].IsInRequest = false;
+                });
+                TaskAxisStateCheck.Start();
             }
-            for (int i = 0; i < len; i++)
-            {
-                UInt32 ret = 0;
-                for (int j = 0; j < 4; j++)
-                {
-                    int index = 4 * i + j+ offset;
-                    if (index < data.Length)
-                        ret += (UInt32)(data[index] << (j * 8));
-                }
-                result.Add(ret);
-            }
-            return result.ToArray();
         }
+       
         #endregion
 
 

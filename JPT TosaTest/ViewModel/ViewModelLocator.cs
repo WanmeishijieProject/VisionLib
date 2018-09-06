@@ -26,6 +26,7 @@ namespace JPT_TosaTest.ViewModel
             SimpleIoc.Default.Register<CamDebugViewModel>();
             SimpleIoc.Default.Register<TeachBoxViewModel>();
             SimpleIoc.Default.Register<MonitorViewModel>();
+            SimpleIoc.Default.Register<AligmentViewModel>();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
@@ -72,6 +73,13 @@ namespace JPT_TosaTest.ViewModel
             get
             {
                 return ServiceLocator.Current.GetInstance<MonitorViewModel>();
+            }
+        }
+        public AligmentViewModel AligmentVM
+        {
+            get
+            {
+                return ServiceLocator.Current.GetInstance<AligmentViewModel>();
             }
         }
 

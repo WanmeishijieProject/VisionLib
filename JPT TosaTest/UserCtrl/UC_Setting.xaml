@@ -23,13 +23,13 @@
                 </materialDesign:TransitionerSlide.OpeningEffects>
                 <local:UC_Para/>
             </materialDesign:TransitionerSlide>
-            <!--<materialDesign:TransitionerSlide>
+            <materialDesign:TransitionerSlide>
                 <materialDesign:TransitionerSlide.OpeningEffects>
                     <materialDesign:TransitionEffect Kind="SlideInFromLeft" Duration="0:0:0.1" />
                     <materialDesign:TransitionEffect Kind="SlideInFromTop" Duration="0:0:0.2" />
                 </materialDesign:TransitionerSlide.OpeningEffects>
-                <local:UC_SystemSetting/>
-            </materialDesign:TransitionerSlide>-->
+                <local:UC_AligmentView/>
+            </materialDesign:TransitionerSlide>
         </materialDesign:Transitioner>
     </Grid>
 </UserControl>

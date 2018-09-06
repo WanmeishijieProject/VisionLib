@@ -4,6 +4,7 @@ using JPT_TosaTest.Config;
 using JPT_TosaTest.Config.SoftwareManager;
 using JPT_TosaTest.IOCards;
 using JPT_TosaTest.Model;
+using JPT_TosaTest.MotionCards;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -30,6 +31,8 @@ namespace JPT_TosaTest.ViewModel
         private int CurrentIoCardIndex_Input = 0;
         private int CurrentIoCardIndex_Output=0;
 
+
+      
         #region Property
 
         public ObservableCollection<IOModel> CurrentIoCardCollectionInput
@@ -55,10 +58,12 @@ namespace JPT_TosaTest.ViewModel
                 }
             }
         }
+
+        public ObservableCollection<AxisArgs> AxisStateCollection { get; set; }
+
         #endregion
         public MonitorViewModel()
         {
- 
             //界面显示
             IOCollectionListInput = new List<ObservableCollection<IOModel>>();
             IOCollectionListOutput = new List<ObservableCollection<IOModel>>();
@@ -133,7 +138,7 @@ namespace JPT_TosaTest.ViewModel
                 {
                     while (!cts.IsCancellationRequested)
                     {
-                        Thread.Sleep(200);
+                        Thread.Sleep(300);
                         int i = 0;
 
                         //更新状态
@@ -143,9 +148,14 @@ namespace JPT_TosaTest.ViewModel
                             int dataInput = fakedata[i];
                             int dataOutput = fakedata[i + 1];
 #else
-                            bool bRet= it.Value.ReadIoInWord(0,out int dataInput);
+                            bool bRet = true;
+                            //int dataInput = fakedata[i];
+                            bRet &= it.Value.ReadIoInWord(0,out int dataInput);
                             bRet &= it.Value.ReadIoOutWord(0,out int dataOutput);
-                            if(!bRet)
+                            //MotionMgr.Instance.FindMotionCardByAxisIndex(4).GetCurrentPos(4,out double pos);
+                            //Console.WriteLine(pos);
+                            //int dataOutput = fakedata[i + 1];
+                            if (!bRet)
                                 Console.WriteLine("--------------------------Read failed--------------------------");
 #endif  
                             if (dataInput != OlddataArrInput[i])
@@ -224,6 +234,8 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
+
+       
         #endregion
     }
 }
