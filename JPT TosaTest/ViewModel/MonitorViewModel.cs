@@ -12,6 +12,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
+using AxisParaLib;
 
 namespace JPT_TosaTest.ViewModel
 {
@@ -31,8 +33,7 @@ namespace JPT_TosaTest.ViewModel
         private int CurrentIoCardIndex_Input = 0;
         private int CurrentIoCardIndex_Output=0;
 
-
-      
+        private bool _allHomeOk;
         #region Property
 
         public ObservableCollection<IOModel> CurrentIoCardCollectionInput
@@ -58,7 +59,6 @@ namespace JPT_TosaTest.ViewModel
                 }
             }
         }
-
         public ObservableCollection<AxisArgs> AxisStateCollection { get; set; }
 
         #endregion
@@ -67,6 +67,13 @@ namespace JPT_TosaTest.ViewModel
             //界面显示
             IOCollectionListInput = new List<ObservableCollection<IOModel>>();
             IOCollectionListOutput = new List<ObservableCollection<IOModel>>();
+            AxisStateCollection = new ObservableCollection<AxisArgs>();
+            foreach (var it in ConfigMgr.Instance.HardwareCfgMgr.AxisSettings)
+                AxisStateCollection.Add(new AxisArgs() {
+                    AxisName = it.AxisName,
+                    AxisNo = it.AxisNo
+                });
+                    
             foreach (var iocard in IOCardMgr.Instance.IOCardDic)
             {
                 ObservableCollection<IOModel> collect_input = new ObservableCollection<IOModel>();
@@ -138,10 +145,10 @@ namespace JPT_TosaTest.ViewModel
                 {
                     while (!cts.IsCancellationRequested)
                     {
-                        Thread.Sleep(300);
+                        Thread.Sleep(200);
                         int i = 0;
 
-                        //更新状态
+                        //更新IO状态
                         foreach (var it in IOCardMgr.Instance.IOCardDic)
                         {
 #if TEST_IO
@@ -149,12 +156,8 @@ namespace JPT_TosaTest.ViewModel
                             int dataOutput = fakedata[i + 1];
 #else
                             bool bRet = true;
-                            //int dataInput = fakedata[i];
                             bRet &= it.Value.ReadIoInWord(0,out int dataInput);
-                            bRet &= it.Value.ReadIoOutWord(0,out int dataOutput);
-                            //MotionMgr.Instance.FindMotionCardByAxisIndex(4).GetCurrentPos(4,out double pos);
-                            //Console.WriteLine(pos);
-                            //int dataOutput = fakedata[i + 1];
+                            bRet &= it.Value.ReadIoOutWord(0,out int dataOutput);       
                             if (!bRet)
                                 Console.WriteLine("--------------------------Read failed--------------------------");
 #endif  
@@ -176,6 +179,35 @@ namespace JPT_TosaTest.ViewModel
                             }
                             i++;
                         }
+
+
+
+                        //更新轴状态信息
+                        int AxisIndex = 0;
+                        bool bHomeOk = true;
+                        foreach (var dic in MotionMgr.Instance.MotionDic)
+                        {
+                            for (int j = 0; j < dic.Value.MAX_AXIS- dic.Value.MIN_AXIS; j++)
+                            {
+                                dic.Value.GetAxisState(AxisIndex, out AxisArgs args);
+                                if (args != null)
+                                {
+                                    AxisStateCollection[AxisIndex].CurAbsPos = args.CurAbsPos;
+                                    AxisStateCollection[AxisIndex].IsHomed = args.IsHomed;
+                                    AxisStateCollection[AxisIndex].IsBusy = args.IsBusy;
+                                    AxisStateCollection[AxisIndex].ErrorCode = args.ErrorCode;
+                                    //Application.Current.Dispatcher.Invoke(() =>
+                                    //{
+                                        
+                                    //});
+                                    //bHomeOk &= args.IsHomed;
+                                }
+                                else
+                                    bHomeOk = false;
+                                AxisIndex++;
+                            }
+                        }
+                        AllHomeOk = bHomeOk;
                     }
                 }, cts.Token);
             }
@@ -235,7 +267,19 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
-       
+        public bool AllHomeOk
+        {
+            get { return _allHomeOk; }
+            set {
+                if (_allHomeOk != value)
+                {
+                    _allHomeOk = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
         #endregion
+
+      
     }
 }

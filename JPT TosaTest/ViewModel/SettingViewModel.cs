@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace JPT_TosaTest.ViewModel
 {
-    public class SettingVM : ViewModelBase
+    public class SettingViewModel : ViewModelBase
     {
 
         #region Commmand

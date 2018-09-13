@@ -6,29 +6,21 @@
              xmlns:local="clr-namespace:JPT_TosaTest.UserCtrl"
              mc:Ignorable="d" 
              d:DesignHeight="500" d:DesignWidth="500">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="20*"/>
-            <ColumnDefinition Width="80*"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <Label Margin="1" Content="X:" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding HeaderBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-        <Label Margin="1" Grid.Row="1" Content="Y1:" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding HeaderBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-        <Label Margin="1" Grid.Row="2" Content="Y2:" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding HeaderBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-        <Label Margin="1" Grid.Row="3" Content="Z:" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding HeaderBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-        <Label Margin="1" Grid.Row="4" Content="R:" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding HeaderBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-
-        <Label Margin="1" Grid.Column="1" Content="100" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding LabelPosBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" Foreground="{Binding CtrlFontColor, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-        <Label Margin="1" Grid.Row="1" Grid.Column="1" Content="200" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding LabelPosBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" Foreground="{Binding CtrlFontColor, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-        <Label Margin="1" Grid.Row="2" Grid.Column="1" Content="200" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding LabelPosBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" Foreground="{Binding CtrlFontColor, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-        <Label Margin="1" Grid.Row="3" Grid.Column="1" Content="300" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding LabelPosBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" Foreground="{Binding CtrlFontColor, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-        <Label Margin="1" Grid.Row="4" Content="400" Grid.Column="1" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding LabelPosBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" Foreground="{Binding CtrlFontColor, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-
+    <Grid DataContext="{Binding MonitorVM, Source={StaticResource Locator}}">
+        <ItemsControl ItemsSource="{Binding AxisStateCollection}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Margin="1" Width="50" Content="{Binding AxisName}" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center"  Background="{Binding HeaderBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        <Label Margin="1" Width="200" Grid.Column="1" Content="{Binding CurAbsPos}" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center"  Background="{Binding LabelPosBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" Foreground="{Binding CtrlFontColor, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </Grid>
 </UserControl>

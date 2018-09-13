@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JPT_TosaTest.MotionCards;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,7 @@ namespace JPT_TosaTest.Config.HardwareManager
         public IOCardCfg[] IOCards { get; set; }
         public CameraCfg[] Cameras { get; set; }
         public LightCfg[] Lights { get; set; }
+        public AxisSetting[] AxisSettings { get; set; }
 
 
         //通信方式

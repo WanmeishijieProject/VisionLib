@@ -29,6 +29,8 @@
             <Convert:Bool2Image x:Key="Bool2Image"/>
             <Convert:Bool2IoColor x:Key="Bool2IoColor"/>
             <Convert:Int2String x:Key="Int2String"/>
+            <Convert:Double2Text x:Key="Double2Text"/>
+            <Convert:Uint2bool x:Key="Uint2bool"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resource/MDStyle.xaml"/>
                 <ResourceDictionary Source="Resource/StylesResourceDictionary.xaml"/>

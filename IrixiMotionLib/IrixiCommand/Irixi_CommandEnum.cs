@@ -32,6 +32,7 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
         ReadDin,
         ReadAd,
         ConfigAdcTrigger,
+        ConfigOutTrigger,
         RunBlndSerach,
     }
 

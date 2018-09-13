@@ -93,9 +93,9 @@
                     </dxc:Chart3DControl.Legends>
 
                     <dxc:Series3DStorage>
-                        <dxc:Series3D DisplayName="{Binding Scg[0].DisplayName}">
+                        <dxc:Series3D DisplayName="{Binding DataContext.Scg[0].DisplayName,RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}">
                             <dxc:SeriesPoint3DDataSourceAdapter 
-                                DataSource="{Binding Scg[0]}" 
+                                DataSource="{Binding DataContext.Scg[0],RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" 
                                 XArgumentDataMember="X" 
                                 YArgumentDataMember="Y" 
                                 ValueDataMember="Z"/>

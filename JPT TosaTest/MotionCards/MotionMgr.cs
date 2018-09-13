@@ -18,7 +18,7 @@ namespace JPT_TosaTest.MotionCards
             get { return _instance.Value; }
         }
 
-        private Dictionary<string, IMotion> MotionDic = new Dictionary<string, IMotion>();
+        public Dictionary<string, IMotion> MotionDic = new Dictionary<string, IMotion>();
 
         public void AddMotionCard(string CardName, IMotion MotionCard)
         {
@@ -105,7 +105,8 @@ namespace JPT_TosaTest.MotionCards
             var MotionCard = FindMotionCardByAxisIndex(AxisNo);
             if (MotionCard != null)
             {
-                return MotionCard.MoveAbs(AxisNo, Acc, Speed, Pos);
+                int AxisIndex = AxisNo - MotionCard.MIN_AXIS;
+                return MotionCard.MoveAbs(AxisIndex, Acc, Speed, Pos);
             }
             return false;
         }
@@ -123,7 +124,8 @@ namespace JPT_TosaTest.MotionCards
             var MotionCard = FindMotionCardByAxisIndex(AxisNo);
             if (MotionCard != null)
             {
-                return MotionCard.MoveRel(AxisNo, Acc, Speed, Distance);
+                int AxisIndex = AxisNo - MotionCard.MIN_AXIS;
+                return MotionCard.MoveRel(AxisIndex, Acc, Speed, Distance);
             }
             return false;
         }
@@ -140,9 +142,11 @@ namespace JPT_TosaTest.MotionCards
         public bool Home(int AxisNo, int Dir, double Acc, double Speed1, double Speed2)
         {
             var MotionCard = FindMotionCardByAxisIndex(AxisNo);
+
             if (MotionCard != null)
             {
-                return MotionCard.Home(AxisNo, Dir, Acc, Speed1, Speed2);
+                int AxisIndex = AxisNo - MotionCard.MIN_AXIS;
+                return MotionCard.Home(AxisIndex, Dir, Acc, Speed1, Speed2);
             }
             return false;
         }
@@ -157,7 +161,8 @@ namespace JPT_TosaTest.MotionCards
             var MotionCard = FindMotionCardByAxisIndex(AxisNo);
             if (MotionCard != null)
             {
-                return MotionCard.IsHomeStop(AxisNo);
+                int AxisIndex = AxisNo - MotionCard.MIN_AXIS;
+                return MotionCard.IsHomeStop(AxisIndex);
             }
             return false;
         }
@@ -172,7 +177,8 @@ namespace JPT_TosaTest.MotionCards
             var MotionCard = FindMotionCardByAxisIndex(AxisNo);
             if (MotionCard != null)
             {
-                return MotionCard.IsNormalStop(AxisNo);
+                int AxisIndex = AxisNo - MotionCard.MIN_AXIS;
+                return MotionCard.IsNormalStop(AxisIndex);
             }
             return false;
         }
@@ -189,7 +195,8 @@ namespace JPT_TosaTest.MotionCards
             var MotionCard = FindMotionCardByAxisIndex(AxisNo);
             if (MotionCard != null)
             {
-                return MotionCard.GetCurrentPos(AxisNo,out Pos);
+                int AxisIndex = AxisNo - MotionCard.MIN_AXIS;
+                return MotionCard.GetCurrentPos(AxisIndex,out Pos);
             }
             return false;
         }
@@ -205,7 +212,8 @@ namespace JPT_TosaTest.MotionCards
             var MotionCard = FindMotionCardByAxisIndex(AxisNo);
             if (MotionCard != null)
             {
-                return MotionCard.SetCurrentPos(AxisNo, Pos);
+                int AxisIndex = AxisNo - MotionCard.MIN_AXIS;
+                return MotionCard.SetCurrentPos(AxisIndex, Pos);
             }
             return false;
         }

@@ -91,7 +91,6 @@ namespace JPT_TosaTest.IOCards
 
         public  bool WriteIoOutBit(int Index, bool value)
         {
-            
             return  _controller.WriteIoOutBit(Index + 1, value); ;
         }
 

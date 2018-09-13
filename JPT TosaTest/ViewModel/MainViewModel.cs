@@ -8,7 +8,11 @@ using JPT_TosaTest.UserCtrl;
 using System.Threading;
 using System.Collections.Generic;
 using System.Windows;
-
+using GalaSoft.MvvmLight.Messaging;
+using System.Data;
+using AxisParaLib;
+using System.Windows.Controls;
+using JPT_TosaTest.Classes;
 
 namespace JPT_TosaTest.ViewModel
 {
@@ -22,16 +26,18 @@ namespace JPT_TosaTest.ViewModel
         private object[] stationLock = new object[10];
         private bool _showSnakeInfoBar = false;
         private string _snakeLastError = "";
-   
+        private LogExcel PrePointSetExcel;
+        private string POINT_FILE = "Config/Point.xls";
+
         public MainViewModel(IDataService dataService)
         {
-            TestItemCollection = new ObservableCollection<TestItemModel>()
-            {
-                new TestItemModel(){ ItemName="Item1", PosX=19.876, PosY=22.987, ItemColor="Green"},
-                new TestItemModel(){ ItemName="Item1", PosX=19.876, PosY=22.987, ItemColor="Green"},
-                new TestItemModel(){ ItemName="Item1", PosX=19.876, PosY=22.987, ItemColor="Green"},
-                new TestItemModel(){ ItemName="Item1", PosX=19.876, PosY=22.987, ItemColor="Green"},
-            };
+            //注册错误显示消息
+            Messenger.Default.Register<string>(this, "Error", msg => {
+                Application.Current.Dispatcher.Invoke(()=>ShowErrorinfo(msg));
+            });
+
+
+
             ResultCollection = new ObservableCollection<ResultItem>()
             {
               new ResultItem(){ Index=1, HSG_X=1, HSG_Y=2, HSG_R=3, PLC_X=5, PLC_Y=6, PLC_R=7 }
@@ -53,7 +59,38 @@ namespace JPT_TosaTest.ViewModel
             for (int i = 0; i < 10; i++)
                 stationLock[i] = new object();
 
-           
+            List<string> PrePointColumns = new List<string>();
+            DataForPreSetPosition = new DataTable();
+            DataForPreSetPosition.Columns.Add("PointName");
+            PrePointColumns.Add("PointName");
+            foreach (var it in Config.ConfigMgr.Instance.HardwareCfgMgr.AxisSettings)
+            {
+                DataForPreSetPosition.Columns.Add(it.AxisName);
+                PrePointColumns.Add(it.AxisName);
+            }
+
+            //Just For test
+            for (int i = 0; i < 5; i++)
+            {
+                DataRow dr = DataForPreSetPosition.NewRow();
+                dr[0] = i.ToString();
+                dr[1] = i * i;
+                dr[2] = 4 * i;
+                dr[3] = 5 * i * i;
+            }
+
+
+            //读取预设点文件
+            PrePointSetExcel = new LogExcel();
+            PrePointSetExcel.CreateExcelFile(PrePointColumns.ToArray(), POINT_FILE);
+            DataTable dtPoint = new DataTable();
+            PrePointSetExcel.ExcelToDataTable(ref dtPoint, "");
+            DataForPreSetPosition = dtPoint;
+        }
+
+        ~MainViewModel()
+        {
+            Messenger.Default.Unregister("Error");
         }
 
         private void Value_OnStationInfoChanged1(int Index, string StationName, string Msg)
@@ -79,6 +116,17 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
+        private void SavePrePointFile(LogExcel log,DataTable dt)
+        {
+            try
+            {
+                log.DataTableToExcel(dt, "", true, false);
+            }
+            catch (Exception ex)
+            {
+                Messenger.Default.Send<string>(ex.Message, "Error");
+            }
+        }
         #region Property
         public int ViewIndex
         {
@@ -92,12 +140,13 @@ namespace JPT_TosaTest.ViewModel
                 }
             }
         }
-        public ObservableCollection<TestItemModel> TestItemCollection
+
+        public ObservableCollection<ResultItem> ResultCollection
         {
             get;
             set;
         }
-        public ObservableCollection<ResultItem> ResultCollection
+        public DataTable DataForPreSetPosition
         {
             get;
             set;
@@ -156,6 +205,7 @@ namespace JPT_TosaTest.ViewModel
                 }
             }
         }
+
         #endregion
 
 
@@ -260,13 +310,19 @@ namespace JPT_TosaTest.ViewModel
         /// <summary>
         /// 增加Hsg示教位置
         /// </summary>
-        public RelayCommand AddPreSetCommand
+        public RelayCommand<ObservableCollection<AxisArgs>> AddPreSetCommand
         {
             get
             {
-                return new RelayCommand(() =>
+                return new RelayCommand<ObservableCollection<AxisArgs>>(AxisStatecollection =>
                 {
-                    TestItemCollection.Add(new TestItemModel() { ItemName = "Item1", PosX = 19.876, PosY = 22.987, ItemColor = "Green" });
+                    if (AxisStatecollection != null && AxisStatecollection.Count == DataForPreSetPosition.Columns.Count - 1)
+                    {
+                        DataRow dr = DataForPreSetPosition.NewRow();
+                        for (int i = 0; i < AxisStatecollection.Count; i++)
+                            dr[i + 1] = AxisStatecollection[i].CurAbsPos;
+                        DataForPreSetPosition.Rows.Add(dr);
+                    }
                 });
             }
         }
@@ -281,7 +337,10 @@ namespace JPT_TosaTest.ViewModel
                 return new RelayCommand<int>(nIndex =>
                 {
                     if (nIndex >= 0)
-                        TestItemCollection.RemoveAt(nIndex);
+                    {
+                        DataForPreSetPosition.Rows.RemoveAt(nIndex);
+                       
+                    }
                 });
             }
         }
@@ -302,6 +361,28 @@ namespace JPT_TosaTest.ViewModel
                        dlg.Show();
                    }
                });
+            }
+        }
+
+        public RelayCommand<DataGridCellInfo> MoveToPtCommand
+        {
+            get
+            {
+                return new RelayCommand<DataGridCellInfo>(drv =>
+                {
+                    if (drv != null)
+                    {
+                        DataRowView item = drv.Item as DataRowView;
+                        DataGridTextColumn dgc = drv.Column as DataGridTextColumn;
+                        int index = dgc.DisplayIndex;
+                        if (index >= 0)
+                        {
+                            var data = item[index];
+                            int AxisNo = Config.ConfigMgr.Instance.HardwareCfgMgr.AxisSettings[index - 1].AxisNo;
+                            MotionCards.MotionMgr.Instance.MoveAbs(AxisNo, 0, 10000, double.Parse(data.ToString()));
+                        }
+                    }
+                });
             }
         }
 
@@ -355,6 +436,14 @@ namespace JPT_TosaTest.ViewModel
             get
             {
                 return new RelayCommand(() => ShowSnakeInfoBar = false);
+            }
+        }
+
+        public RelayCommand SavePrePointCommand
+        {
+            get
+            {
+                return new RelayCommand(() => SavePrePointFile(PrePointSetExcel,DataForPreSetPosition));
             }
         }
         #endregion

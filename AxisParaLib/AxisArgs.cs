@@ -7,12 +7,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace JPT_TosaTest.MotionCards
+namespace AxisParaLib
 {
-    public enum EnumHomeType
-    {
-        O
-    }
+
     public class AxisArgs : INotifyPropertyChanged
     {
         private double _curAbsPos;
@@ -20,21 +17,18 @@ namespace JPT_TosaTest.MotionCards
         private bool _isBusy;
         private byte _errorCode;
         private int _gainFactor;
-        private EnumHomeType _homeType;
-
-
-
 
         public AxisArgs()
         {
+            
             CurAbsPos = 0;
             IsHomed = false;
             IsBusy = false;
             GainFactor = 1;
-            HomeType = EnumHomeType.O;
             AxisLock = new object();
             TimeOut = 10;
             IsInRequest = false;
+            MoveArgs = new AxisMoveArgs();
         }
         public double CurAbsPos
         {
@@ -94,20 +88,19 @@ namespace JPT_TosaTest.MotionCards
         }
         public bool IsInRequest { get; set; }
         public long ReqStartTime { get; set; }
-        public int TimeOut { get; set; }
-
-
-        public EnumHomeType HomeType
+        public int TimeOut { get; set; }  
+        public double LimitP { get; set; }
+        public double LimitN { get; set; }
+        public double HomeOffset { get; set; }
+        public int HomeMode
         {
-            get
-            {
-                return _homeType;
-            }
-            set
-            {
-                UpdateProperty(ref _homeType, value);
-            }
+            get;
+            set;
         }
+        public string AxisName { get; set; }
+        public int AxisNo { get; set; }
+        public AxisMoveArgs MoveArgs { get; set; }
+
         public object AxisLock { get; }
 
         public event PropertyChangedEventHandler PropertyChanged;

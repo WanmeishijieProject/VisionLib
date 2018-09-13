@@ -95,8 +95,6 @@ namespace Package
             return SyncEvent.WaitOne(TimeOut);
         }
 
-
-
         public IPackage GetPackage(byte[] RawData)
         {
             return ByteArrToPackage(RawData);

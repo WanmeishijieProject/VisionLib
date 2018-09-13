@@ -5,10 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using IrixiStepperControllerHelper;
 using JPT_TosaTest.Communication;
 using JPT_TosaTest.Config.HardwareManager;
 using JPT_TosaTest.MotionCards.IrixiCommand;
+using AxisParaLib;
+
+
 
 namespace JPT_TosaTest.MotionCards
 {
@@ -16,6 +18,7 @@ namespace JPT_TosaTest.MotionCards
     {
         Comport comport = null;
         private IrixiEE0017 _controller=null;
+        private AxisArgs[] AxisArgsList = new AxisArgs[16];
 
         public MotionCardCfg motionCfg { get; set; }
         public int MAX_AXIS { get; set; }
@@ -23,7 +26,8 @@ namespace JPT_TosaTest.MotionCards
 
         public Motion_IrixiEE0017()
         {
-           
+            for (int i = 0; i < 12; i++)
+                AxisArgsList[i] = new AxisArgs();
         }
 
         public  bool Init(MotionCardCfg motionCfg, ICommunicationPortCfg communicationPortCfg)
@@ -51,7 +55,6 @@ namespace JPT_TosaTest.MotionCards
             return false;
         }
 
-
         public  bool Deinit()
         {
             try
@@ -68,12 +71,23 @@ namespace JPT_TosaTest.MotionCards
         public  bool GetCurrentPos(int AxisNo, out double Pos)
         {
             Pos = 0;
-            if (AxisNo > MAX_AXIS || AxisNo < MIN_AXIS)
+            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
             {
                 return false;
             }
-            int axisIndex = AxisNo - MIN_AXIS + 1;
-            return _controller.GetCurrentPos(axisIndex, out Pos);
+            Pos = AxisArgsList[AxisNo].CurAbsPos;
+            return true;
+        }
+
+        public bool GetAxisState(int AxisNo, out AxisArgs state)
+        {
+            state = null;
+            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
+            {
+                return false;
+            }
+            state = AxisArgsList[AxisNo];
+            return true;
         }
 
         /// <summary>
@@ -87,35 +101,33 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public  bool Home(int AxisNo, int Dir, double Acc, double Speed1, double Speed2)    //
         {
-            if (AxisNo > MAX_AXIS || AxisNo < MIN_AXIS)
+            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
             {
                 return false;
             }
-            int axisIndex = AxisNo - MIN_AXIS + 1;
+            int axisIndex = AxisNo + 1;
             return _controller.Home(axisIndex, Dir, Acc, Speed1, Speed2);
 
         }
 
-
         public  bool IsHomeStop(int AxisNo)
         {
-
-            if (AxisNo > MAX_AXIS || AxisNo < MIN_AXIS)
+            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
             {
                 return false;
             }
-            int axisIndex = AxisNo - MIN_AXIS + 1;
+            int axisIndex = AxisNo + 1;
             return _controller.IsHomeStop(axisIndex);
 
         }
 
         public  bool IsNormalStop(int AxisNo)
         {
-            if (AxisNo > MAX_AXIS || AxisNo < MIN_AXIS)
+            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
             {
                 return false;
             }
-            int axisIndex = AxisNo - MIN_AXIS + 1;
+            int axisIndex = AxisNo + 1;
             return _controller.IsNormalStop(axisIndex);
 
         }
@@ -130,11 +142,11 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public  bool MoveAbs(int AxisNo, double Acc, double Speed, double Pos)
         {
-            if (AxisNo > MAX_AXIS || AxisNo < MIN_AXIS)
+            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
             {
                 return false;
             }
-            int axisIndex = AxisNo - MIN_AXIS + 1;
+            int axisIndex = AxisNo + 1;
             return _controller.MoveAbs(axisIndex, Acc, Speed, Pos);
 
         }
@@ -149,11 +161,11 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public bool MoveAbs(int AxisNo, double Acc, double Speed, double Pos, EnumTriggerType TriggerType, UInt16 Interval)
         {
-            if (AxisNo > MAX_AXIS || AxisNo < MIN_AXIS)
+            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
             {
                 return false;
             }
-            int axisIndex = AxisNo - MIN_AXIS + 1;
+            int axisIndex = AxisNo + 1;
             return _controller.MoveAbs(axisIndex, Acc, Speed, Pos, TriggerType, Interval);
 
         }
@@ -168,11 +180,13 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public  bool MoveRel(int AxisNo, double Acc, double Speed, double Distance)
         {
-            if (AxisNo > MAX_AXIS || AxisNo < MIN_AXIS)
+            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
             {
                 return false;
-            }
-            int axisIndex = AxisNo - MIN_AXIS + 1;
+            }  
+            int axisIndex = AxisNo + 1;
+            if (!IsPosValid(AxisNo, Distance))
+                throw new Exception($"Axis{AxisNo} can't reach the specified location");
             return _controller.MoveRel(axisIndex, Acc, Speed, Distance);
 
         }
@@ -187,11 +201,13 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public bool MoveRel(int AxisNo, double Acc, double Speed, double Distance, EnumTriggerType TriggerType, UInt16 Interval)
         {
-            if (AxisNo > MAX_AXIS || AxisNo < MIN_AXIS)
+            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
             {
                 return false;
             }
-            int axisIndex = AxisNo - MIN_AXIS + 1;
+            int axisIndex = AxisNo + 1;
+            if (!IsPosValid(AxisNo, Distance))
+                throw new Exception($"Axis{AxisNo} can't reach the specified location");
             return _controller.MoveRel(axisIndex, Acc, Speed, Distance, TriggerType, Interval);
         }
        
@@ -224,29 +240,66 @@ namespace JPT_TosaTest.MotionCards
         {
             return _controller.ReadAD(ChannelFlags);
         }
-        public  bool SetCurrentPos(int AxisNo, double Pos)
-        {
-            if (AxisNo > MAX_AXIS || AxisNo < MIN_AXIS)
-            {
-                return false;
-            }
-            int axisIndex = AxisNo - MIN_AXIS + 1;
-            return false;
-        }
+ 
 
         public  bool Stop()
         {
             return _controller.Stop();
         }
 
-        public bool IsAxisInRange(int AxisNo)
+        public bool IsAxisInRange(int AxisNo)   //给Mgr用来查询板卡使用的，别的函数都是从0开始
         {
             return AxisNo >= MIN_AXIS && AxisNo <= MAX_AXIS;
+        }
+        public bool DoBlindSearch(int XAxisNo, int YAxisNo, double Range, double Gap, double Speed, double Interval)
+        {
+            if (XAxisNo > MAX_AXIS- MIN_AXIS || XAxisNo < 0 || YAxisNo>MAX_AXIS-MIN_AXIS || YAxisNo<0)
+            {
+                return false;
+            }
+            int XaxisIndex = XAxisNo  + 1;
+            int YaxisIndex = YAxisNo  + 1;
+            return _controller.DoBindSearch(XaxisIndex, YaxisIndex, Range, Gap, Speed, Interval);
         }
 
         private void OnAxisPositionChanged(object sender, Tuple<byte, AxisArgs> e)
         {
-            Console.WriteLine(e.Item2.CurAbsPos);
+            AxisArgsList[e.Item1-1] = e.Item2;
+        }
+
+        public bool SetCurrentPos(int AxisNo, double Pos)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Reset()
+        {
+            throw new NotImplementedException();
+        }
+
+
+
+        public void SetAxisPara(int AxisNo, AxisSetting Setting)
+        {
+            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
+            {
+                return;
+            }
+            int axisIndex = AxisNo + 1;
+            _controller.SetAxisPara(AxisNo + 1, Setting.GainFactor, Setting.LimitP, Setting.LimitN, Setting.HomeOffset, (int)Setting.HomeMode, Setting.AxisName);
+        }
+
+        private bool IsPosValid(int AxisNo, double TargetPosRelative)
+        {
+            if (GetCurrentPos(AxisNo, out double CurPos))
+            {
+                if (TargetPosRelative + CurPos > AxisArgsList[AxisNo].LimitP || TargetPosRelative + CurPos < AxisArgsList[AxisNo].LimitN)
+                {
+                    return false;
+                }
+                return true;
+            }
+            return false;
         }
     }
 }

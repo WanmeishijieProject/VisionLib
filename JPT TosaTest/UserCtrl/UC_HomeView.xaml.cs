@@ -1,4 +1,5 @@
-﻿using JPT_TosaTest.Vision;
+﻿using JPT_TosaTest.ViewModel;
+using JPT_TosaTest.Vision;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,12 +43,12 @@ namespace JPT_TosaTest.UserCtrl
             if (bAttach)
             {
                 HalconVision.Instance.AttachCamWIndow(0, "Cam1", Cam1.HalconWindow);
-                HalconVision.Instance.AttachCamWIndow(1, "Cam2", Cam2.HalconWindow);
+               
             }
             else
             {
                 HalconVision.Instance.DetachCamWindow(0, "Cam1");
-                HalconVision.Instance.DetachCamWindow(1, "Cam2");
+     
             }
         }
         private async void LoadDelay(int ms)
@@ -77,10 +78,11 @@ namespace JPT_TosaTest.UserCtrl
             //            SyncEvent.Set();
             //    }
             //}
+         
 
         }
 
-        private void Cam2_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void Cam1_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (Lock != null)
             {
@@ -90,6 +92,11 @@ namespace JPT_TosaTest.UserCtrl
                         SyncEvent.Set();
                 }
             }
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            (DataContext as MainViewModel).MoveToPtCommand.Execute(DatagridPos.CurrentCell);
         }
     }
 }

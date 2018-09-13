@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Package;
+using AxisParaLib;
 
 namespace JPT_TosaTest.MotionCards
 {
@@ -40,7 +41,8 @@ namespace JPT_TosaTest.MotionCards
         private Irixi_ReadDout CommandReadDout = new Irixi_ReadDout();
         private Irixi_ReadDin CommandReadDin = new Irixi_ReadDin();
         private Irixi_RunBlindSearch CommandRunBlindSearch = new Irixi_RunBlindSearch();
-
+        private Irixi_ClearSysError CommandClearSysError = new Irixi_ClearSysError();
+        private Irixi_ClearMcsuError CommandClearMcsuError = new Irixi_ClearMcsuError();
 
         //解析包
         private AutoResetEvent ParsePackageEvent = new AutoResetEvent(false);
@@ -52,7 +54,7 @@ namespace JPT_TosaTest.MotionCards
 
 
         //查询轴状态线程
-        Task TaskAxisStateCheck = null;
+        Task[] AxisStateCheckTaskList = new Task[12];
 
 
 
@@ -181,6 +183,7 @@ namespace JPT_TosaTest.MotionCards
                 CommandHome.FrameLength = 0x05;
                 byte[] cmd = CommandHome.ToBytes();
                 this.ExcuteCmd(cmd);
+                CheckAxisState(Enumcmd.Home, AxisNo);
                 return true;
             }
             catch
@@ -351,7 +354,7 @@ namespace JPT_TosaTest.MotionCards
                     CommandMove.SpeedPercent = speedPer;
                     byte[] cmd = CommandMove.ToBytes();
                     this.ExcuteCmd(cmd);
-                    CheckAxisState(Enumcmd.Move, AxisNo - 1);
+                    CheckAxisState(Enumcmd.Move, AxisNo);
                     return true;
                 }
                 catch (Exception ex)
@@ -380,7 +383,7 @@ namespace JPT_TosaTest.MotionCards
                         return false;
                     }
                     var speedPuse = Speed * AxisStateList[AxisNo - 1].GainFactor;
-                    byte speedPer = Convert.ToByte(Math.Floor(speedPuse / 100));
+                    byte speedPer = Convert.ToByte(Math.Floor(speedPuse / 100));    //
                     int distancePuse = Convert.ToInt32(Distance * AxisStateList[AxisNo - 1].GainFactor);
                     CommandMoveTrigger.FrameLength = 0x0E;
                     CommandMoveTrigger.TriggerType = TriggerType == EnumTriggerType.ADC ? Enumcmd.MoveTrigAdc : Enumcmd.MoveTrigOut;
@@ -390,7 +393,7 @@ namespace JPT_TosaTest.MotionCards
                     CommandMoveTrigger.TriggerInterval = Interval;
                     byte[] cmd = CommandMoveTrigger.ToBytes();
                     this.ExcuteCmd(cmd);
-                    CheckAxisState(Enumcmd.Move, AxisNo - 1);
+                    CheckAxisState(Enumcmd.Move, AxisNo);
                     return true;
                 }
                 catch (Exception ex)
@@ -465,7 +468,7 @@ namespace JPT_TosaTest.MotionCards
                     {
                         this.ExcuteCmd(cmd);
                     }
-                    bool bRet = CommandReadDout.WaitFinish(3000);
+                    bool bRet = CommandReadDout.WaitFinish(1000);
                     Console.WriteLine("---------ReadOutWaitOne-----------");
                     bRet &= Int32.TryParse(CommandReadDout.ReturnObject.ToString(), out value);
                     return bRet;
@@ -483,6 +486,8 @@ namespace JPT_TosaTest.MotionCards
             {
                 try
                 {
+                    if (Index < 0 || Index > 8)
+                        return false;
                     CommandSetDout.FrameLength = 0x06;
                     CommandSetDout.GPIOChannel = (byte)Index;
                     CommandSetDout.GPIOState = value ? (byte)1 : (byte)0;
@@ -662,7 +667,7 @@ namespace JPT_TosaTest.MotionCards
             }
         }
 
-        public bool DoBindSearch(uint HAxis, uint VAxis, double Range, double Gap, double Speed, double Interval)
+        public bool DoBindSearch(int HAxis, int VAxis, double Range, double Gap, double Speed, double Interval)
         {
             lock (ComportLock)
             {
@@ -674,9 +679,11 @@ namespace JPT_TosaTest.MotionCards
                     int AxisIndex = (int)HAxis;
                     CommandRunBlindSearch.Range = (uint)(Range * AxisStateList[AxisIndex].GainFactor);
                     CommandRunBlindSearch.Gap = (uint)(Gap * AxisStateList[AxisIndex].GainFactor);
-                    CommandRunBlindSearch.SpeedPercent = (byte)((Speed * AxisStateList[AxisIndex].GainFactor) / 10000);
+                    CommandRunBlindSearch.SpeedPercent = (byte)((Speed * AxisStateList[AxisIndex].GainFactor) / 100);
                     CommandRunBlindSearch.Interval = (UInt16)(Interval * AxisStateList[AxisIndex].GainFactor);
-                    byte[] cmd = CommandStop.ToBytes();
+                    byte[] cmd = CommandRunBlindSearch.ToBytes();
+                    CheckAxisState(Enumcmd.RunBlndSerach, HAxis);
+                    CheckAxisState(Enumcmd.RunBlndSerach, VAxis);
                     this.ExcuteCmd(cmd);
                     return true;
                 }
@@ -687,6 +694,56 @@ namespace JPT_TosaTest.MotionCards
             }
         }
 
+        public bool ClearMcsuError(int AxisNo)
+        {
+            lock (ComportLock)
+            {
+                try
+                {
+                    CommandClearMcsuError.FrameLength = 0x05;
+                    CommandClearMcsuError.AxisNo = (byte)AxisNo;
+                    byte[] cmd = CommandClearMcsuError.ToBytes();
+                    this.ExcuteCmd(cmd);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    return false;
+                }
+            }
+        }
+
+        public bool ClearSysError()
+        {
+            lock (ComportLock)
+            {
+                try
+                {
+                    CommandClearSysError.FrameLength = 0x04;
+                    byte[] cmd = CommandClearSysError.ToBytes();
+                    Sp.Write(cmd, 0, cmd.Length);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    return false;
+                }
+            }
+        }
+
+        public bool SetAxisPara(int AxisNo, UInt32 GainFactor, double LimitP, double LimitN, double HomeOffset, int HomeMode,string AxisName="")
+        {
+            if (AxisNo > 12 || AxisNo < 1)
+            {
+                return false;
+            }
+            AxisStateList[AxisNo - 1].GainFactor = (int)GainFactor;
+            AxisStateList[AxisNo - 1].LimitP = LimitP;
+            AxisStateList[AxisNo - 1].LimitN = LimitN;
+            AxisStateList[AxisNo - 1].HomeMode = HomeMode;
+            AxisStateList[AxisNo - 1].HomeOffset = HomeOffset;
+            return true;
+        }
 
         #region Private
         private bool GetMcsuState(int AxisNo, out AxisArgs axisargs)
@@ -715,8 +772,6 @@ namespace JPT_TosaTest.MotionCards
                 }
             }
         }
-
-
 
         private void Comport_DataReceived1(object sender, SerialDataReceivedEventArgs e)
         {
@@ -819,6 +874,8 @@ namespace JPT_TosaTest.MotionCards
                 }, ctsParsePackage.Token);
                 TaskParsePackage.Start();
             }
+            Thread.Sleep(1000);
+            GetStateWhenFirstLoad();
         }
         //处理收到的包
         private void ProcessPackage(byte[] data)
@@ -871,48 +928,57 @@ namespace JPT_TosaTest.MotionCards
                 ctsParsePackage.Cancel();
         }
 
-
-        //触发轴状态事件
-        private void CheckAxisState(Enumcmd Command,int Index)
+        private void CheckAxisState(Enumcmd Command, int Index) //触发一次查询10秒
         {
-            AxisStateList[Index].ReqStartTime = DateTime.Now.Ticks;
-            if (TaskAxisStateCheck == null || TaskAxisStateCheck.IsCanceled || TaskAxisStateCheck.IsCompleted)
+            int IndexBase0 = Index - 1;
+            AxisStateList[IndexBase0].ReqStartTime = DateTime.Now.Ticks;
+            if (AxisStateCheckTaskList[IndexBase0] == null || AxisStateCheckTaskList[IndexBase0].IsCanceled || AxisStateCheckTaskList[IndexBase0].IsCompleted)
             {
-                AxisStateList[Index].IsInRequest = true;
-                TaskAxisStateCheck=new Task(()=> {              
+                AxisStateCheckTaskList[IndexBase0] = new Task(() =>
+                {
                     while (true)
                     {
-                        if (this.GetMcsuState(Index + 1, out AxisArgs state))   //更新状态
+                        if (this.GetMcsuState(Index, out AxisArgs state))   //更新状态
                         {
-                            OnAxisPositionChanged?.Invoke(this, new Tuple<byte, AxisArgs>((byte)(Index + 1), state));
+                            OnAxisPositionChanged?.Invoke(this, new Tuple<byte, AxisArgs>((byte)(Index), state));
+                            if (AxisStateList[IndexBase0].IsBusy && AxisStateList[IndexBase0].ErrorCode==0)
+                                AxisStateList[IndexBase0].ReqStartTime = DateTime.Now.Ticks;
                         }
-                        Thread.Sleep(200);
-                        if (TimeSpan.FromTicks(DateTime.Now.Ticks - AxisStateList[Index].ReqStartTime).TotalSeconds > 100)
+                        Thread.Sleep(50);
+                        if (TimeSpan.FromTicks(DateTime.Now.Ticks - AxisStateList[IndexBase0].ReqStartTime).TotalSeconds >1)
                         {
                             break; ;
                         }
-
-                        if (Command == Enumcmd.Home)
-                        {
-                            if (!AxisStateList[Index].IsBusy && AxisStateList[Index].IsHomed)
-                                break;
-                        }
-                        else if (Command == Enumcmd.Move || Command == Enumcmd.MoveTrigAdc || Command == Enumcmd.MoveTrigOut)
-                        {
-                            if (!AxisStateList[Index].IsBusy)
-                                break;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                    AxisStateList[Index].IsInRequest = false;
+                    }  
+                    AxisStateList[IndexBase0].IsInRequest = false;  
                 });
-                TaskAxisStateCheck.Start();
+                AxisStateCheckTaskList[IndexBase0].Start();
             }
         }
-       
+
+        private void GetStateWhenFirstLoad()
+        {
+            //第一次需要先查询一下位置
+            Task.Run(() =>
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    Thread.Sleep(1000);
+                    UInt16? realValue = null;
+                    if (ReadIoOutWord(0, out int value))
+                    {
+                        realValue = (UInt16)value;
+                    }
+                    OnOutputStateChanged?.Invoke(this, realValue);
+                    if (i == 9 || realValue.HasValue)
+                        break;
+                }
+            });
+            for (int i = 1; i <= 12; i++)
+            {
+                CheckAxisState(Enumcmd.Move, i);
+            }
+        }
         #endregion
 
 

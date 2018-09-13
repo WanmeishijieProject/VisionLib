@@ -21,7 +21,7 @@ namespace JPT_TosaTest.ViewModel
             }
 
             SimpleIoc.Default.Register<MainViewModel>();
-            SimpleIoc.Default.Register<SettingVM>();
+            SimpleIoc.Default.Register<SettingViewModel>();
             SimpleIoc.Default.Register<LogInViewModel>();
             SimpleIoc.Default.Register<CamDebugViewModel>();
             SimpleIoc.Default.Register<TeachBoxViewModel>();
@@ -40,11 +40,11 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
-        public SettingVM SettingViewModel
+        public SettingViewModel SettingVM
         {
             get
             {
-                return ServiceLocator.Current.GetInstance<SettingVM>();
+                return ServiceLocator.Current.GetInstance<SettingViewModel>();
             }
         }
         public LogInViewModel LogInVM

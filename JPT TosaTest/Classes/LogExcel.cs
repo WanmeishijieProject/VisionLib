@@ -59,16 +59,13 @@ namespace JPT_TosaTest.Classes
                 return false;
             }
         }
-        /// <summary>  
-        /// 将DataTable数据导入到excel中  
-        /// </summary>  
-        /// <param name="data">要导入的数据</param>  
-        /// <param name="isColumnWritten">DataTable的列名是否要导入</param>  
-        /// <param name="sheetName">要导入的excel的sheet的名称</param>  
-        /// <returns>导入数据行数(包含列名那一行)</returns>  
-        private Stream OpenClasspathResource(String fileName)
+    
+        private Stream OpenClasspathResource(String fileName, bool bCreate=false)
         {
-            return new FileStream(fileName, FileMode.Open, FileAccess.Read);       
+            if(!bCreate)
+                return new FileStream(fileName, FileMode.Open, FileAccess.Read);
+            else
+                return new FileStream(fileName, FileMode.Open, FileAccess.Read);
         }
 
         private void WriteToFile(IWorkbook workbook, String fileName)
@@ -85,6 +82,14 @@ namespace JPT_TosaTest.Classes
             Stream MyExcelStream = OpenClasspathResource(fileName);
             return new HSSFWorkbook(MyExcelStream);
         }
+
+        /// <summary>  
+        /// 将DataTable数据导入到excel中  
+        /// </summary>  
+        /// <param name="data">要导入的数据</param>  
+        /// <param name="isColumnWritten">DataTable的列名是否要导入</param>  
+        /// <param name="sheetName">要导入的excel的sheet的名称</param>  
+        /// <returns>导入数据行数(包含列名那一行)</returns>  
         public int DataTableToExcel(DataTable dt, string sheetName, bool isColumnWritten,bool Append=true)
         {
             try
@@ -98,14 +103,35 @@ namespace JPT_TosaTest.Classes
                 if (sheet == null)
                     return 0;
                 int nStartRow = sheet.LastRowNum + 1;
+                if (!Append)
+                {
+                    for (int i = 0; i <= sheet.LastRowNum; i++)
+                    {
+                        IRow row = sheet.GetRow(i);
+                        if(row!=null)
+                            sheet.RemoveRow(row);
+                    }
+                    nStartRow = 1;
+                }
 
+                //是否写入第一行
+                if (isColumnWritten)
+                {
+                    IRow FirstRow= sheet.CreateRow(0);
+                    int K = 0;
+                    foreach (var it in dt.Columns)
+                    {
+                        FirstRow.CreateCell(K++).SetCellValue(it.ToString());
+                    }
+                }
+
+                //不加第一行
+                
                 for (int i = 0; i < dt.Rows.Count; i++)
                 {
                     DataRow dr = dt.Rows[i];
-                    IRow row = sheet.CreateRow(nStartRow);
+                    IRow row = sheet.CreateRow(nStartRow+i);
                     for (int j = 0; j < dt.Columns.Count; j++)        //写一行的数据
-
-
                         row.CreateCell(j).SetCellValue(dr[j].ToString());
                 }
                 WriteToFile(Workbook, FileName);

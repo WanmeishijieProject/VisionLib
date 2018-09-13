@@ -47,13 +47,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AxisArgs.cs" />
+    <Compile Include="IrixiCommand\Irixi_ClearSysError.cs" />
     <Compile Include="IrixiCommand\Irixi_ClearMem.cs" />
     <Compile Include="IrixiCommand\Irixi_CommandEnum.cs" />
     <Compile Include="IrixiCommand\Irixi_ConfigAdcTrig.cs" />
     <Compile Include="IrixiCommand\Irixi_GetMcsuSta.cs" />
     <Compile Include="IrixiCommand\Irixi_GetMemLen.cs" />
     <Compile Include="IrixiCommand\Irixi_GetSysSta.cs" />
+    <Compile Include="IrixiCommand\Irixi_ClearMcsuError.cs" />
     <Compile Include="IrixiCommand\Irixi_Home.cs" />
     <Compile Include="IrixiCommand\Irixi_Move.cs" />
     <Compile Include="IrixiCommand\Irixi_MoveTrigger.cs" />
@@ -68,6 +69,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AxisParaLib\AxisParaLib.csproj">
+      <Project>{550d7643-117d-4b91-8da7-56a138558edb}</Project>
+      <Name>AxisParaLib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PackageParse\PackageParse.csproj">
       <Project>{d6e8da7f-3970-4ad8-b24b-0b918fe64c80}</Project>
       <Name>PackageParse</Name>

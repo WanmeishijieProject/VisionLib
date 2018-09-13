@@ -119,8 +119,15 @@ namespace JPT_TosaTest.Config
                                         var ports = from portCfg in portCfgs where portCfg.PortName == motionCfg.PortName select portCfg;
                                         if (ports != null && ports.Count() > 0)
                                         {
-                                            if ( motionBase.Init(motionCfg, ports.ElementAt(0)))
+                                            if (motionBase.Init(motionCfg, ports.ElementAt(0)))
+                                            {
                                                 MotionMgr.Instance.AddMotionCard(motionCfg.Name, motionBase);
+                                                for (int i = 0; i < motionBase.MAX_AXIS-motionBase.MIN_AXIS; i++)
+                                                {
+                                                    var settings = HardwareCfgMgr.AxisSettings.Where(a => a.AxisNo == i + motionBase.MIN_AXIS);
+                                                    motionBase.SetAxisPara(i, settings == null ? null : settings.First());
+                                                }
+                                            }
                                             else
                                                 errList.Add($"{motionCfg.Name} init failed");
                                         }
@@ -129,8 +136,15 @@ namespace JPT_TosaTest.Config
                                     }
                                     else  //无需选择通信端口
                                     {
-                                        if (motionBase.Init(motionCfg,null))
+                                        if (motionBase.Init(motionCfg, null))
+                                        {
                                             MotionMgr.Instance.AddMotionCard(motionCfg.Name, motionBase);
+                                            for (int i = 0; i < motionBase.MAX_AXIS - motionBase.MIN_AXIS; i++)
+                                            {
+                                                var settings = HardwareCfgMgr.AxisSettings.Where(a => a.AxisNo == i+ motionBase.MIN_AXIS);
+                                                motionBase.SetAxisPara(i, settings == null ? null : settings.First());
+                                            }
+                                        }
                                         else
                                             errList.Add($"{motionCfg.Name} init failed");
                                     }
@@ -217,8 +231,7 @@ namespace JPT_TosaTest.Config
                             {
                                 lightBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.Vision.Light." + lightCfg.Name.Substring(0, lightCfg.Name.IndexOf("[")), true, BindingFlags.CreateInstance, null, null, null, null) as LightBase;
                                 if (lightBase != null)
-                                {
-                                  
+                                {  
                                     if (lightCfg.ConnectMode.ToLower() != "none")
                                     {
                                         var p = hardWareMgrType.GetProperty($"{lightCfg.ConnectMode}s");

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageParse", "PackagePars
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyBenchTests", "AssemblyBenchTests\AssemblyBenchTests.csproj", "{97CF67D9-C262-4637-9D70-F19FDFE91121}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AxisParaLib", "AxisParaLib\AxisParaLib.csproj", "{550D7643-117D-4B91-8DA7-56A138558EDB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{97CF67D9-C262-4637-9D70-F19FDFE91121}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97CF67D9-C262-4637-9D70-F19FDFE91121}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{97CF67D9-C262-4637-9D70-F19FDFE91121}.Release|Any CPU.Build.0 = Release|Any CPU
+		{550D7643-117D-4B91-8DA7-56A138558EDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{550D7643-117D-4B91-8DA7-56A138558EDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{550D7643-117D-4B91-8DA7-56A138558EDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{550D7643-117D-4B91-8DA7-56A138558EDB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

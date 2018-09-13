@@ -137,6 +137,7 @@
     <Compile Include="Classes\AlimentClass\ScanCurve\ScanCurve3D.cs" />
     <Compile Include="Classes\AlimentClass\ScanCurve\ScanCurveBase.cs" />
     <Compile Include="Classes\AlimentClass\ScanCurve\ScanCurveGroup.cs" />
+    <Compile Include="Classes\HotKey.cs" />
     <Compile Include="Classes\NotifyPropertyChangedExtension.cs" />
     <Compile Include="Classes\FileHelper.cs" />
     <Compile Include="Classes\ListBoxBehavior.cs" />
@@ -170,6 +171,7 @@
     <Compile Include="Converter\Bool2Image.cs" />
     <Compile Include="Converter\Bool2IoColor.cs" />
     <Compile Include="Converter\Bool2Visibility.cs" />
+    <Compile Include="Converter\Double2Text.cs" />
     <Compile Include="Converter\EnumCamSnapState2SnapButtonEnable.cs" />
     <Compile Include="Converter\Int2BackgroundBrush.cs" />
     <Compile Include="Converter\Int2String.cs" />
@@ -181,6 +183,7 @@
     <Compile Include="Converter\MsgType2Image.cs" />
     <Compile Include="Converter\RoiTemplate2Visibility.cs" />
     <Compile Include="Converter\Text2CameStateImage.cs" />
+    <Compile Include="Converter\Uint2bool.cs" />
     <Compile Include="Converter\UserName2Visibility.cs" />
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Instrument\InstrumentBase.cs" />
@@ -199,7 +202,7 @@
     <Compile Include="Model\RoiItem.cs" />
     <Compile Include="Model\ModelItem.cs" />
     <Compile Include="Model\RoiModelBase.cs" />
-    <Compile Include="Model\TestItemModel.cs" />
+    <Compile Include="MotionCards\AxisSetting.cs" />
     <Compile Include="MotionCards\IMotion.cs" />
     <Compile Include="MotionCards\MotionMgr.cs" />
     <Compile Include="MotionCards\Motion_IrixiEE0017.cs" />
@@ -246,9 +249,6 @@
     <Compile Include="UserCtrl\UC_Setting.xaml.cs">
       <DependentUpon>UC_Setting.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UserCtrl\UC_TeachBox.xaml.cs">
-      <DependentUpon>UC_TeachBox.xaml</DependentUpon>
-    </Compile>
     <Compile Include="UserCtrl\Window_AddRoiModel.xaml.cs">
       <DependentUpon>Window_AddRoiModel.xaml</DependentUpon>
     </Compile>
@@ -260,7 +260,7 @@
     <Compile Include="ViewModel\LogInViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\MonitorViewModel.cs" />
-    <Compile Include="ViewModel\SettingVM.cs" />
+    <Compile Include="ViewModel\SettingViewModel.cs" />
     <Compile Include="ViewModel\TeachBoxViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Compile Include="Vision\HalconVision.cs" />
@@ -358,10 +358,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserCtrl\UC_Setting.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UserCtrl\UC_TeachBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -479,6 +475,10 @@
     <Resource Include="Images\Monitor.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AxisParaLib\AxisParaLib.csproj">
+      <Project>{550d7643-117d-4b91-8da7-56a138558edb}</Project>
+      <Name>AxisParaLib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\IrixiMotionLib\IrixiMotionLib.csproj">
       <Project>{d58caf83-e372-4051-9819-d2752aac3e41}</Project>
       <Name>IrixiMotionLib</Name>
@@ -488,7 +488,10 @@
       <Name>PackageParse</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Images\goto.png" />
+    <Resource Include="Images\save.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

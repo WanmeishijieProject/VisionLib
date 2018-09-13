@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AxisParaLib;
 
 namespace JPT_TosaTest.MotionCards
 {
@@ -90,6 +91,11 @@ namespace JPT_TosaTest.MotionCards
          int MIN_AXIS { get; set; }
 
         bool IsAxisInRange(int AxisNo);
-       
+
+        bool Reset();
+
+        void SetAxisPara(int AxisNo, AxisSetting setting);
+
+        bool GetAxisState(int AxisNo, out AxisArgs state);
     }
 }
