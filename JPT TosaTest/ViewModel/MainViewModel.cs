@@ -69,16 +69,6 @@ namespace JPT_TosaTest.ViewModel
                 PrePointColumns.Add(it.AxisName);
             }
 
-            //Just For test
-            for (int i = 0; i < 5; i++)
-            {
-                DataRow dr = DataForPreSetPosition.NewRow();
-                dr[0] = i.ToString();
-                dr[1] = i * i;
-                dr[2] = 4 * i;
-                dr[3] = 5 * i * i;
-            }
-
 
             //读取预设点文件
             PrePointSetExcel = new LogExcel();

@@ -7,8 +7,16 @@ using System.Threading.Tasks;
 
 namespace JPT_TosaTest.IOCards
 {
+    public enum EnumIOType
+    {
+        INPUT,
+        OUTPUT,
+    }
+    public delegate void IOStateChange(IIO sender, EnumIOType IOType, UInt16 OldValue, UInt16 NewValue);
     public interface IIO
     {
+        event IOStateChange OnIOStateChanged;
+
         IOCardCfg ioCfg { get; set; }
 
         /// <summary>

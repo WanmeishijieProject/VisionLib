@@ -22,7 +22,8 @@ namespace JPT_TosaTest.MotionCards
         private static Dictionary<string, IrixiEE0017> InstanceDic = new Dictionary<string, IrixiEE0017>();
 
         public EventHandler<UInt16?>  OnOutputStateChanged;
-        public EventHandler<Tuple<byte,AxisArgs>> OnAxisPositionChanged;
+        public EventHandler<UInt16?> OnInputStateChanged;
+        public EventHandler<Tuple<byte,AxisArgs>> OnAxisStateChanged;
 
 
         private Irixi_Home CommandHome = new Irixi_Home();
@@ -940,9 +941,9 @@ namespace JPT_TosaTest.MotionCards
                     {
                         if (this.GetMcsuState(Index, out AxisArgs state))   //更新状态
                         {
-                            OnAxisPositionChanged?.Invoke(this, new Tuple<byte, AxisArgs>((byte)(Index), state));
+                            OnAxisStateChanged?.Invoke(this, new Tuple<byte, AxisArgs>((byte)(Index), state));
                             if (AxisStateList[IndexBase0].IsBusy && AxisStateList[IndexBase0].ErrorCode==0)
-                                AxisStateList[IndexBase0].ReqStartTime = DateTime.Now.Ticks;
+                                AxisStateList[IndexBase0].ReqStartTime = DateTime.Now.Ticks;            
                         }
                         Thread.Sleep(50);
                         if (TimeSpan.FromTicks(DateTime.Now.Ticks - AxisStateList[IndexBase0].ReqStartTime).TotalSeconds >1)

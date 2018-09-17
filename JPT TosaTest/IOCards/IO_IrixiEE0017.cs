@@ -11,9 +11,11 @@ namespace JPT_TosaTest.IOCards
     {
         private Comport comport = null;
         private IrixiEE0017 _controller = null;
-
+        private UInt16? OutputValue=0;
         public IOCardCfg ioCfg { get; set; }
-        private UInt16? OutputValue = 0;
+
+        public event IOStateChange OnIOStateChanged;
+
         public bool Deinit()
         {
             if (comport != null)
@@ -48,7 +50,11 @@ namespace JPT_TosaTest.IOCards
 
         private void _controller_OnOutputStateChanged( object sender,UInt16? e)
         {
-             OutputValue= e;
+            if (e.HasValue)
+            {
+                OnIOStateChanged?.Invoke(this,EnumIOType.OUTPUT, (UInt16)OutputValue, (UInt16)e);
+                OutputValue = e;
+            }
         }
 
         //Input

@@ -20,9 +20,9 @@ namespace JPT_TosaTest.Classes
         IntPtr Handle;     //窗体句柄
         Window window;     //热键所在窗体
         uint Controlkey;   //热键控制键
-        uint Key;          //热键主键
+        public uint Key;          //热键主键
 
-        public delegate void OnHotkeyEventHandeler();     //热键事件委托
+        public delegate void OnHotkeyEventHandeler(Keys key);     //热键事件委托
         public event OnHotkeyEventHandeler OnHotKey = null;   //热键事件    
 
         static Hashtable KeyPair = new Hashtable();         //热键哈希表
@@ -116,7 +116,7 @@ namespace JPT_TosaTest.Classes
             if (msg == WM_HOTKEY)
             {
                 HotKey hk = (HotKey)HotKey.KeyPair[(int)wParam];
-                if (hk.OnHotKey != null) hk.OnHotKey();
+                hk.OnHotKey?.Invoke((Keys)hk.Key);
             }
             return IntPtr.Zero;
         }

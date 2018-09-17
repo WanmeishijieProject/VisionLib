@@ -195,6 +195,7 @@
     <Compile Include="Model\DataItem.cs" />
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\HardwareParaModel.cs" />
+    <Compile Include="Model\HotKeyModel.cs" />
     <Compile Include="Model\IDataService.cs" />
     <Compile Include="Model\IOModel.cs" />
     <Compile Include="Model\MessageItem.cs" />

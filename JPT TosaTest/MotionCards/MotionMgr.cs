@@ -1,11 +1,13 @@
-﻿using System;
+﻿using AxisParaLib;
+using JPT_TosaTest.IOCards;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace JPT_TosaTest.MotionCards
-{
+{ 
     public class MotionMgr
     {
         private MotionMgr()
@@ -22,18 +24,22 @@ namespace JPT_TosaTest.MotionCards
 
         public void AddMotionCard(string CardName, IMotion MotionCard)
         {
-            bool bFind = false;
-            foreach (var it in MotionDic)
+            if (!MotionDic.Keys.Contains(CardName))
             {
-                if (it.Key == CardName)
-                {
-                    bFind = true;
-                    return;
-                }
-            }
-            if (!bFind)
                 MotionDic.Add(CardName, MotionCard);
+            }
         }
+
+        private void MotionCard_OnErrorOccured(int ErrorCode, string ErrorMsg)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void MotionCard_OnAxisStateChanged(int AxisNo, AxisArgs axisState)
+        {
+            throw new NotImplementedException();
+        }
+
         public void RemoveMotionCard(string CardName)
         {
             foreach (var it in MotionDic)
@@ -201,6 +207,17 @@ namespace JPT_TosaTest.MotionCards
             return false;
         }
 
+        public bool GetAxisState(int AxisNo, out AxisArgs axisArgs)
+        {
+            axisArgs = null;
+            var MotionCard = FindMotionCardByAxisIndex(AxisNo);
+            if (MotionCard != null)
+            {
+                int AxisIndex = AxisNo - MotionCard.MIN_AXIS;
+                return MotionCard.GetAxisState(AxisIndex, out axisArgs);
+            }
+            return false;
+        }
         /// <summary>
         /// 设置当前位置
         /// </summary>

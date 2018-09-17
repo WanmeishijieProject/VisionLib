@@ -11,11 +11,7 @@
         WindowStartupLocation="CenterScreen"    
         mc:Ignorable="d"
         DataContext="{Binding TeachBoxVM, Source={StaticResource Locator}}"
-        Height="800" Width="700"
-        Closed="Window_Closed"
-        Loaded="Window_Loaded">
-    <Window.InputBindings>
-    </Window.InputBindings>
+        Height="800" Width="700">
     <Grid MouseDown="Grid_MouseDown">
         <Grid.RowDefinitions>
             <RowDefinition Height="100"/>
@@ -28,8 +24,8 @@
         </Button>
         <Grid Grid.RowSpan="2" Background="White" MouseDown="Grid_MouseDown" Margin="30,60,30,30">
             <Grid.RowDefinitions>
-                <RowDefinition Height="40*"/>
-                <RowDefinition Height="60*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -70,24 +66,21 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </Grid>
-            <Grid Grid.Row="1">
+            <Grid Grid.Row="1" VerticalAlignment="Bottom">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="40"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <CheckBox Name="Cb_Sethotkey" Content="Set hotkey" FontSize="15" VerticalContentAlignment="Center"/>
                 <CheckBox Name="Cb_Usehotkey" Content="Use hotkey" Margin="120,0" FontSize="15" VerticalContentAlignment="Center" Click="Cb_Usehotkey_Click"/>
-                <ListBox Grid.Row="1" IsEnabled="{Binding IsChecked, ElementName=Cb_Sethotkey}" ItemsSource="{Binding MonitorVM.AxisStateCollection, Source={StaticResource Locator} }">
+                <ListBox Grid.Row="1" IsEnabled="{Binding IsChecked, ElementName=Cb_Sethotkey}" ItemsSource="{Binding HotKeyCollect}" ScrollViewer.VerticalScrollBarVisibility="Visible">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Width="100" Margin="2" FontSize="12" VerticalAlignment="Center" Text="{Binding AxisName}"/>
-                                <!--<CheckBox Width="100" Margin="2" VerticalContentAlignment="Center" FontSize="15"  Content="Shift" VerticalAlignment="Center"/>
-                                <CheckBox Width="100" Margin="2" VerticalContentAlignment="Center" FontSize="15"  Content="Ctrl" VerticalAlignment="Center"/>
-                                <CheckBox Width="100" Margin="2" VerticalContentAlignment="Center" FontSize="15"  Content="Alt" VerticalAlignment="Center"/>-->
-                                <TextBox Width="95" Margin="2" materialDesign:HintAssist.Hint="Backward" Text="" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="2" PreviewKeyDown="TextBox_KeyDown"
+                                <TextBox Width="95" Margin="2" materialDesign:HintAssist.Hint="Backward" Text="{Binding BackwardKeyValue, Mode=OneWayToSource}" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="2" PreviewKeyDown="TextBox_KeyDown"
                                         VerticalAlignment="Center" HorizontalAlignment="Center"  FontSize="12" materialDesign:HintAssist.FloatingOffset="0,-20" materialDesign:HintAssist.FloatingScale="3"/>
-                                <TextBox Width="95" Margin="2" materialDesign:HintAssist.Hint="Forward" Text="" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="2" PreviewKeyDown="TextBox_KeyDown_1"
+                                <TextBox Width="95" Margin="2" materialDesign:HintAssist.Hint="Forward" Text="{Binding ForwardKeyValue}" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="2" PreviewKeyDown="TextBox_KeyDown_1"
                                         VerticalAlignment="Center" HorizontalAlignment="Center"  FontSize="12" materialDesign:HintAssist.FloatingOffset="0,-20" materialDesign:HintAssist.FloatingScale="3"/>
                             </StackPanel>
                         </DataTemplate>

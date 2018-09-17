@@ -125,7 +125,14 @@ namespace JPT_TosaTest.Config
                                                 for (int i = 0; i < motionBase.MAX_AXIS-motionBase.MIN_AXIS; i++)
                                                 {
                                                     var settings = HardwareCfgMgr.AxisSettings.Where(a => a.AxisNo == i + motionBase.MIN_AXIS);
-                                                    motionBase.SetAxisPara(i, settings == null ? null : settings.First());
+                                                    try
+                                                    {
+                                                        motionBase.SetAxisPara(i, settings.Count() == 0 ? null : settings.First());
+                                                    }
+                                                    catch (Exception ex)
+                                                    {
+                                                        errList.Add($"{ex.Message}");
+                                                    }
                                                 }
                                             }
                                             else
@@ -142,7 +149,14 @@ namespace JPT_TosaTest.Config
                                             for (int i = 0; i < motionBase.MAX_AXIS - motionBase.MIN_AXIS; i++)
                                             {
                                                 var settings = HardwareCfgMgr.AxisSettings.Where(a => a.AxisNo == i+ motionBase.MIN_AXIS);
-                                                motionBase.SetAxisPara(i, settings == null ? null : settings.First());
+                                                try
+                                                {
+                                                    motionBase.SetAxisPara(i, settings == null ? null : settings.First());
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    errList.Add($"{ex.Message}");
+                                                }
                                             }
                                         }
                                         else

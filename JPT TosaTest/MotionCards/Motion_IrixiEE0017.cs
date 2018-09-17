@@ -18,11 +18,15 @@ namespace JPT_TosaTest.MotionCards
     {
         Comport comport = null;
         private IrixiEE0017 _controller=null;
-        private AxisArgs[] AxisArgsList = new AxisArgs[16];
+        private AxisArgs[] AxisArgsList = new AxisArgs[12];
+
+        public event AxisStateChange OnAxisStateChanged;
+        public event ErrorOccur OnErrorOccured;
 
         public MotionCardCfg motionCfg { get; set; }
         public int MAX_AXIS { get; set; }
         public int MIN_AXIS { get; set; }
+
 
         public Motion_IrixiEE0017()
         {
@@ -42,7 +46,7 @@ namespace JPT_TosaTest.MotionCards
             _controller = IrixiEE0017.CreateInstance(motionCfg.PortName);
             if (_controller != null)
             {
-                _controller.OnAxisPositionChanged += OnAxisPositionChanged;
+                _controller.OnAxisStateChanged += OnIrixiAxisStateChanged;
                 if (motionCfg.NeedInit)
                 {
                     return _controller.Init(Int32.Parse(comport.ToString().ToLower().Replace("com", "")));
@@ -262,9 +266,12 @@ namespace JPT_TosaTest.MotionCards
             return _controller.DoBindSearch(XaxisIndex, YaxisIndex, Range, Gap, Speed, Interval);
         }
 
-        private void OnAxisPositionChanged(object sender, Tuple<byte, AxisArgs> e)
+        private void OnIrixiAxisStateChanged(object sender, Tuple<byte, AxisArgs> e)
         {
             AxisArgsList[e.Item1-1] = e.Item2;
+            OnAxisStateChanged?.Invoke(this,e.Item1 - 1, e.Item2);
+            if (e.Item2.ErrorCode != 0)
+                OnErrorOccured?.Invoke(this,e.Item2.ErrorCode, "发生错误"); //需要解析错误字符串
         }
 
         public bool SetCurrentPos(int AxisNo, double Pos)
@@ -285,6 +292,8 @@ namespace JPT_TosaTest.MotionCards
             {
                 return;
             }
+            if (Setting == null)
+                return;
             int axisIndex = AxisNo + 1;
             _controller.SetAxisPara(AxisNo + 1, Setting.GainFactor, Setting.LimitP, Setting.LimitN, Setting.HomeOffset, (int)Setting.HomeMode, Setting.AxisName);
         }

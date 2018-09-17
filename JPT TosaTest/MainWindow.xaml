@@ -99,8 +99,8 @@
                 </dxr:RibbonPage>
             </dxr:RibbonDefaultPageCategory>
         </dxr:RibbonControl>
-        <Grid Width="400" HorizontalAlignment="Right" Background="White" Opacity="0.5"/>
-        <Grid Width="400" Grid.RowSpan="2"  HorizontalAlignment="Right" Height="170" VerticalAlignment="Top">
+        <!--<Grid Width="{Binding Width, ElementName=GridAxisPos}" HorizontalAlignment="Right" Background="White" Opacity="0.5"/>-->
+        <Grid Background="White" Opacity="0.5" Name="GridAxisPos" Width="Auto" Grid.RowSpan="2"  HorizontalAlignment="Right" Height="170" VerticalAlignment="Top">
             <UserCtrl:UC_AxisPos CtrlFontSize="20"/>
         </Grid>
         <useCtrl:UC_HomeView Grid.Row="1"  Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=1}"/>
