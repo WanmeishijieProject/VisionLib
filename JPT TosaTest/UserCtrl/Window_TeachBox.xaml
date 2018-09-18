@@ -71,8 +71,14 @@
                     <RowDefinition Height="40"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <CheckBox Name="Cb_Sethotkey" Content="Set hotkey" FontSize="15" VerticalContentAlignment="Center"/>
-                <CheckBox Name="Cb_Usehotkey" Content="Use hotkey" Margin="120,0" FontSize="15" VerticalContentAlignment="Center" Click="Cb_Usehotkey_Click"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition Width="130"/>
+                    </Grid.ColumnDefinitions>
+                    <CheckBox Name="Cb_Sethotkey" Margin="5,0" Content="Set hotkey" FontSize="15" VerticalContentAlignment="Center"/>
+                    <CheckBox Name="Cb_Usehotkey" Grid.Column="1" Margin="5,0" Content="Use hotkey"  FontSize="15" VerticalContentAlignment="Center" Click="Cb_Usehotkey_Click"/>
+                </Grid>
                 <ListBox Grid.Row="1" IsEnabled="{Binding IsChecked, ElementName=Cb_Sethotkey}" ItemsSource="{Binding HotKeyCollect}" ScrollViewer.VerticalScrollBarVisibility="Visible">
                     <ListBox.ItemTemplate>
                         <DataTemplate>

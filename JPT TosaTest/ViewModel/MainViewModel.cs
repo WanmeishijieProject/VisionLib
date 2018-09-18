@@ -275,11 +275,7 @@ namespace JPT_TosaTest.ViewModel
         {
             get
             {
-                return new RelayCommand(() =>
-                      {
-                          ShowErrorinfo("Error Info");
-                          ViewIndex = 3;
-                      });
+                return new RelayCommand(() =>ViewIndex = 3);
             }
         }
 
@@ -349,6 +345,7 @@ namespace JPT_TosaTest.ViewModel
                    {
                        Window_TeachBox dlg = new Window_TeachBox(ref OpenedEvent);
                        dlg.Show();
+                       dlg.Topmost = true;
                    }
                });
             }

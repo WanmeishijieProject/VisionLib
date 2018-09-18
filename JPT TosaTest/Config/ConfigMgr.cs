@@ -124,7 +124,7 @@ namespace JPT_TosaTest.Config
                                                 MotionMgr.Instance.AddMotionCard(motionCfg.Name, motionBase);
                                                 for (int i = 0; i < motionBase.MAX_AXIS-motionBase.MIN_AXIS; i++)
                                                 {
-                                                    var settings = HardwareCfgMgr.AxisSettings.Where(a => a.AxisNo == i + motionBase.MIN_AXIS);
+                                                    var settings = HardwareCfgMgr.AxisSettings.Where(a => a.AxisNo == (i + motionBase.MIN_AXIS));
                                                     try
                                                     {
                                                         motionBase.SetAxisPara(i, settings.Count() == 0 ? null : settings.First());

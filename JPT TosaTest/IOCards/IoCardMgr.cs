@@ -7,14 +7,14 @@ namespace JPT_TosaTest.IOCards
     {
         private IOCardMgr()
         {
-
+            IOCardDic = new Dictionary<string, IIO>();
         }
         private static readonly Lazy<IOCardMgr> _instance = new Lazy<IOCardMgr>(() => new IOCardMgr());
         public static IOCardMgr Instance
         {
             get { return _instance.Value; }
         }
-        public Dictionary<string, IIO> IOCardDic = new Dictionary<string, IIO>();
+        public Dictionary<string, IIO> IOCardDic { get; }
 
         public void AddIOCard(string CardName, IIO IOCard)
         {

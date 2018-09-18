@@ -20,8 +20,6 @@ namespace JPT_TosaTest.ViewModel
     public class MonitorViewModel : ViewModelBase
     {
         #region Field
-        private Task IoScanTask = null;
-        private CancellationTokenSource cts = null;
         //所有板卡的IO数组
         private List<ObservableCollection<IOModel>> IOCollectionListInput { get; set; }
         private List<ObservableCollection<IOModel>> IOCollectionListOutput { get; set; }
@@ -47,11 +45,13 @@ namespace JPT_TosaTest.ViewModel
             IOCollectionListOutput = new List<ObservableCollection<IOModel>>();
             AxisStateCollection = new ObservableCollection<AxisArgs>();
             foreach (var it in ConfigMgr.Instance.HardwareCfgMgr.AxisSettings)
-                AxisStateCollection.Add(new AxisArgs()
-                {
-                    AxisName = it.AxisName,
-                    AxisNo = it.AxisNo
-                });
+            {
+                var MotionCard = MotionMgr.Instance.FindMotionCardByAxisIndex(it.AxisNo);
+                if (MotionCard != null)
+                    AxisStateCollection.Add(MotionCard.AxisArgsList[it.AxisNo - MotionCard.MIN_AXIS]);
+                else
+                    AxisStateCollection.Add(new AxisArgs());
+            }
 
             foreach (var iocard in IOCardMgr.Instance.IOCardDic)
             {
@@ -227,7 +227,7 @@ namespace JPT_TosaTest.ViewModel
 
         private void Value_OnErrorOccured(IMotion sender, int ErrorCode, string ErrorMsg)
         {
-            Console.WriteLine($"Motion{sender.motionCfg.Name} error occured");
+            Console.WriteLine($"Motion{sender.motionCfg.Name} error occured:{ErrorMsg}");
         }
 
         private void Value_OnAxisStateChanged(IMotion sender, int AxisNo, AxisArgs args)
@@ -249,7 +249,7 @@ namespace JPT_TosaTest.ViewModel
         private void Value_OnIOStateChanged(IIO sender, EnumIOType IOType, ushort OldValue, ushort NewValue)
         {
 
-            if (IOType == EnumIOType.OUTPUT)
+            if (IOType == EnumIOType.OUTPUT) //Output
             {
                 int i = 0;
                 foreach (var it in IOCardMgr.Instance.IOCardDic)
@@ -269,14 +269,26 @@ namespace JPT_TosaTest.ViewModel
                     i++;
                 }
             }
-            else
+            else  //Input
             {
-                //Input
+                int i = 0;
+                foreach (var it in IOCardMgr.Instance.IOCardDic)
+                {
+                    if (it.Value.ioCfg.Name == sender.ioCfg.Name)
+                    {
+                        if (NewValue != OlddataArrInput[i])
+                        {
+                            OlddataArrInput[i] = NewValue;
+                            for (int j = 0; j < 16; j++)
+                            {
+                                IOCollectionListInput[i][j].IsChecked = ((NewValue >> j) & 0x01) == 1 ? true : false;
+                            }
+                        }
+                        break;
+                    }
+                    i++;
+                }
             }
-            {
-
-            }
-
           
         }
         #endregion

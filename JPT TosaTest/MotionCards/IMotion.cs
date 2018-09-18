@@ -18,6 +18,8 @@ namespace JPT_TosaTest.MotionCards
 
         MotionCardCfg motionCfg { get; set; }
 
+        AxisArgs[] AxisArgsList { get; }
+
         /// <summary>
         /// 板卡初始化
         /// </summary>

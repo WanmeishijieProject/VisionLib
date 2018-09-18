@@ -17,6 +17,9 @@ namespace AxisParaLib
         private bool _isBusy;
         private byte _errorCode;
         private int _gainFactor;
+        private bool _limitPTrigged;
+        private bool _limitNTrigged;
+        private bool _originTrigged;
 
         public AxisArgs()
         {
@@ -24,11 +27,13 @@ namespace AxisParaLib
             CurAbsPos = 0;
             IsHomed = false;
             IsBusy = false;
+
             GainFactor = 1;
             AxisLock = new object();
             TimeOut = 10;
             IsInRequest = false;
             MoveArgs = new AxisMoveArgs();
+
         }
         public double CurAbsPos
         {
@@ -52,6 +57,40 @@ namespace AxisParaLib
                 UpdateProperty(ref _isHomed, value);
             }
         }
+        public bool LimitPTrigged
+        {
+            get
+            {
+                return _limitPTrigged;
+            }
+            set
+            {
+                UpdateProperty(ref _limitPTrigged, value);
+            }
+        }
+
+        public bool LimitNTrigged
+        {
+            get
+            {
+                return _limitNTrigged;
+            }
+            set
+            {
+                UpdateProperty(ref _limitNTrigged, value);
+            }
+        }
+        public bool OriginTrigged
+        {
+            get
+            {
+                return _originTrigged;
+            }
+            set
+            {
+                UpdateProperty(ref _originTrigged, value);
+            }
+        }
         public bool IsBusy
         {
             get
@@ -71,9 +110,16 @@ namespace AxisParaLib
             }
             set
             {
+                if (ErrorCode != value)
+                {
+                    LimitNTrigged = (value == 6);
+                    LimitPTrigged = (value == 5);
+                }
                 UpdateProperty(ref _errorCode, value);
             }
         }
+
+
         public int GainFactor
 
         {
@@ -97,9 +143,18 @@ namespace AxisParaLib
             get;
             set;
         }
-        public string AxisName { get; set; }
-        public int AxisNo { get; set; }
-        public AxisMoveArgs MoveArgs { get; set; }
+        public string AxisName
+        {
+            get;set;
+        }
+        public int AxisNo
+        {
+            get;set;
+        }
+        public AxisMoveArgs MoveArgs
+        {
+            get;set;
+        }
 
         public object AxisLock { get; }
 

@@ -5,12 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:JPT_TosaTest.UserCtrl"
         mc:Ignorable="d"
-        Height="80" Width="500">
+        Height="40" Width="500">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
-            <RowDefinition Height="20"/>
-        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="100"/>
             <ColumnDefinition Width="100"/>
@@ -19,15 +15,19 @@
             <ColumnDefinition Width="100"/>
             <ColumnDefinition Width="100"/>
         </Grid.ColumnDefinitions>
-        <TextBlock Grid.RowSpan="2" Text="X轴" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+        <TextBlock Grid.RowSpan="2" Text="{Binding AxisName}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
 
-        <Border Grid.Column="1" Margin="5" CornerRadius="10" Background="LightBlue"/>
-        <TextBlock Grid.Row="1" Grid.Column="1" Text="正限位" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Border Grid.Column="1" Margin="5"  CornerRadius="10" Background="{Binding LimitNTrigged, Converter={StaticResource Bool2LimitColor}}">
+            <TextBlock Text="Limit-" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+       
 
-        <Border Grid.Row="0" Grid.Column="2" Margin="5" CornerRadius="10" Background="LightBlue"/>
-        <TextBlock Grid.Row="1" Grid.Column="2" Text="原点" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-
-        <Border Grid.Row="0" Grid.Column="3" Margin="5" CornerRadius="10" Background="LightBlue"/>
-        <TextBlock Grid.Row="1" Grid.Column="3" Text="负限位" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Border Grid.Row="0" Grid.Column="2" Margin="5" CornerRadius="10" Background="{Binding OriginTrigged, Converter={StaticResource Bool2LimitColor}}">
+            <TextBlock Text="Origin" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+       
+        <Border Grid.Row="0" Grid.Column="3" Margin="5" CornerRadius="10" Background="{Binding LimitPTrigged, Converter={StaticResource Bool2LimitColor}}">
+            <TextBlock Text="Limit+" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
     </Grid>
 </UserControl>

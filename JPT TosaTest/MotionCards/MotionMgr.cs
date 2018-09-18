@@ -12,7 +12,7 @@ namespace JPT_TosaTest.MotionCards
     {
         private MotionMgr()
         {
-
+            MotionDic = new Dictionary<string, IMotion>();
         }
         private static readonly Lazy<MotionMgr> _instance = new Lazy<MotionMgr>(() => new MotionMgr());
         public static MotionMgr Instance
@@ -20,7 +20,7 @@ namespace JPT_TosaTest.MotionCards
             get { return _instance.Value; }
         }
 
-        public Dictionary<string, IMotion> MotionDic = new Dictionary<string, IMotion>();
+        public Dictionary<string, IMotion> MotionDic { get; }
 
         public void AddMotionCard(string CardName, IMotion MotionCard)
         {

@@ -35,6 +35,7 @@ namespace JPT_TosaTest.IOCards
                 if (_controller != null)
                 {
                     _controller.OnOutputStateChanged += _controller_OnOutputStateChanged;
+                    _controller.OnInputStateChanged+= _controller_OnInputStateChanged;
                     if (ioCfg.NeedInit)
                     {
                         return _controller.Init(Int32.Parse(comport.ToString().ToLower().Replace("com", "")));
@@ -54,6 +55,13 @@ namespace JPT_TosaTest.IOCards
             {
                 OnIOStateChanged?.Invoke(this,EnumIOType.OUTPUT, (UInt16)OutputValue, (UInt16)e);
                 OutputValue = e;
+            }
+        }
+        private void _controller_OnInputStateChanged(object sender, UInt16? e)
+        {
+            if (e.HasValue)
+            {
+                OnIOStateChanged?.Invoke(this, EnumIOType.INPUT, (UInt16)OutputValue, (UInt16)e);
             }
         }
 

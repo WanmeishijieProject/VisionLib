@@ -14,11 +14,31 @@ using AxisParaLib;
 
 namespace JPT_TosaTest.MotionCards
 {
+    public enum EnumMotionError
+    {
+            ERR_NONE,                              ///< 0, no error
+            ERR_AXISID,                            ///< 1, unknown axis index
+            ERR_PARA,                              ///< 2, Parameter error
+            ERR_NOT_HOMED,                         ///< 3, the axis has not been home
+            ERR_BUSY,                             ///< 4, the axis is busy
+            ERR_CWLS,                              ///< 5, cwls detected
+            ERR_CCWLS,                              ///< 6, ccwls detected
+            ERR_EMERGENCY,                           ///< 7, emergency button pressed
+            ERR_USER_STOPPED,                       ///< 8, stopped by user
+            ERR_NO_STAGE_DETECTED,          ///< 9, no stage(hardware) detected
+            ERR_UNKNOWN,            ///< 10, undefined error
+
+            /********** The next are the system errors ***********/
+            ERR_SYS_MCSU_ID = 0x80,                         ///< 128, MSCU id is out of range
+            ERR_SYS_CANBUS_RX,                              ///< 129, Can-bus receiving message error
+            ERR_SYS_PARAM                                   ///< 130, Parameter is error
+        }
+
     public class Motion_IrixiEE0017 : IMotion
     {
         Comport comport = null;
         private IrixiEE0017 _controller=null;
-        private AxisArgs[] AxisArgsList = new AxisArgs[12];
+      
 
         public event AxisStateChange OnAxisStateChanged;
         public event ErrorOccur OnErrorOccured;
@@ -26,10 +46,11 @@ namespace JPT_TosaTest.MotionCards
         public MotionCardCfg motionCfg { get; set; }
         public int MAX_AXIS { get; set; }
         public int MIN_AXIS { get; set; }
-
+        public AxisArgs[] AxisArgsList { get; }
 
         public Motion_IrixiEE0017()
         {
+            AxisArgsList = new AxisArgs[12];
             for (int i = 0; i < 12; i++)
                 AxisArgsList[i] = new AxisArgs();
         }
@@ -230,6 +251,7 @@ namespace JPT_TosaTest.MotionCards
             Length = 0;
             return _controller.GetMemLength(out Length);
         }
+
         public bool ReadMem(UInt32 Offset, UInt32 Length, out List<Int16> RawDataList)
         {
             RawDataList = null;
@@ -240,6 +262,7 @@ namespace JPT_TosaTest.MotionCards
         {
             return _controller.ClearMem();
         }
+
         public bool ReadAD(byte ChannelFlags)
         {
             return _controller.ReadAD(ChannelFlags);
@@ -255,6 +278,7 @@ namespace JPT_TosaTest.MotionCards
         {
             return AxisNo >= MIN_AXIS && AxisNo <= MAX_AXIS;
         }
+
         public bool DoBlindSearch(int XAxisNo, int YAxisNo, double Range, double Gap, double Speed, double Interval)
         {
             if (XAxisNo > MAX_AXIS- MIN_AXIS || XAxisNo < 0 || YAxisNo>MAX_AXIS-MIN_AXIS || YAxisNo<0)
@@ -268,10 +292,15 @@ namespace JPT_TosaTest.MotionCards
 
         private void OnIrixiAxisStateChanged(object sender, Tuple<byte, AxisArgs> e)
         {
-            AxisArgsList[e.Item1-1] = e.Item2;
-            OnAxisStateChanged?.Invoke(this,e.Item1 - 1, e.Item2);
+            int AxisNo = e.Item1 - 1;
+            AxisArgsList[AxisNo].CurAbsPos = e.Item2.CurAbsPos;
+            AxisArgsList[AxisNo].ErrorCode = e.Item2.ErrorCode;
+            AxisArgsList[AxisNo].IsBusy = e.Item2.IsBusy;
+            AxisArgsList[AxisNo].IsHomed= e.Item2.IsHomed;
+            AxisArgsList[AxisNo].IsInRequest = e.Item2.IsInRequest;
+            OnAxisStateChanged?.Invoke(this,e.Item1 - 1, AxisArgsList[AxisNo]);
             if (e.Item2.ErrorCode != 0)
-                OnErrorOccured?.Invoke(this,e.Item2.ErrorCode, "发生错误"); //需要解析错误字符串
+                OnErrorOccured?.Invoke(this,e.Item2.ErrorCode, ParseErrorCode(e.Item2.ErrorCode));
         }
 
         public bool SetCurrentPos(int AxisNo, double Pos)
@@ -295,6 +324,14 @@ namespace JPT_TosaTest.MotionCards
             if (Setting == null)
                 return;
             int axisIndex = AxisNo + 1;
+
+            AxisArgsList[AxisNo].AxisName = Setting.AxisName;
+            AxisArgsList[AxisNo].AxisNo = Setting.AxisNo;
+            AxisArgsList[AxisNo].LimitN = Setting.LimitN;
+            AxisArgsList[AxisNo].LimitP = Setting.LimitP;
+            AxisArgsList[AxisNo].HomeOffset = Setting.HomeOffset;
+            AxisArgsList[AxisNo].HomeMode = (int)Setting.HomeMode;
+
             _controller.SetAxisPara(AxisNo + 1, Setting.GainFactor, Setting.LimitP, Setting.LimitN, Setting.HomeOffset, (int)Setting.HomeMode, Setting.AxisName);
         }
 
@@ -310,5 +347,15 @@ namespace JPT_TosaTest.MotionCards
             }
             return false;
         }
+
+        private string ParseErrorCode(int error)
+        {
+            if ((error >= 0x00 && error <= 0x0A) || (error >= 0x80 && error <= 0x82))
+            {
+                return ((EnumMotionError)error).ToString();
+            }
+            return "";
+        }
     }
+
 }

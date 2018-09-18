@@ -780,11 +780,11 @@ namespace JPT_TosaTest.MotionCards
             for (int i = 0; i < Len; i++)
             {
                 byte bt = (byte)Sp.ReadByte();
+                //if (bt == PACKAGE_HEADER)
+                //    ParsePackageEvent.Set();
                 lock (PackageQueueLock)
                 {
                     FrameRecvByteQueue.Enqueue(bt);
-                    //if (bt == PACKAGE_HEADER)
-                    //    ParsePackageEvent.Set();
                 }
             }
         }
@@ -823,7 +823,6 @@ namespace JPT_TosaTest.MotionCards
                     while (!ctsParsePackage.IsCancellationRequested)
                     {
                         Thread.Sleep(1);
-                        //ParsePackageEvent.WaitOne();    用事件阻塞小行程延迟比较厉害
                         if (FrameRecvByteQueue.Count > 0)
                         {
                             byte data = 0x00;
@@ -929,7 +928,7 @@ namespace JPT_TosaTest.MotionCards
                 ctsParsePackage.Cancel();
         }
 
-        private void CheckAxisState(Enumcmd Command, int Index) //触发一次查询10秒
+        private void CheckAxisState(Enumcmd Command, int Index) //触发一次查询1秒 
         {
             int IndexBase0 = Index - 1;
             AxisStateList[IndexBase0].ReqStartTime = DateTime.Now.Ticks;
@@ -942,10 +941,16 @@ namespace JPT_TosaTest.MotionCards
                         if (this.GetMcsuState(Index, out AxisArgs state))   //更新状态
                         {
                             OnAxisStateChanged?.Invoke(this, new Tuple<byte, AxisArgs>((byte)(Index), state));
-                            if (AxisStateList[IndexBase0].IsBusy && AxisStateList[IndexBase0].ErrorCode==0)
-                                AxisStateList[IndexBase0].ReqStartTime = DateTime.Now.Ticks;            
+                            if (AxisStateList[IndexBase0].ErrorCode == 0)
+                            {
+                                if (AxisStateList[IndexBase0].IsBusy)
+                                    AxisStateList[IndexBase0].ReqStartTime = DateTime.Now.Ticks;
+                            }
+                            else
+                                return;
+                           
                         }
-                        Thread.Sleep(50);
+                        Thread.Sleep(1);
                         if (TimeSpan.FromTicks(DateTime.Now.Ticks - AxisStateList[IndexBase0].ReqStartTime).TotalSeconds >1)
                         {
                             break; ;

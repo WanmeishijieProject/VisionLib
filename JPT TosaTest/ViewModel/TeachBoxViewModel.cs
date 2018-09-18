@@ -149,7 +149,6 @@ namespace JPT_TosaTest.ViewModel
                 {
                     try
                     {
-
                         if (args.MoveArgs.MoveMode == 0)
                             MotionMgr.Instance.MoveAbs(args.AxisNo, 0, args.MoveArgs.Speed, args.MoveArgs.Distance);
                         else
@@ -218,7 +217,9 @@ namespace JPT_TosaTest.ViewModel
                         if (Model != null && Model.Count() > 0)
                         {
                             HotKeyModel hotkeyModel = Model.First();
-                            MotionMgr.Instance.MoveRel(hotkeyModel.AxisNo, 0, 10000, 100);
+                            var motion = MotionMgr.Instance.FindMotionCardByAxisIndex(hotkeyModel.AxisNo);
+                            var arg = motion.AxisArgsList[hotkeyModel.AxisNo - motion.MIN_AXIS].MoveArgs;
+                            MotionMgr.Instance.MoveRel(hotkeyModel.AxisNo, 0, arg.Speed, Math.Abs(arg.Distance));
                         }
                         break;
                     }
@@ -242,7 +243,9 @@ namespace JPT_TosaTest.ViewModel
                         if (Model != null && Model.Count() > 0)
                         {
                             HotKeyModel hotkeyModel = Model.First();
-                            MotionMgr.Instance.MoveRel(hotkeyModel.AxisNo, 0, 10000, -100);
+                            var motion = MotionMgr.Instance.FindMotionCardByAxisIndex(hotkeyModel.AxisNo);
+                            var arg = motion.AxisArgsList[hotkeyModel.AxisNo - motion.MIN_AXIS].MoveArgs;
+                            MotionMgr.Instance.MoveRel(hotkeyModel.AxisNo, 0, arg.Speed, -Math.Abs(arg.Distance));
                         }
                         break;
                     }

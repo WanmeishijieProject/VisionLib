@@ -103,13 +103,18 @@
         </Button>
         <GridSplitter Height="5" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch"/>
         <GroupBox Header="{DynamicResource MonitorPage_MotionState}" Margin="16" Grid.Row="2" Grid.ColumnSpan="2">
-            <ListBox>
-                <ListBox.ItemTemplate>
+            <ListView ItemsSource="{Binding AxisStateCollection}" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Vertical"/>
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.ItemTemplate>
                     <DataTemplate>
                         <local:UC_AxisStateListItem/>
                     </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                </ListView.ItemTemplate>
+            </ListView>
         </GroupBox>
     </Grid>
 </UserControl>

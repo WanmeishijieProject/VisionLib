@@ -170,6 +170,7 @@
     <Compile Include="Config\UserManager\UserModel.cs" />
     <Compile Include="Converter\Bool2Image.cs" />
     <Compile Include="Converter\Bool2IoColor.cs" />
+    <Compile Include="Converter\Bool2LimitColor.cs" />
     <Compile Include="Converter\Bool2Visibility.cs" />
     <Compile Include="Converter\Double2Text.cs" />
     <Compile Include="Converter\EnumCamSnapState2SnapButtonEnable.cs" />

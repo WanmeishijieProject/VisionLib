@@ -31,6 +31,7 @@
             <Convert:Int2String x:Key="Int2String"/>
             <Convert:Double2Text x:Key="Double2Text"/>
             <Convert:Uint2bool x:Key="Uint2bool"/>
+            <Convert:Bool2LimitColor x:Key="Bool2LimitColor"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resource/MDStyle.xaml"/>
                 <ResourceDictionary Source="Resource/StylesResourceDictionary.xaml"/>
