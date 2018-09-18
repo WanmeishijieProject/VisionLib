@@ -14,12 +14,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using AxisParaLib;
+using GalaSoft.MvvmLight.Messaging;
 
 namespace JPT_TosaTest.ViewModel
 {
     public class MonitorViewModel : ViewModelBase
     {
         #region Field
+        private static int MAX_IOCARD_NUM = 10;
         //所有板卡的IO数组
         private List<ObservableCollection<IOModel>> IOCollectionListInput { get; set; }
         private List<ObservableCollection<IOModel>> IOCollectionListOutput { get; set; }
@@ -32,8 +34,8 @@ namespace JPT_TosaTest.ViewModel
         private int CurrentIoCardIndex_Input = 0;
         private int CurrentIoCardIndex_Output = 0;
 
-        int[] OlddataArrInput = new int[10];    //记录旧的IO状态
-        int[] OlddataArrOutput = new int[10];
+        int[] OlddataArrInput = new int[MAX_IOCARD_NUM];    //记录旧的IO状态//应该不会超过10组IO卡
+        int[] OlddataArrOutput = new int[MAX_IOCARD_NUM];
 
         private bool _allHomeOk;
         #endregion
@@ -227,7 +229,7 @@ namespace JPT_TosaTest.ViewModel
 
         private void Value_OnErrorOccured(IMotion sender, int ErrorCode, string ErrorMsg)
         {
-            Console.WriteLine($"Motion{sender.motionCfg.Name} error occured:{ErrorMsg}");
+            Messenger.Default.Send<string>($"Motion{sender.motionCfg.Name} error occured:{ErrorMsg}", "Error");
         }
 
         private void Value_OnAxisStateChanged(IMotion sender, int AxisNo, AxisArgs args)

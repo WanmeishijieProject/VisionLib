@@ -11,5 +11,6 @@ namespace JPT_TosaTestPAS.Config.SoftwareManager
     {
         public WorkFlowConfig[] WorkFlowConfigs { get; set; }
         public IoNameCfg[] IONames { get; set; }
+        public HotKeyCfg HotKey { get; set; }
     }
 }

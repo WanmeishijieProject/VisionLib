@@ -234,5 +234,16 @@ namespace JPT_TosaTest.MotionCards
             }
             return false;
         }
+
+        public bool Reset(int AxisNo)
+        {
+            var MotionCard = FindMotionCardByAxisIndex(AxisNo);
+            if (MotionCard != null)
+            {
+                //int AxisIndex = AxisNo - MotionCard.MIN_AXIS;
+                return MotionCard.Reset();
+            }
+            return false;
+        }
     }
 }

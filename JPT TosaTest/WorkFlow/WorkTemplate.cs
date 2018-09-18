@@ -40,7 +40,7 @@ namespace JPT_TosaTest.WorkFlow
             motion.Home(3,0,0, 0, 0);
             //motion.MoveRel(2, 0, 1000, 10000);
             //motion.MoveAbs(3, 0, 1000, 10000);
-           // motion.MoveAbs(3, 0, 10000, 10000);
+            // motion.MoveAbs(3, 0, 10000, 10000);
             //motion.SetTrigConfig(0xFF);
             //motion.ClearMem();
             //motion.MoveRel(4, 0, 5000, 1000, EnumTriggerType.ADC, 100);

@@ -67,5 +67,14 @@ namespace JPT_TosaTest.UserCtrl
             }
         }
 
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            (DataContext as TeachBoxViewModel).WindowLoadCommand.Execute(null);
+        }
+
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            (DataContext as TeachBoxViewModel).WindowClosingCommand.Execute(null);
+        }
     }
 }

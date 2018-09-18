@@ -360,6 +360,7 @@ namespace JPT_TosaTest.Config
                     break; 
                 case EnumConfigType.SoftwareCfg:
                     fileSaved = File_SoftwareCfg;
+
                     break;
                 case EnumConfigType.SystemParaCfg:
                     fileSaved = File_SystemParaCfg;

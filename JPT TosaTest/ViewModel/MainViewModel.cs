@@ -345,7 +345,7 @@ namespace JPT_TosaTest.ViewModel
                    {
                        Window_TeachBox dlg = new Window_TeachBox(ref OpenedEvent);
                        dlg.Show();
-                       dlg.Topmost = true;
+                       //dlg.Topmost = true;
                    }
                });
             }

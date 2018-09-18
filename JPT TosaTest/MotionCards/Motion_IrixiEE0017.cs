@@ -308,9 +308,19 @@ namespace JPT_TosaTest.MotionCards
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Reset Mcsu error,All axises
+        /// </summary>
+        /// <returns></returns>
         public bool Reset()
         {
-            throw new NotImplementedException();
+            bool bRet = true;
+            for (int i = 0; i < MAX_AXIS - MIN_AXIS; i++)
+            {
+                bRet &= _controller.ClearMcsuError(i+1);
+            }
+            bRet &= _controller.ClearSysError();
+            return bRet;
         }
 
 

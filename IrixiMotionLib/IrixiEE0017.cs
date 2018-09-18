@@ -181,7 +181,10 @@ namespace JPT_TosaTest.MotionCards
                     return false;
                 }
                 CommandHome.AxisNo = (byte)AxisNo;
-                CommandHome.FrameLength = 0x05;
+                CommandHome.FrameLength = 0x09;
+                CommandHome.AccStep = (UInt16)(Acc*AxisStateList[AxisNo-1].GainFactor);
+                CommandHome.LSpeed = (byte)((Speed1 * AxisStateList[AxisNo - 1].GainFactor) / 100.0f);
+                CommandHome.HSpeed = (byte)((Speed2 * AxisStateList[AxisNo - 1].GainFactor) / 100.0f);
                 byte[] cmd = CommandHome.ToBytes();
                 this.ExcuteCmd(cmd);
                 CheckAxisState(Enumcmd.Home, AxisNo);
@@ -774,19 +777,47 @@ namespace JPT_TosaTest.MotionCards
             }
         }
 
+
+        private List<byte> TempList = new List<byte>();
+        private int ExpectLength=0;
         private void Comport_DataReceived1(object sender, SerialDataReceivedEventArgs e)
         {
             int Len = Sp.BytesToRead;
             for (int i = 0; i < Len; i++)
             {
                 byte bt = (byte)Sp.ReadByte();
-                //if (bt == PACKAGE_HEADER)
-                //    ParsePackageEvent.Set();
-                lock (PackageQueueLock)
-                {
-                    FrameRecvByteQueue.Enqueue(bt);
-                }
+                FrameRecvByteQueue.Enqueue(bt);
             }
+
+            while (FrameRecvByteQueue.Count > 0)
+            {
+                byte bt = FrameRecvByteQueue.Dequeue();
+                if (bt == PACKAGE_HEADER && TempList.Count == 0)
+                {
+                    TempList.Add(bt);
+                    continue;
+                }
+                if (TempList.Count > 0) //说明发现了包
+                {
+                    TempList.Add(bt);
+                    if (TempList.Count == 3)
+                    {
+                        ExpectLength = TempList[1] + TempList[2] * 256;
+                    }
+                    else if (TempList.Count >= (7 + ExpectLength))
+                    {
+                        byte[] dataList = TempList.ToArray();
+                        UInt32 Crc32 = (UInt32)(dataList[dataList.Length - 4] + (dataList[dataList.Length - 3] << 8) + (dataList[dataList.Length - 2] << 16) + (dataList[dataList.Length - 1] << 24));
+                        UInt32 CalcCrc32 = Crc32Instance.Calculate(dataList, 0, dataList.Length - 4);
+                        if (Crc32 == CalcCrc32) //校验成功
+                        {
+                            ProcessPackage(dataList);
+                        }
+                        ExpectLength = 0;
+                        TempList=new List<byte>();
+                    }
+                }
+            }     
         }
 
         private byte CheckSum(byte[] buf, int offset, int count)
@@ -872,7 +903,7 @@ namespace JPT_TosaTest.MotionCards
                     }
                 
                 }, ctsParsePackage.Token);
-                TaskParsePackage.Start();
+                //TaskParsePackage.Start();
             }
             Thread.Sleep(1000);
             GetStateWhenFirstLoad();

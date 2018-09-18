@@ -161,6 +161,7 @@
     <Compile Include="Config\HardwareManager\CameraCfg.cs" />
     <Compile Include="Config\HardwareManager\MotionCardCfg.cs" />
     <Compile Include="Config\HardwareManager\HardwareCfgManager.cs" />
+    <Compile Include="Config\SoftwareManager\HotKeyCfg.cs" />
     <Compile Include="Config\SoftwareManager\IoNameCfg.cs" />
     <Compile Include="Config\SoftwareManager\WorkFlowConfig.cs" />
     <Compile Include="Config\SoftwareManager\SoftwareCfgManager.cs" />

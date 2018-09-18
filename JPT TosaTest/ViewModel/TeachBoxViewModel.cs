@@ -25,85 +25,23 @@ namespace JPT_TosaTest.ViewModel
             HotKeyCollect = new ObservableCollection<HotKeyModel>();
             foreach (var it in ConfigMgr.Instance.HardwareCfgMgr.AxisSettings)
             {
-                HotKeyCollect.Add(new HotKeyModel() {
-                     AxisName=it.AxisName,
-                     AxisNo=it.AxisNo,              
-                });
+                var MotionCard = MotionMgr.Instance.FindMotionCardByAxisIndex(it.AxisNo);
+                if (MotionCard != null)
+                    HotKeyCollect.Add(new HotKeyModel()
+                    {
+                        AxisName = MotionCard.AxisArgsList[it.AxisNo - MotionCard.MIN_AXIS].AxisName,
+                        AxisNo = MotionCard.AxisArgsList[it.AxisNo - MotionCard.MIN_AXIS].AxisNo,
+                    });
+                else
+                    HotKeyCollect.Add(new HotKeyModel());
             }
 
         }
         #region Property
         public ObservableCollection<HotKeyModel> HotKeyCollect { get; set; }
         #endregion
+
         #region Command
-        public RelayCommand LeftCommand
-        {
-            get
-            {
-                return new RelayCommand(() =>
-                {
-                    try
-                    {
-                        MotionMgr.Instance.MoveRel(3, 0, 10000, -10);
-                    }
-                    catch (Exception ex)
-                    {
-                        ShowError(ex.Message);
-                    }
-                });
-            }
-        }
-        public RelayCommand RightCommand
-        {
-            get
-            {
-                return new RelayCommand(() =>
-                {
-                    try
-                    {
-                        MotionMgr.Instance.MoveRel(3, 0, 10000, 10);
-                    }
-                    catch (Exception ex)
-                    {
-                        ShowError(ex.Message);
-                    }
-                });
-            }
-        }
-        public RelayCommand UpCommand
-        {
-            get
-            {
-                return new RelayCommand(() =>
-                {
-                    try
-                    {
-                        MotionMgr.Instance.MoveRel(2, 0, 10000, -10);
-                    }
-                    catch (Exception ex)
-                    {
-                        ShowError(ex.Message);
-                    }
-                });
-            }
-        }
-        public RelayCommand DownCommand
-        {
-            get
-            {
-                return new RelayCommand(() =>
-                {
-                    try
-                    {
-                        MotionMgr.Instance.MoveRel(2, 0, 10000, 10);
-                    }
-                    catch (Exception ex)
-                    {
-                        ShowError(ex.Message);
-                    }
-                });
-            }
-        }
         public RelayCommand<AxisArgs> HomeCommand
         {
             get
@@ -112,7 +50,7 @@ namespace JPT_TosaTest.ViewModel
                 {
                     try
                     {
-                        MotionMgr.Instance.Home(args.AxisNo, 0,0,0,0);
+                        MotionMgr.Instance.Home(args.AxisNo,0, 500,2000,10000);
                     }
                     catch (Exception ex)
                     {
@@ -161,21 +99,42 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
-
         public RelayCommand<Tuple<Window, bool>> RegisterHotKeyCommand
         {
             get { return new RelayCommand<Tuple<Window,bool>>(tuple=> {
                 RegisterHotKey(tuple.Item2, tuple.Item1);
             }); }
         }
- 
+        public RelayCommand WindowLoadCommand
+        {
+            get
+            {
+                return new RelayCommand(() =>
+                {
+                   //To do load HotKey
+                });
+            }
+        }
+        public RelayCommand WindowClosingCommand
+        {
+            get
+            {
+                return new RelayCommand(() =>
+                {
+                    //To do save HotKey
+                });
+            }
+        }
+        #endregion
+
+        #region private
 
         private void ShowError(string msg)
         {
-            Messenger.Default.Send<string>(msg,"Error");
+            Messenger.Default.Send<string>(msg, "Error");
         }
 
-        private void RegisterHotKey(bool bRegister,System.Windows.Window win)
+        private void RegisterHotKey(bool bRegister, System.Windows.Window win)
         {
             if (bRegister)
             {
@@ -183,14 +142,14 @@ namespace JPT_TosaTest.ViewModel
                 {
                     if (!string.IsNullOrEmpty(it.BackwardKeyValue) && !string.IsNullOrEmpty(it.ForwardKeyValue))
                     {
-                        if (Enum.TryParse(it.BackwardKeyValue, out Keys backwardKey) && Enum.TryParse(it.ForwardKeyValue,out Keys forwardKey))
+                        if (Enum.TryParse(it.BackwardKeyValue, out Keys backwardKey) && Enum.TryParse(it.ForwardKeyValue, out Keys forwardKey))
                         {
                             HotKey BackWardHotKey = new HotKey(win, HotKey.KeyFlags.MOD_NOREPEAT, backwardKey);
                             HotKey ForWardHotKey = new HotKey(win, HotKey.KeyFlags.MOD_NOREPEAT, forwardKey);
                             BackWardHotKey.OnHotKey += BackWardHotKey_OnHotKey;
                             ForWardHotKey.OnHotKey += ForWardHotKey_OnHotKey;
-                            if(!HotKeyDic.ContainsKey(it.AxisName))
-                                HotKeyDic.Add(it.AxisName,new Tuple<HotKey,HotKey>(BackWardHotKey,ForWardHotKey));
+                            if (!HotKeyDic.ContainsKey(it.AxisName))
+                                HotKeyDic.Add(it.AxisName, new Tuple<HotKey, HotKey>(BackWardHotKey, ForWardHotKey));
                         }
                     }
                 }
@@ -227,7 +186,7 @@ namespace JPT_TosaTest.ViewModel
             }
             catch (Exception ex)
             {
-                Messenger.Default.Send<string>(ex.Message,"Error");
+                Messenger.Default.Send<string>(ex.Message, "Error");
             }
         }
 
@@ -257,6 +216,5 @@ namespace JPT_TosaTest.ViewModel
             }
         }
         #endregion
-
     }
 }
