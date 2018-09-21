@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JPT_TosaTest.Models 
+namespace CameraDebugLib.Model 
 {
     public class CameraItem : INotifyPropertyChanged
     {

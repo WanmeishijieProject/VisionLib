@@ -43,7 +43,14 @@
   <ItemGroup>
     <Compile Include="AxisArgs.cs" />
     <Compile Include="AxisMoveArgs.cs" />
+    <Compile Include="UnitManager\Degree.cs" />
+    <Compile Include="UnitManager\Nano.cs" />
+    <Compile Include="UnitManager\UnitBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnitManager\UnitHelper.cs" />
+    <Compile Include="UnitManager\Micron.cs" />
+    <Compile Include="UnitManager\Millimeter.cs" />
+    <Compile Include="UnitManager\Radian.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

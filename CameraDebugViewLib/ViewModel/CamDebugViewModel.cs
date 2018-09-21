@@ -1,10 +1,8 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
-using JPT_TosaTest.Classes;
-using JPT_TosaTest.Models;
-using JPT_TosaTest.UserCtrl;
-using JPT_TosaTest.Vision;
+using CameraDebugLib;
+using CameraDebugLib.Vision;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,13 +14,18 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Media.Animation;
+using CameraDebugLib.Model;
+using CameraDebugLib.Class;
+using CameraDebugLib.Vision.Light;
+using CameraDebugLib.Vision.CameraCfg;
 
-namespace JPT_TosaTest.ViewModel
+namespace CameraDebugLib.ViewModel
 {
 
 
     public class CamDebugViewModel : ViewModelBase
     {
+
         public enum EnumRoiModelType : int
         {
             ROI,
@@ -30,22 +33,8 @@ namespace JPT_TosaTest.ViewModel
         }
         public CamDebugViewModel()
         {
-            #region CameraInit
-            CameraCollection = new ObservableCollection<CameraItem>();
-            int i = 0;
-            List<string> camList = new List<string>();
-            foreach (var it in ConfigMgr.Instance.HardwareCfgMgr.Cameras)
-                camList.Add(it.NameForVision);
-            foreach (var it in HalconVision.Instance.FindCamera(EnumCamType.GigEVision, camList))
-            {
-                bool bOpen = HalconVision.Instance.OpenCam(i++);
-                CameraCollection.Add(new CameraItem() { CameraName = it.Key, StrCameraState = bOpen ? "Connected" : "DisConnected" });
-            }
-            #endregion
-
             //ModelList
             RoiModelList = RoiCollection;
-
             Messenger.Default.Register<int>(this, "UpdateRoiFiles", nCamID => UpdateRoiCollect(nCamID));
             Messenger.Default.Register<int>(this, "UpdateModelFiles", nCamID => UpdateModelCollect(nCamID));
         }
@@ -68,7 +57,7 @@ namespace JPT_TosaTest.ViewModel
         private IEnumerable<RoiModelBase> _roiModelList = null;
         private Task GrabTask = null;
         public EnumCamSnapState _camSnapState;
-        private Storyboard RoiSb = null, TemplateSb=null;
+        private Storyboard RoiSb = null, TemplateSb = null;
         private string DefaultImagePath = @"C:\";
         private int _lightBrightness = 0;
         private bool _openLightSource = false;
@@ -77,13 +66,13 @@ namespace JPT_TosaTest.ViewModel
         private void UpdateRoiCollect(int nCamID)
         {
             RoiCollection.Clear();
-            foreach (var it in Vision.VisionDataHelper.GetRoiListForSpecCamera(nCamID, RoiFileHelper.GetWorkDictoryProfileList(new string[] { "reg" })))
+            foreach (var it in CameraDebugLib.Vision.VisionDataHelper.GetRoiListForSpecCamera(nCamID, RoiFileHelper.GetWorkDictoryProfileList(new string[] { "reg" })))
                 RoiCollection.Add(new RoiItem() { StrName = it.Replace(string.Format("Cam{0}_", nCamID), ""), StrFullName = it });
         }
         private void UpdateModelCollect(int nCamID)
         {
             ModelCollection.Clear();
-            foreach (var it in Vision.VisionDataHelper.GetTemplateListForSpecCamera(nCamID, ModelFileHelper.GetWorkDictoryProfileList(new string[] { "shm" })))
+            foreach (var it in CameraDebugLib.Vision.VisionDataHelper.GetTemplateListForSpecCamera(nCamID, ModelFileHelper.GetWorkDictoryProfileList(new string[] { "shm" })))
                 ModelCollection.Add(new ModelItem() { StrName = it.Replace(string.Format("Cam{0}_", nCamID), ""), StrFullName = it });
         }
         private void ThreadFunc(int nCamID)
@@ -158,7 +147,7 @@ namespace JPT_TosaTest.ViewModel
             }
             get { return _minThre; }
         }
-  
+
         /// <summary>
         /// 当前选择的是ROI还是Model模式
         /// </summary>
@@ -247,7 +236,7 @@ namespace JPT_TosaTest.ViewModel
                         RoiModelList = RoiCollection;
 
                     //更新对应光源的亮度值
-                    LightBrightness = ConfigMgr.Instance.HardwareCfgMgr.Cameras[value].LightValue;
+                    //LightBrightness = ConfigMgr.Instance.HardwareCfgMgr.Cameras[value].LightValue; dddd
 
                     _currentSelectedCamera = value;
                     RaisePropertyChanged();
@@ -376,7 +365,7 @@ namespace JPT_TosaTest.ViewModel
                     int nCamID = CurrentSelectedCamera;
                     if (fileList.Count == 0) //判断编辑现有的还是编辑新模板
                     {
-                        if (item != null)      
+                        if (item != null)
                         {
                             if (nCamID >= 0)
                             {
@@ -455,7 +444,7 @@ namespace JPT_TosaTest.ViewModel
                 {
                     if (item != null)
                     {
-                        
+
                     }
                 });
             }
@@ -515,7 +504,7 @@ namespace JPT_TosaTest.ViewModel
                         {
                             strRecParaFileName = $"VisionData\\Roi\\Cam{nCamID}_{strRecParaFileName}.tup";
                             strModelFileName = $"VisionData\\Model\\Cam{nCamID}_{strModelFileName}.shm";
-                        }    
+                        }
                         try
                         {
                             bool bRet = HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.GET_ANGLE_TUNE1, nCamID, $"{strRecParaFileName}&{strModelFileName}", out object result);
@@ -552,20 +541,25 @@ namespace JPT_TosaTest.ViewModel
         }
         public RelayCommand GrabContinusCommand
         {
-            get { return new RelayCommand(()=> {
-                if (CurrentSelectedCamera >= 0 && (GrabTask == null || GrabTask.IsCanceled || GrabTask.IsCompleted))
+            get
+            {
+                return new RelayCommand(() =>
                 {
-                    cts = new CancellationTokenSource();
-                    GrabTask = new Task(()=>ThreadFunc(CurrentSelectedCamera));
-                    GrabTask.Start();
-                }
-            }); }
+                    if (CurrentSelectedCamera >= 0 && (GrabTask == null || GrabTask.IsCanceled || GrabTask.IsCompleted))
+                    {
+                        cts = new CancellationTokenSource();
+                        GrabTask = new Task(() => ThreadFunc(CurrentSelectedCamera));
+                        GrabTask.Start();
+                    }
+                });
+            }
         }
         public RelayCommand GrabOnceCommand
         {
             get
             {
-                return new RelayCommand (() => {
+                return new RelayCommand(() =>
+                {
                     if (CurrentSelectedCamera >= 0)
                     {
                         HalconVision.Instance.GrabImage(CurrentSelectedCamera);
@@ -585,8 +579,9 @@ namespace JPT_TosaTest.ViewModel
         {
             get
             {
-                return new RelayCommand(() => {
-                    if(cts!=null)
+                return new RelayCommand(() =>
+                {
+                    if (cts != null)
                         cts.Cancel();
                     CamSnapState = EnumCamSnapState.IDLE;
                 });
@@ -642,15 +637,15 @@ namespace JPT_TosaTest.ViewModel
         {
             get
             {
-                return new RelayCommand(() => {
+                return new RelayCommand(() =>
+                {
                     if (CurrentSelectedCamera >= 0)
                     {
                         //调整相应相机的光源
-                        int LightChannel = ConfigMgr.Instance.HardwareCfgMgr.Cameras[CurrentSelectedCamera].LightPortChannel;
-                        LightBase lightControl= LigtMgr.Instance.FindInstrumentByChannelIndex(LightChannel);
+                        var LightChannel = HalconVision.Instance.ActualCameraConfigList[CurrentSelectedCamera].LightPortChannel;
+                        LightBase lightControl = LigtMgr.Instance.FindLightByChannelIndex(LightChannel);   //传入光源通道号
                         if (lightControl != null)
                         {
-                            //lightControl.OpenLight(LightChannel);
                             lightControl.SetLightValue(LightChannel, LightBrightness);
                         }
                     }
@@ -669,27 +664,27 @@ namespace JPT_TosaTest.ViewModel
         {
             get
             {
-                return new RelayCommand<FrameworkElement> (control =>
-                {
-                    if (RoiSb == null && TemplateSb == null)
-                    {
-                        RoiSb = control.TryFindResource("RoiSb") as Storyboard;
-                        TemplateSb = control.TryFindResource("ModelSb") as Storyboard;
-                        if (RoiSb != null)
-                            RoiSb.Completed += RoiSb_Completed;
-                        if (TemplateSb != null)
-                            TemplateSb.Completed += TemplateSb_Completed;
-                    }
-                    RoiOrModelPanel = (Convert.ToInt32(RoiOrModelPanel) ^ 1)==0? EnumRoiModelType.ROI : EnumRoiModelType.MODEL;
-                    if (RoiSb != null && TemplateSb != null)
-                    {
-                        if (RoiOrModelPanel == EnumRoiModelType.ROI)
-                            TemplateSb.Begin();
-                        else
-                            RoiSb.Begin();
-                    }
-                    
-                });
+                return new RelayCommand<FrameworkElement>(control =>
+               {
+                   if (RoiSb == null && TemplateSb == null)
+                   {
+                       RoiSb = control.TryFindResource("RoiSb") as Storyboard;
+                       TemplateSb = control.TryFindResource("ModelSb") as Storyboard;
+                       if (RoiSb != null)
+                           RoiSb.Completed += RoiSb_Completed;
+                       if (TemplateSb != null)
+                           TemplateSb.Completed += TemplateSb_Completed;
+                   }
+                   RoiOrModelPanel = (Convert.ToInt32(RoiOrModelPanel) ^ 1) == 0 ? EnumRoiModelType.ROI : EnumRoiModelType.MODEL;
+                   if (RoiSb != null && TemplateSb != null)
+                   {
+                       if (RoiOrModelPanel == EnumRoiModelType.ROI)
+                           TemplateSb.Begin();
+                       else
+                           RoiSb.Begin();
+                   }
+
+               });
             }
         }
         public RelayCommand SwitchLightPowerCommand
@@ -701,8 +696,8 @@ namespace JPT_TosaTest.ViewModel
                     if (CurrentSelectedCamera < 0)
                         return;
                     OpenLightSource = !OpenLightSource;
-                    int LightChannel = ConfigMgr.Instance.HardwareCfgMgr.Cameras[CurrentSelectedCamera].LightPortChannel;
-                    LightBase lightControl = LigtMgr.Instance.FindInstrumentByChannelIndex(LightChannel);
+                    int LightChannel = HalconVision.Instance.ActualCameraConfigList[CurrentSelectedCamera].LightPortChannel;
+                    LightBase lightControl = LigtMgr.Instance.FindLightByChannelIndex(LightChannel);
                     if (lightControl == null)
                         return;
                     if (OpenLightSource)
@@ -712,9 +707,20 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
-        
+
+        public RelayCommand<List<CameraConfig>> UserControlLoadedCommand
+        {
+            get { return new RelayCommand<List<CameraConfig>>(camConfigList=> {
+              
+                CameraCollection = new ObservableCollection<CameraItem>();
+                int i = 0;
+                foreach (var it in HalconVision.Instance.FindCamera(EnumCamType.GigEVision, camConfigList))
+                {
+                    bool bOpen = HalconVision.Instance.OpenCam(i++);
+                    CameraCollection.Add(new CameraItem() { CameraName = it.Key, StrCameraState = bOpen ? "Connected" : "DisConnected" });
+                }
+            }); }
+        }
+        #endregion
     }
-    #endregion
-
-
 }

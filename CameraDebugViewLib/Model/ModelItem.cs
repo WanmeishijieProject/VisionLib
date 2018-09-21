@@ -1,14 +1,13 @@
-﻿using GalaSoft.MvvmLight.Command;
+﻿using CameraDebugLib.Class;
+using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
-using JPT_TosaTest.Classes;
-using JPT_TosaTest.UserCtrl;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JPT_TosaTest.Models
+namespace CameraDebugLib.Model
 {
     public class ModelItem : RoiModelBase
     {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JPT_TosaTest.Classes
+namespace CameraDebugLib.Class
 {
     public class FileHelper
     {
@@ -53,7 +53,7 @@ namespace JPT_TosaTest.Classes
                 _workDirectory = strWorkDirectory + "\\";
             else
             {
-                throw new Exception(string.Format("{0} is not exist", strWorkDirectory));
+               // throw new Exception(string.Format("{0} is not exist", strWorkDirectory));
             }
         }
         public bool SetWorkDirectory(string strPath)

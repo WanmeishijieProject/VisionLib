@@ -5,9 +5,9 @@ using System.Linq;
 using System.Threading;
 using GalaSoft.MvvmLight.Messaging;
 using HalconDotNet;
-using JPT_TosaTest.UserCtrl;
+using CameraDebugLib.Vision.CameraCfg;
 
-namespace JPT_TosaTest.Vision
+namespace CameraDebugLib.Vision
 {
     public enum Enum_REGION_OPERATOR { ADD, SUB }
     public enum Enum_REGION_TYPE { RECTANGLE, CIRCLE }
@@ -54,13 +54,13 @@ namespace JPT_TosaTest.Vision
                 _lockList.Add(new object());
             }
             HOperatorSet.GenEmptyObj(out Region);
-            CamCfgDic = FindCamera(EnumCamType.HuaRay,new List<string>() { "Cam1","Cam2"});
         }
         private static readonly Lazy<HalconVision> _instance = new Lazy<HalconVision>(() => new HalconVision());
         public static HalconVision Instance
         {
             get { return _instance.Value; }
         }
+        public List<CameraConfig> ActualCameraConfigList { get { return _actualCameraConfigList;} }
         #endregion
 
         #region  Field
@@ -81,7 +81,9 @@ namespace JPT_TosaTest.Vision
         public Enum_REGION_TYPE RegionType = Enum_REGION_TYPE.CIRCLE;
         private AutoResetEvent SyncEvent = new AutoResetEvent(false);
         private string DebugWindowName = "CameraDebug";
+        private List<CameraConfig> _actualCameraConfigList { get; set; }
         #endregion
+
 
         public bool AttachCamWIndow(int nCamID, string Name, HTuple hWindow)
         {
@@ -185,7 +187,7 @@ namespace JPT_TosaTest.Vision
             }
             catch (Exception ex)
             {
-                Messenger.Default.Send<string>($"Open Camera Error:{CamCfgDic.ElementAt(nCamID)}:{ex.Message}", "ShowError");
+                Messenger.Default.Send<string>($"Open Camera Error:{CamCfgDic.ElementAt(nCamID)}:{ex.Message}");
                 return false;
             }
             finally
@@ -664,10 +666,10 @@ namespace JPT_TosaTest.Vision
             HOperatorSet.CloseAllFramegrabbers();
             return true;       
         }
-        public Dictionary<string, Tuple<string, string>> FindCamera(EnumCamType camType, List<string> acturalNameList)
+        public Dictionary<string, Tuple<string, string>> FindCamera(EnumCamType camType, List<CameraConfig> acturalConfigList)
         {
             Dictionary<string, Tuple<string, string>> dic = new Dictionary<string, Tuple<string, string>>();
-
+            _actualCameraConfigList = acturalConfigList;
             try
             {
                 dic.Add("DirectShow", new Tuple<string, string>("Integrated Camera", "DirectShow"));
@@ -675,31 +677,34 @@ namespace JPT_TosaTest.Vision
                 HOperatorSet.InfoFramegrabber(camType.ToString(), "info_boards", out HTuple hv_Information, out HTuple hv_ValueList);
                 if (0 == hv_ValueList.Length)
                     return dic;
-                for (int i = 0; i < acturalNameList.Count; i++)
+                for (int i = 0; i < acturalConfigList.Count; i++)
                 {
                     bool bFind = false;
                     foreach (var dev in hv_ValueList.SArr)
                     {
 
                         string Name = dev.Substring(0, dev.IndexOf("port")).Replace("device:", "").Trim();
-                        if (Name.Contains(acturalNameList[i]))
+                        if (Name.Contains(acturalConfigList[i].Name))
                         {
-                            dic.Add(acturalNameList[i], new Tuple<string, string>(Name.Trim(), camType.ToString()));
+                            dic.Add(acturalConfigList[i].Name, new Tuple<string, string>(Name.Trim(), camType.ToString()));
                             bFind = true;
                             break;
                         }
                     }
                     if (!bFind)
-                        Messenger.Default.Send<String>(string.Format("相机:{0}未找到硬件，请检查硬件连接或者配置", acturalNameList[i]), "ShowError");
+                        Messenger.Default.Send<String>(string.Format("相机:{0}未找到硬件，请检查硬件连接或者配置", acturalConfigList[i]), "ShowError");
                 }
-
                 return dic;
             }
             catch (Exception ex)
             {
-                Messenger.Default.Send<String>(string.Format("FIndCamera error:{0}", ex.Message));
+                Messenger.Default.Send<String>(string.Format("FIndCamera error:{0}", ex.Message), "Error");
                 return dic;
                 //throw new Exception(string.Format("FIndCamera error:{0}", ex.Message));
+            }
+            finally
+            {
+                CamCfgDic = dic;
             }
 
         }
@@ -1796,20 +1801,26 @@ namespace JPT_TosaTest.Vision
         public static List<string> GetRoiListForSpecCamera(int nCamID, List<string> fileListInDataDirection)
         {
             var list = new List<string>();
-            foreach (var it in fileListInDataDirection)
+            if (fileListInDataDirection != null)
             {
-                if (it.Contains(string.Format("Cam{0}_", nCamID)))
-                    list.Add(it);
+                foreach (var it in fileListInDataDirection)
+                {
+                    if (it.Contains(string.Format("Cam{0}_", nCamID)))
+                        list.Add(it);
+                }
             }
             return list;
         }
         public static List<string> GetTemplateListForSpecCamera(int nCamID, List<string> fileListInDataDirection)
         {
             var list = new List<string>();
-            foreach (var it in fileListInDataDirection)
+            if (fileListInDataDirection != null)
             {
-                if (it.Contains(string.Format("Cam{0}_", nCamID)))
-                    list.Add(it);
+                foreach (var it in fileListInDataDirection)
+                {
+                    if (it.Contains(string.Format("Cam{0}_", nCamID)))
+                        list.Add(it);
+                }
             }
             return list;
         }

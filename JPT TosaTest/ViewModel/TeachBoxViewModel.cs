@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Windows;
 using System.Linq;
+using AxisParaLib.UnitManager;
 
 namespace JPT_TosaTest.ViewModel
 {
@@ -36,9 +37,27 @@ namespace JPT_TosaTest.ViewModel
                     HotKeyCollect.Add(new HotKeyModel());
             }
 
+
+            LengthUnitCollection = new ObservableCollection<UnitBase>()
+            {
+                new Millimeter(),
+                new Micron(),
+                new Nano()
+            };
+            AngleUnitCollection = new ObservableCollection<UnitBase>
+            {
+                new Degree(),
+                new Radian(),
+            };
+            CurrentLengthUint = LengthUnitCollection[0];
+            CurrentAngleUint = AngleUnitCollection[0];
         }
         #region Property
         public ObservableCollection<HotKeyModel> HotKeyCollect { get; set; }
+        public ObservableCollection<UnitBase> LengthUnitCollection { get; set; }
+        public ObservableCollection<UnitBase> AngleUnitCollection { get; set; }
+        public UnitBase CurrentLengthUint { get; set; }
+        public UnitBase CurrentAngleUint { get; set; }
         #endregion
 
         #region Command

@@ -15,35 +15,37 @@ namespace JPT_TosaTest.MotionCards
     {
         private int AXIS_NUM = 12;
         private List<AxisArgs> AxisStateList = new List<AxisArgs>();
-        private static object ComportLock = new object();  
+        private static readonly object ComportLock = new object();
         SerialPort Sp = null;
         private Queue<byte> FrameRecvByteQueue = new Queue<byte>();
         private List<short> ADCRawDataList = new List<short>();
         private static Dictionary<string, IrixiEE0017> InstanceDic = new Dictionary<string, IrixiEE0017>();
 
-        public EventHandler<UInt16?>  OnOutputStateChanged;
+        public EventHandler<UInt16?> OnOutputStateChanged;
         public EventHandler<UInt16?> OnInputStateChanged;
-        public EventHandler<Tuple<byte,AxisArgs>> OnAxisStateChanged;
+        public EventHandler<Tuple<byte, AxisArgs>> OnAxisStateChanged;
 
 
-        private Irixi_Home CommandHome = new Irixi_Home();
-        private Irixi_Move CommandMove = new Irixi_Move();
-        private Irixi_MoveTrigger CommandMoveTrigger = new Irixi_MoveTrigger();
-        private Irixi_Stop CommandStop = new Irixi_Stop();
-        private Irixi_GetMcsuSta CommandGetMcsuSta = new Irixi_GetMcsuSta();
-        private Irixi_GetSysSta CommandSysSta = new Irixi_GetSysSta();
-        private Irixi_GetMemLen CommandGetMemLen = new Irixi_GetMemLen();
-        private Irixi_ReadMem CommandReadMem = new Irixi_ReadMem();
-        private Irixi_ClearMem CommandClearMem = new Irixi_ClearMem();
-        private Irixi_ReadAD CommandReadAd = new Irixi_ReadAD();
+        private Irixi_HOST_CMD_HOME CommandHome = new Irixi_HOST_CMD_HOME();
+        private Irixi_HOST_CMD_MOVE CommandMove = new Irixi_HOST_CMD_MOVE();
+        private Irixi_HOST_CMD_MOVE_TRIGGER CommandMoveTrigger = new Irixi_HOST_CMD_MOVE_TRIGGER();
+        private Irixi_HOST_CMD_STOP CommandStop = new Irixi_HOST_CMD_STOP();
+        private Irixi_HOST_CMD_SET_ACC CommandSetMoveAcc = new Irixi_HOST_CMD_SET_ACC();
+        private Irixi_HOST_CMD_GET_MCSU_STA CommandGetMcsuSta = new Irixi_HOST_CMD_GET_MCSU_STA();
+        private Irixi_HOST_CMD_GET_SYS_INFO CommandGetSysInfo = new Irixi_HOST_CMD_GET_SYS_INFO();
+        private Irixi_HOST_CMD_GET_MEM_LEN CommandGetMemLen = new Irixi_HOST_CMD_GET_MEM_LEN();
+        private Irixi_HOST_CMD_READ_MEM CommandReadMem = new Irixi_HOST_CMD_READ_MEM();
+        private Irixi_HOST_CMD_CLEAR_MEM CommandClearMem = new Irixi_HOST_CMD_CLEAR_MEM();
+        private Irixi_HOST_CMD_READ_AD CommandReadAd = new Irixi_HOST_CMD_READ_AD();
 
-        private Irixi_ConfigAdcTrig CommandConfigAdcTrigger = new Irixi_ConfigAdcTrig();
-        private Irixi_SetDout CommandSetDout = new Irixi_SetDout();
-        private Irixi_ReadDout CommandReadDout = new Irixi_ReadDout();
-        private Irixi_ReadDin CommandReadDin = new Irixi_ReadDin();
-        private Irixi_RunBlindSearch CommandRunBlindSearch = new Irixi_RunBlindSearch();
-        private Irixi_ClearSysError CommandClearSysError = new Irixi_ClearSysError();
-        private Irixi_ClearMcsuError CommandClearMcsuError = new Irixi_ClearMcsuError();
+        private Irixi_HOST_CMD_SET_T_ADC CommandSetTriggerADC = new Irixi_HOST_CMD_SET_T_ADC();
+        private Irixi_HOST_CMD_SET_DOUT CommandSetDout = new Irixi_HOST_CMD_SET_DOUT();
+        private Irixi_HOST_CMD_READ_DOUT CommandReadDout = new Irixi_HOST_CMD_READ_DOUT();
+        private Irixi_HOST_CMD_READ_DIN CommandReadDin = new Irixi_HOST_CMD_READ_DIN();
+        private Irixi_HOST_CMD_BLINDSEARCH CommandRunBlindSearch = new Irixi_HOST_CMD_BLINDSEARCH();
+        private Irixi_HOST_CMD_GET_ERR CommandClearSysError = new Irixi_HOST_CMD_GET_ERR();
+        private Irixi_HOST_CMD_SET_T_OUT CommandTriggerOut = new Irixi_HOST_CMD_SET_T_OUT();
+        private Irixi_HOST_CMD_GET_ERR CommandGetErr = new Irixi_HOST_CMD_GET_ERR();
 
         //解析包
         private AutoResetEvent ParsePackageEvent = new AutoResetEvent(false);
@@ -53,11 +55,9 @@ namespace JPT_TosaTest.MotionCards
         private CRC32 Crc32Instance = new CRC32();
         private UInt16 PACKAGE_HEADER = 0x7E;
 
-
         //查询轴状态线程
-        Task[] AxisStateCheckTaskList = new Task[12];
-
-
+        private Task[] AxisStateCheckTaskList = new Task[12];
+        double[] AccList = new double[12];
 
         private IrixiEE0017()
         {
@@ -182,12 +182,12 @@ namespace JPT_TosaTest.MotionCards
                 }
                 CommandHome.AxisNo = (byte)AxisNo;
                 CommandHome.FrameLength = 0x09;
-                CommandHome.AccStep = (UInt16)(Acc*AxisStateList[AxisNo-1].GainFactor);
+                CommandHome.AccStep = (UInt16)(Acc * AxisStateList[AxisNo - 1].GainFactor);
                 CommandHome.LSpeed = (byte)((Speed1 * AxisStateList[AxisNo - 1].GainFactor) / 100.0f);
                 CommandHome.HSpeed = (byte)((Speed2 * AxisStateList[AxisNo - 1].GainFactor) / 100.0f);
                 byte[] cmd = CommandHome.ToBytes();
                 this.ExcuteCmd(cmd);
-                CheckAxisState(Enumcmd.Home, AxisNo);
+                CheckAxisState(Enumcmd.HOST_CMD_HOME, AxisNo);
                 return true;
             }
             catch
@@ -349,6 +349,7 @@ namespace JPT_TosaTest.MotionCards
                     {
                         return false;
                     }
+                    SetMoveAcc(AxisNo, Acc);    //设置加速度
                     var speedPuse = Speed * AxisStateList[AxisNo - 1].GainFactor;
                     byte speedPer = Convert.ToByte(Math.Floor(speedPuse / 100));
                     int distancePuse = Convert.ToInt32(Distance * AxisStateList[AxisNo - 1].GainFactor);
@@ -358,7 +359,7 @@ namespace JPT_TosaTest.MotionCards
                     CommandMove.SpeedPercent = speedPer;
                     byte[] cmd = CommandMove.ToBytes();
                     this.ExcuteCmd(cmd);
-                    CheckAxisState(Enumcmd.Move, AxisNo);
+                    CheckAxisState(Enumcmd.HOST_CMD_MOVE, AxisNo);
                     return true;
                 }
                 catch (Exception ex)
@@ -386,18 +387,19 @@ namespace JPT_TosaTest.MotionCards
                     {
                         return false;
                     }
+                    SetMoveAcc(AxisNo, Acc);    //设置加速度
                     var speedPuse = Speed * AxisStateList[AxisNo - 1].GainFactor;
                     byte speedPer = Convert.ToByte(Math.Floor(speedPuse / 100));    //
                     int distancePuse = Convert.ToInt32(Distance * AxisStateList[AxisNo - 1].GainFactor);
                     CommandMoveTrigger.FrameLength = 0x0E;
-                    CommandMoveTrigger.TriggerType = TriggerType == EnumTriggerType.ADC ? Enumcmd.MoveTrigAdc : Enumcmd.MoveTrigOut;
+                    CommandMoveTrigger.TriggerType = TriggerType == EnumTriggerType.ADC ? Enumcmd.HOST_CMD_MOVE_T_ADC : Enumcmd.HOST_CMD_MOVE_T_OUT;
                     CommandMoveTrigger.AxisNo = (byte)AxisNo;
                     CommandMoveTrigger.Distance = distancePuse;
                     CommandMoveTrigger.SpeedPercent = speedPer;
                     CommandMoveTrigger.TriggerInterval = Interval;
                     byte[] cmd = CommandMoveTrigger.ToBytes();
                     this.ExcuteCmd(cmd);
-                    CheckAxisState(Enumcmd.Move, AxisNo);
+                    CheckAxisState(Enumcmd.HOST_CMD_MOVE, AxisNo);
                     return true;
                 }
                 catch (Exception ex)
@@ -406,6 +408,36 @@ namespace JPT_TosaTest.MotionCards
                 }
             }
 
+        }
+
+        public bool SetMoveAcc(int AxisNo, double Acc)
+        {
+
+            lock (ComportLock)
+            {
+                try
+                {
+                    if (AxisNo > 12 || AxisNo < 1)
+                    {
+                        return false;
+                    }
+                    if (AccList[AxisNo - 1] == Math.Round(Acc, 6))
+                    {
+                        return true;
+                    }
+                    CommandSetMoveAcc.FrameLength = 0x07;
+                    CommandSetMoveAcc.AxisNo = (byte)AxisNo;
+                    CommandSetMoveAcc.Acc = (UInt16)(Acc * AxisStateList[AxisNo - 1].GainFactor);
+                    byte[] cmd = CommandSetMoveAcc.ToBytes();
+                    this.ExcuteCmd(cmd);
+                    AccList[AxisNo - 1] = Math.Round(Acc, 6);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    return false;
+                }
+            }
         }
 
         public bool ReadIoInBit(int Index, out bool value)
@@ -522,7 +554,7 @@ namespace JPT_TosaTest.MotionCards
                     {
                         byte GPIOChannel = (byte)StartIndex;
                         byte GPIOState = (byte)((value >> (i - StartIndex)) & 0x01);
-                        WriteIoOutBit(GPIOChannel, GPIOState!=0);
+                        WriteIoOutBit(GPIOChannel, GPIOState != 0);
                     }
                 }
                 return true;
@@ -545,9 +577,9 @@ namespace JPT_TosaTest.MotionCards
             {
                 try
                 {
-                    CommandConfigAdcTrigger.FrameLength = 0x05;
-                    CommandConfigAdcTrigger.ADCChannelFlags = ChannelFlags;
-                    byte[] cmd = CommandConfigAdcTrigger.ToBytes();
+                    CommandSetTriggerADC.FrameLength = 0x05;
+                    CommandSetTriggerADC.ADCChannelFlags = ChannelFlags;
+                    byte[] cmd = CommandSetTriggerADC.ToBytes();
                     this.ExcuteCmd(cmd);
                     return true;
                 }
@@ -686,8 +718,8 @@ namespace JPT_TosaTest.MotionCards
                     CommandRunBlindSearch.SpeedPercent = (byte)((Speed * AxisStateList[AxisIndex].GainFactor) / 100);
                     CommandRunBlindSearch.Interval = (UInt16)(Interval * AxisStateList[AxisIndex].GainFactor);
                     byte[] cmd = CommandRunBlindSearch.ToBytes();
-                    CheckAxisState(Enumcmd.RunBlndSerach, HAxis);
-                    CheckAxisState(Enumcmd.RunBlndSerach, VAxis);
+                    CheckAxisState(Enumcmd.HOST_CMD_BLINDSEARCH, HAxis);
+                    CheckAxisState(Enumcmd.HOST_CMD_BLINDSEARCH, VAxis);
                     this.ExcuteCmd(cmd);
                     return true;
                 }
@@ -698,44 +730,7 @@ namespace JPT_TosaTest.MotionCards
             }
         }
 
-        public bool ClearMcsuError(int AxisNo)
-        {
-            lock (ComportLock)
-            {
-                try
-                {
-                    CommandClearMcsuError.FrameLength = 0x05;
-                    CommandClearMcsuError.AxisNo = (byte)AxisNo;
-                    byte[] cmd = CommandClearMcsuError.ToBytes();
-                    this.ExcuteCmd(cmd);
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    return false;
-                }
-            }
-        }
-
-        public bool ClearSysError()
-        {
-            lock (ComportLock)
-            {
-                try
-                {
-                    CommandClearSysError.FrameLength = 0x04;
-                    byte[] cmd = CommandClearSysError.ToBytes();
-                    Sp.Write(cmd, 0, cmd.Length);
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    return false;
-                }
-            }
-        }
-
-        public bool SetAxisPara(int AxisNo, UInt32 GainFactor, double LimitP, double LimitN, double HomeOffset, int HomeMode,string AxisName="")
+        public bool SetAxisPara(int AxisNo, UInt32 GainFactor, double LimitP, double LimitN, double HomeOffset, int HomeMode, string AxisName = "")
         {
             if (AxisNo > 12 || AxisNo < 1)
             {
@@ -779,7 +774,7 @@ namespace JPT_TosaTest.MotionCards
 
 
         private List<byte> TempList = new List<byte>();
-        private int ExpectLength=0;
+        private int ExpectLength = 0;
         private void Comport_DataReceived1(object sender, SerialDataReceivedEventArgs e)
         {
             int Len = Sp.BytesToRead;
@@ -814,10 +809,10 @@ namespace JPT_TosaTest.MotionCards
                             ProcessPackage(dataList);
                         }
                         ExpectLength = 0;
-                        TempList=new List<byte>();
+                        TempList = new List<byte>();
                     }
                 }
-            }     
+            }
         }
 
         private byte CheckSum(byte[] buf, int offset, int count)
@@ -838,14 +833,14 @@ namespace JPT_TosaTest.MotionCards
             Sp.Write(Cmd, 0, Cmd.Length);
 
         }
-     
+
         private void StartParsePackage()
         {
             long TickStart = 0;
             if (TaskParsePackage == null || TaskParsePackage.IsCanceled || TaskParsePackage.IsCompleted)
             {
                 ctsParsePackage = new CancellationTokenSource();
-                
+
                 TaskParsePackage = new Task(() =>
                 {
                     TickStart = DateTime.Now.Ticks;
@@ -885,7 +880,7 @@ namespace JPT_TosaTest.MotionCards
                                     {
                                         byte[] dataList = TempList.ToArray();
                                         UInt32 Crc32 = (UInt32)(dataList[dataList.Length - 4] + (dataList[dataList.Length - 3] << 8) + (dataList[dataList.Length - 2] << 16) + (dataList[dataList.Length - 1] << 24));
-                                        UInt32 CalcCrc32 = Crc32Instance.Calculate(dataList, 0, dataList.Length-4);
+                                        UInt32 CalcCrc32 = Crc32Instance.Calculate(dataList, 0, dataList.Length - 4);
                                         if (Crc32 == CalcCrc32) //校验成功
                                         {
                                             ProcessPackage(dataList);
@@ -901,7 +896,7 @@ namespace JPT_TosaTest.MotionCards
 
                         }
                     }
-                
+
                 }, ctsParsePackage.Token);
                 //TaskParsePackage.Start();
             }
@@ -915,7 +910,7 @@ namespace JPT_TosaTest.MotionCards
             int RealLen = data.Length;
             switch (Cmd)
             {
-                case (byte)Enumcmd.GetMcsuSta:      //读取状态值
+                case (byte)Enumcmd.HOST_CMD_GET_MCSU_STA:      //读取状态值
                     CommandGetMcsuSta.ByteArrToPackage(data);
                     MCSUS_STATE returnValue = CommandGetMcsuSta.ReturnObject as MCSUS_STATE;
                     int axisIndex = returnValue.AxisIndex;
@@ -928,25 +923,29 @@ namespace JPT_TosaTest.MotionCards
                     }
                     CommandGetMcsuSta.SetSyncFlag();
                     break;
-                case (byte)Enumcmd.GetMemLength:
+                case (byte)Enumcmd.HOST_CMD_GET_MEM_LEN:
                     CommandGetMemLen.ByteArrToPackage(data);
                     CommandGetMemLen.SetSyncFlag();
                     break;
-                case (byte)Enumcmd.ReadMem:
+                case (byte)Enumcmd.HOST_CMD_READ_MEM:
                     CommandReadMem.ByteArrToPackage(data);
                     CommandReadMem.SetSyncFlag();
 
                     break;
-                case (byte)Enumcmd.ReadDin:
+                case (byte)Enumcmd.HOST_CMD_READ_DIN:
                     CommandReadDin.ByteArrToPackage(data);  //解析包
                     CommandReadDin.SetSyncFlag();   //通知读取完毕
                     Console.WriteLine("---------ReadInOver-----------");
                     break;
-                case (byte)Enumcmd.ReadDout:
+                case (byte)Enumcmd.HOST_CMD_READ_DOUT:
                     CommandReadDout.ByteArrToPackage(data);
                     CommandReadDout.SetSyncFlag();
-                    
+
                     Console.WriteLine("---------ReadOutSetOver-----------");
+                    break;
+                case (byte)Enumcmd.HOST_CMD_GET_ERR:
+                    CommandGetErr.ByteArrToPackage(data);
+                    CommandGetErr.SetSyncFlag();
                     break;
             }
 
@@ -979,18 +978,48 @@ namespace JPT_TosaTest.MotionCards
                             }
                             else
                                 return;
-                           
+
                         }
                         Thread.Sleep(1);
-                        if (TimeSpan.FromTicks(DateTime.Now.Ticks - AxisStateList[IndexBase0].ReqStartTime).TotalSeconds >1)
+                        if (TimeSpan.FromTicks(DateTime.Now.Ticks - AxisStateList[IndexBase0].ReqStartTime).TotalSeconds > 1)
                         {
                             break; ;
                         }
-                    }  
-                    AxisStateList[IndexBase0].IsInRequest = false;  
+                    }
+                    AxisStateList[IndexBase0].IsInRequest = false;
                 });
                 AxisStateCheckTaskList[IndexBase0].Start();
             }
+        }
+
+        private bool GetLastError(out byte McsuID, out byte Error)
+        {
+            McsuID = 0xFF;
+            Error = 0;
+            lock (ComportLock)
+            {
+                try
+                {
+                    CommandGetErr.FrameLength = 0x04;
+                    byte[] cmd = CommandGetErr.ToBytes();
+                    this.ExcuteCmd(cmd);
+                    bool bRet = CommandGetErr.WaitFinish(1000);
+                    Console.WriteLine("---------ReadOutWaitOne-----------");
+                    var tuple = CommandGetErr.ReturnObject as Tuple<byte, byte>;
+                    if (tuple != null)
+                    {
+                        McsuID = tuple.Item1;
+                        Error = tuple.Item2;
+                        return true;
+                    }
+                    return false;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
         }
 
         private void GetStateWhenFirstLoad()
@@ -1013,9 +1042,11 @@ namespace JPT_TosaTest.MotionCards
             });
             for (int i = 1; i <= 12; i++)
             {
-                CheckAxisState(Enumcmd.Move, i);
+                CheckAxisState(Enumcmd.HOST_CMD_MOVE, i);
             }
         }
+
+
         #endregion
 
 

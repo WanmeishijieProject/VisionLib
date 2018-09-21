@@ -1,0 +1,26 @@
+﻿<Window x:Class="TestCamDebugLib.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ignore="http://www.galasoft.ch/ignore"
+        xmlns:camDebug="clr-namespace:CameraDebugLib;assembly=CameraDebugViewLib"
+        xmlns:lib="clr-namespace:CameraDebugViewLib;assembly=CameraDebugViewLib"
+        mc:Ignorable="d ignore"
+        Height="800"
+        Width="800"
+        Title="MVVM Light Application"
+        DataContext="{Binding Main, Source={StaticResource Locator}}">
+    
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Skins/MainSkin.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid x:Name="LayoutRoot">
+        <camDebug:UC_CameraDebug CameraConfigList="{Binding CamList,RelativeSource={RelativeSource AncestorType=Window}}"/>
+    </Grid>
+</Window>

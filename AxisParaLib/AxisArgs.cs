@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AxisParaLib.UnitManager;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -33,7 +34,6 @@ namespace AxisParaLib
             TimeOut = 10;
             IsInRequest = false;
             MoveArgs = new AxisMoveArgs();
-
         }
         public double CurAbsPos
         {
@@ -155,6 +155,7 @@ namespace AxisParaLib
         {
             get;set;
         }
+        public UnitBase Unit { get; set; }
 
         public object AxisLock { get; }
 

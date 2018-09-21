@@ -47,24 +47,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IrixiCommand\Irixi_ClearSysError.cs" />
-    <Compile Include="IrixiCommand\Irixi_ClearMem.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_GET_ERR.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_CLEAR_MEM.cs" />
     <Compile Include="IrixiCommand\Irixi_CommandEnum.cs" />
-    <Compile Include="IrixiCommand\Irixi_ConfigAdcTrig.cs" />
-    <Compile Include="IrixiCommand\Irixi_GetMcsuSta.cs" />
-    <Compile Include="IrixiCommand\Irixi_GetMemLen.cs" />
-    <Compile Include="IrixiCommand\Irixi_GetSysSta.cs" />
-    <Compile Include="IrixiCommand\Irixi_ClearMcsuError.cs" />
-    <Compile Include="IrixiCommand\Irixi_Home.cs" />
-    <Compile Include="IrixiCommand\Irixi_Move.cs" />
-    <Compile Include="IrixiCommand\Irixi_MoveTrigger.cs" />
-    <Compile Include="IrixiCommand\Irixi_ReadAD.cs" />
-    <Compile Include="IrixiCommand\Irixi_ReadDin.cs" />
-    <Compile Include="IrixiCommand\Irixi_ReadDout.cs" />
-    <Compile Include="IrixiCommand\Irixi_ReadMem.cs" />
-    <Compile Include="IrixiCommand\Irixi_RunBlindSearch.cs" />
-    <Compile Include="IrixiCommand\Irixi_SetDout.cs" />
-    <Compile Include="IrixiCommand\Irixi_Stop.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_SET_T_ADC.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_GET_MCSU_STA.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_GET_MEM_LEN.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_GET_SYS_INFO.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_GET_SYS_STA.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_SET_T_OUT.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_HOME.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_MOVE.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_MOVE_TRIGGER.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_READ_AD.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_READ_DIN.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_READ_DOUT.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_READ_MEM.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_BLINDSEARCH.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_SET_DOUT.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_SET_ACC.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_STOP.cs" />
     <Compile Include="IrixiEE0017.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

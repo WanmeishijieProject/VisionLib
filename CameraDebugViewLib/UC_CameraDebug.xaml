@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="JPT_TosaTest.UserCtrl.UC_CameraDebug"
+﻿<UserControl x:Class="CameraDebugLib.UC_CameraDebug"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -6,7 +6,7 @@
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:halcon="clr-namespace:HalconDotNet;assembly=halcondotnet"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
-             xmlns:UserCtrl="clr-namespace:JPT_TosaTest.UserCtrl"
+             xmlns:UserCtrl="clr-namespace:CameraDebugLib"
              xmlns:cmd="http://www.galasoft.ch/mvvmlight"
              Name="CameDebugUC"
              mc:Ignorable="d" 
@@ -16,6 +16,10 @@
              d:DesignHeight="800" d:DesignWidth="800">
     <UserControl.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resource/StylesResourceDictionary.xaml"/>
+                <ResourceDictionary Source="Resource/Convert.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
             <Storyboard x:Key="ModelSb">
                 <DoubleAnimation Storyboard.TargetName="SelectTrans"  Storyboard.TargetProperty="X" From="88" To="0" BeginTime="00:00:00" Duration="00:00:0.2"/>
             </Storyboard>
@@ -25,8 +29,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-       
-            <Grid DataContext="{Binding CamDebugVM, Source={StaticResource Locator}}">
+        <Grid x:Name="GridRoot"  DataContext="{StaticResource Main}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
@@ -60,8 +63,8 @@
                                     <ColumnDefinition Width="35"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Image Source="/JPT TosaTest;component/Images/GrabOnce.png" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="1" Text="{DynamicResource CameraPage_SnapOnce}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
+                                <Image Source="Images/GrabOnce.png" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="单帧采集" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
                             </Grid>
                         </Button.Content>
                     </Button>
@@ -73,8 +76,8 @@
                                     <ColumnDefinition Width="35"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Image Source="/JPT TosaTest;component/Images/GrabRepeat.png" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="1" Text="{DynamicResource CameraPage_SnapContinus}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
+                                <Image Source="Images/GrabRepeat.png" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="连续采集" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
                             </Grid>
                         </Button.Content>
                     </Button>
@@ -86,8 +89,8 @@
                                     <ColumnDefinition Width="35"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Image Source="/JPT TosaTest;component/Images/StopGrab.png" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="1" Text="{DynamicResource CameraPage_StopGrab}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="30,0,0,0"/>
+                                <Image Source="Images/StopGrab.png" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="停止采集" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="30,0,0,0"/>
 
                             </Grid>
                         </Button.Content>
@@ -102,10 +105,10 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Orientation="Vertical" Background="Gray">
-                                    <RadioButton Name="RbImage" Content="{DynamicResource CameraPage_TypeImage}" IsChecked="{Binding SaveImageType}"/>
-                                    <RadioButton Name="RbWindow" Content="{DynamicResource CameraPage_TypeWindow}"/>
+                                    <RadioButton Name="RbImage" Content="Image" IsChecked="{Binding SaveImageType}"/>
+                                    <RadioButton Name="RbWindow" Content="Window"/>
                                 </StackPanel>
-                                <TextBlock Grid.Column="1" Text="{DynamicResource CameraPage_SaveImage}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
+                                <TextBlock Grid.Column="1" Text="保存图片" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
                             </Grid>
                         </Button.Content>
                     </Button>
@@ -114,7 +117,7 @@
                         Command="{Binding OpenImageCommand}" CommandParameter="{Binding HalconWindowHandle, RelativeSource={RelativeSource AncestorType=UserControl}}">
                         <Button.Content>
                             <Grid>
-                                <TextBlock Grid.Column="1" Text="{DynamicResource CameraPage_OpenImage}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
+                                <TextBlock Grid.Column="1" Text="打开图片" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
                             </Grid>
                         </Button.Content>
                     </Button>
@@ -139,8 +142,8 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     <Rectangle Grid.Row="4" RadiusX="20" RadiusY="20" Margin="0,13,0,13"  StrokeThickness="1"  Stroke="Orange"/>
-                    <Button Grid.Row="4" VerticalAlignment="Center" Content="{DynamicResource CameraPage_AddRoi}" FontSize="20" Margin="12,18,94,18" Style="{StaticResource RoundButtonStyle1}" Background="Transparent" BorderThickness="0" Width="70" Command="{Binding NewRoiCommand}" CommandParameter="{Binding SelectedIndex,ElementName=Cb_Cameras}"/>
-                    <Button Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Content="{DynamicResource CameraPage_AddModel}" FontSize="20" Margin="90,0,0,0" Style="{StaticResource RoundButtonStyle1}" Background="Transparent" BorderThickness="0" Command="{Binding PreCreateModelCommand}" CommandParameter="{Binding SelectedIndex,ElementName=Cb_Cameras}"/>
+                    <Button Grid.Row="4" VerticalAlignment="Center" Content="+Roi" FontSize="20" Margin="12,18,94,18" Style="{StaticResource RoundButtonStyle1}" Background="Transparent" BorderThickness="0" Width="70" Command="{Binding NewRoiCommand}" CommandParameter="{Binding SelectedIndex,ElementName=Cb_Cameras}"/>
+                    <Button Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Content="+Model" FontSize="20" Margin="90,0,0,0" Style="{StaticResource RoundButtonStyle1}" Background="Transparent" BorderThickness="0" Command="{Binding PreCreateModelCommand}" CommandParameter="{Binding SelectedIndex,ElementName=Cb_Cameras}"/>
                     <Rectangle Grid.Row="4" RadiusX="20" RadiusY="20" Margin="0,13,88,13" Fill="Orange">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="MouseDown">
@@ -171,18 +174,18 @@
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <RadioButton  VerticalAlignment="Center" Content="{DynamicResource CameraPage_TypeCircle}" FontSize="15" VerticalContentAlignment="Center" IsChecked="{Binding RegionType, Converter={StaticResource IsChecked2RegionType}}"/>
-                            <RadioButton Grid.Row="1"  VerticalAlignment="Center" Content="{DynamicResource CameraPage_TypeRectangle}" FontSize="15" VerticalContentAlignment="Center" />
+                            <RadioButton  VerticalAlignment="Center" Content="圆形" FontSize="15" VerticalContentAlignment="Center" IsChecked="{Binding RegionType, Converter={StaticResource IsChecked2RegionType}}"/>
+                            <RadioButton Grid.Row="1"  VerticalAlignment="Center" Content="矩形" FontSize="15" VerticalContentAlignment="Center" />
                         </Grid>
-                        <Button Name="BtnDrawModelRegion" Grid.Column="2" Style="{StaticResource RoundButtonStyle1}" Background="LightGreen" Content="{DynamicResource CameraPage_BtnDraw}" FontSize="15" Margin="3" 
+                        <Button Name="BtnDrawModelRegion" Grid.Column="2" Style="{StaticResource RoundButtonStyle1}" Background="LightGreen" Content="绘图" FontSize="15" Margin="3" 
                             Command="{Binding PreDrawModelRegionCommand}" CommandParameter="{Binding SelectedItem, ElementName=ListBoxRoiModel}"/>
                     </Grid>
                     <ListBox x:Name="ListBoxRoiModel" Grid.Row="5" Grid.ColumnSpan="2" Grid.RowSpan="3" Margin="5" SelectedIndex="0" ItemsSource="{Binding RoiModelList}" 
                              IsEnabled="{Binding IsEnabled,ElementName=Cb_Cameras}">
                         <ListBox.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Name="MenueShow" Header="{DynamicResource CameraPage_MenuShow}" FontSize="15" Click="MenueShow_Click"/>
-                                <MenuItem Name="MenueSelectItem" Header="{DynamicResource CameraPage_MenuUseItem}" FontSize="15" Click="MenueSelectItem_Click"/>
+                                <MenuItem Name="MenueShow" Header="显示该项" FontSize="15" Click="MenueShow_Click"/>
+                                <MenuItem Name="MenueSelectItem" Header="使用该项" FontSize="15" Click="MenueSelectItem_Click"/>
                             </ContextMenu>
                         </ListBox.ContextMenu>
                         <ListBox.ItemTemplate>
@@ -210,7 +213,7 @@
                                     <ColumnDefinition Width="40"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{DynamicResource CameraPage_MaxThres}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2" FontSize="12"/>
+                                <TextBlock Text="最大阈值" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2" FontSize="12"/>
                                 <TextBlock Grid.Column="1" Text="{Binding MaxThre,Mode=OneWay}" VerticalAlignment="Center" Margin="2" FontSize="12"/>
                                 <Slider Name="MaxThreSlider" Grid.Column="2" Margin="10" Minimum="0" Maximum="255" Ticks="1" TickFrequency="1" Value="{Binding MaxThre,Mode=OneWayToSource}">
                                     <i:Interaction.Triggers>
@@ -226,7 +229,7 @@
                                     <ColumnDefinition Width="40"/>
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{DynamicResource CameraPage_MinThres}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2" FontSize="12"/>
+                                <TextBlock Text="最小阈值" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2" FontSize="12"/>
                                 <TextBlock Grid.Column="1" Text="{Binding MinThre, Mode=OneWay}" VerticalAlignment="Center" FontSize="12"/>
                                 <Slider Name="MinThreSlider" Grid.Column="2" Margin="10" Minimum="0" Maximum="255" Value="{Binding MinThre,Mode=OneWayToSource}">
                                     <i:Interaction.Triggers>
@@ -243,7 +246,7 @@
                                     <ColumnDefinition/>
                                     <ColumnDefinition Width="40"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{DynamicResource CameraPage_LightBrightness}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2" FontSize="12"/>
+                                <TextBlock Text="亮度" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2" FontSize="12"/>
                                 <TextBlock Grid.Column="1" Text="{Binding LightBrightness, Mode=OneWay}" VerticalAlignment="Center" FontSize="12"/>
                                 <Slider Name="SliderLight" Grid.Column="2" Margin="10" Minimum="0" Maximum="255" Value="{Binding LightBrightness,Mode=TwoWay}">
                                     <i:Interaction.Triggers>
@@ -262,7 +265,7 @@
                                     <ColumnDefinition Width="80"/>
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{DynamicResource CameraPage_ModelNum}" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
+                                <TextBlock Text="模板数量" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
                                 <TextBox Grid.Column="1" Margin="3" FontSize="15" VerticalContentAlignment="Center"/>
                             </Grid>
                             <Grid Grid.Row="3" Grid.Column="1">
@@ -270,12 +273,12 @@
                                     <ColumnDefinition Width="80"/>
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{DynamicResource CameraPage_MinScore}" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
+                                <TextBlock Text="最小分数" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
                                 <TextBox Grid.Column="1" Margin="3" FontSize="15" VerticalContentAlignment="Center"/>
                             </Grid>
-                            <Button Name="BtnSaveModelPara"  Margin="5,2,5,7" Content="{DynamicResource CameraPage_SaveModel}" FontSize="15" Grid.Row="4" Grid.Column="0" 
+                            <Button Name="BtnSaveModelPara"  Margin="5,2,5,7" Content="保存模板" FontSize="15" Grid.Row="4" Grid.Column="0" 
                                     Command="{Binding SaveModelParaCommand}" CommandParameter="{Binding SelectedItem, ElementName=ListBoxRoiModel}" Style="{StaticResource RoundButtonStyle1}" Background="LightBlue"/>
-                            <Button Name="BtnTestModel" Margin="5,2,5,7" Content="{DynamicResource CameraPage_TestModel}" FontSize="15" Grid.Row="4" Grid.Column="1" 
+                            <Button Name="BtnTestModel" Margin="5,2,5,7" Content="测试模板" FontSize="15" Grid.Row="4" Grid.Column="1" 
                                     Command="{Binding TestModelParaCommand}" CommandParameter="{Binding SelectedIndex, ElementName=ListBoxRoiModel}" Style="{StaticResource RoundButtonStyle1}" Background="LightBlue"/>
                         </Grid>
                     </Grid>

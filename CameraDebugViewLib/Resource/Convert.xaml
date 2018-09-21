@@ -1,0 +1,22 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:Convert="clr-namespace:CameraDebugLib.Converter"
+                    xmlns:Viewmodel="clr-namespace:CameraDebugLib.ViewModel">
+    <Convert:int2Visibility x:Key="int2Visibility"/>
+    <Convert:Bool2Visibility x:Key="Bool2Visibility"/>
+    <Convert:Int2BackgroundBrush x:Key="Int2BackgroundBrush"/>
+    <Convert:EnumCamSnapState2SnapButtonEnable x:Key="EnumCamSnapState2SnapButtonEnable"/>
+    <Convert:Text2CameStateImage x:Key="Text2CameStateImage"/>
+    <Convert:RoiTemplate2Visibility x:Key="RoiTemplate2Visibility"/>
+    <Convert:IsChecked2RegionOperator x:Key="IsChecked2RegionOperator"/>
+    <Convert:IsChecked2RegionType x:Key="IsChecked2RegionType"/>
+    <Convert:UserName2Visibility x:Key="UserName2Visibility"/>
+    <Convert:Level2Boolean x:Key="Level2Boolean"/>
+    <Convert:Bool2Image x:Key="Bool2Image"/>
+    <Convert:Bool2IoColor x:Key="Bool2IoColor"/>
+    <Convert:Int2String x:Key="Int2String"/>
+    <Convert:Double2Text x:Key="Double2Text"/>
+    <Convert:Uint2bool x:Key="Uint2bool"/>
+    <Convert:Bool2LimitColor x:Key="Bool2LimitColor"/>
+    <Viewmodel:CamDebugViewModel x:Key="Main"/>
+</ResourceDictionary>

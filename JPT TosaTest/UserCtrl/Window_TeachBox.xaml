@@ -77,9 +77,20 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="130"/>
                         <ColumnDefinition Width="130"/>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition Width="170"/>
                     </Grid.ColumnDefinitions>
                     <CheckBox Name="Cb_Sethotkey" Margin="5,0" Content="Set hotkey" FontSize="15" VerticalContentAlignment="Center"/>
                     <CheckBox Name="Cb_Usehotkey" Grid.Column="1" Margin="5,0" Content="Use hotkey"  FontSize="15" VerticalContentAlignment="Center" Click="Cb_Usehotkey_Click"/>
+                    <StackPanel Orientation="Horizontal" Grid.Column="2">
+                        <TextBlock Margin="5,0" Text="长度单位" VerticalAlignment="Center"/>
+                        <ComboBox Margin="5,0" Width="70" ItemsSource="{Binding LengthUnitCollection}" DisplayMemberPath="DisplayNameEN" SelectedItem="{Binding CurrentLengthUint}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Column="3">
+                        <TextBlock Margin="15,0" Text="角度单位" VerticalAlignment="Center"/>
+                        <ComboBox Margin="5,0" Width="70" ItemsSource="{Binding AngleUnitCollection}" DisplayMemberPath="DisplayNameEN" SelectedItem="{Binding CurrentAngleUint}"/>
+                    </StackPanel>
+                    
                 </Grid>
                 <ListBox Grid.Row="1" IsEnabled="{Binding IsChecked, ElementName=Cb_Sethotkey}" ItemsSource="{Binding HotKeyCollect}" ScrollViewer.VerticalScrollBarVisibility="Visible">
                     <ListBox.ItemTemplate>

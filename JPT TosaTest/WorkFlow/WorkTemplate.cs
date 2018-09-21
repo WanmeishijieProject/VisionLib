@@ -35,11 +35,11 @@ namespace JPT_TosaTest.WorkFlow
         {
             motion = MotionMgr.Instance.FindMotionCardByAxisIndex(4) as Motion_IrixiEE0017;
             io = IOCardMgr.Instance.FindIOCardByCardName("IO_IrixiEE0017[0]") as IO_IrixiEE0017;
-
+      
             motion.Home(2,0,0,0,0);
             motion.Home(3,0,0, 0, 0);
-            //motion.MoveRel(2, 0, 1000, 10000);
-            //motion.MoveAbs(3, 0, 1000, 10000);
+            motion.MoveRel(2, 0, 1000, 10000);
+            motion.MoveAbs(3, 0, 1000, 10000);
             // motion.MoveAbs(3, 0, 10000, 10000);
             //motion.SetTrigConfig(0xFF);
             //motion.ClearMem();

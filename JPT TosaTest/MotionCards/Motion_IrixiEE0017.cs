@@ -16,23 +16,23 @@ namespace JPT_TosaTest.MotionCards
 {
     public enum EnumMotionError
     {
-            ERR_NONE,                              ///< 0, no error
-            ERR_AXISID,                            ///< 1, unknown axis index
-            ERR_PARA,                              ///< 2, Parameter error
-            ERR_NOT_HOMED,                         ///< 3, the axis has not been home
-            ERR_BUSY,                             ///< 4, the axis is busy
-            ERR_CWLS,                              ///< 5, cwls detected
-            ERR_CCWLS,                              ///< 6, ccwls detected
-            ERR_EMERGENCY,                           ///< 7, emergency button pressed
-            ERR_USER_STOPPED,                       ///< 8, stopped by user
-            ERR_NO_STAGE_DETECTED,          ///< 9, no stage(hardware) detected
-            ERR_UNKNOWN,            ///< 10, undefined error
+        ERR_NONE,
+        ERR_PARA,
+        ERR_NOT_INIT,
+        ERR_NOT_HOMED,
+        ERR_BUSY,
+        ERR_CWLS,
+        ERR_CCWLS,
+        ERR_EMERGENCY,
+        ERR_USER_STOPPED,
+        ERR_NO_STAGE_DETECTED,
+        ERR_UNKNOWN,
+        ERR_SYS_MCSU_ID,
+        ERR_SYS_CANBUS_RX,
+        ERR_SYS_PARAM,
+        ERR_SYS_BLINDSEARCH,
 
-            /********** The next are the system errors ***********/
-            ERR_SYS_MCSU_ID = 0x80,                         ///< 128, MSCU id is out of range
-            ERR_SYS_CANBUS_RX,                              ///< 129, Can-bus receiving message error
-            ERR_SYS_PARAM                                   ///< 130, Parameter is error
-        }
+    }
 
     public class Motion_IrixiEE0017 : IMotion
     {
@@ -314,13 +314,7 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public bool Reset()
         {
-            bool bRet = true;
-            for (int i = 0; i < MAX_AXIS - MIN_AXIS; i++)
-            {
-                bRet &= _controller.ClearMcsuError(i+1);
-            }
-            bRet &= _controller.ClearSysError();
-            return bRet;
+            return true;
         }
 
 

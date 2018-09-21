@@ -1,5 +1,12 @@
-﻿using JPT_TosaTest.ViewModel;
-using JPT_TosaTest.Vision;
+﻿/*
+ MvvmLightLibs的版本报宿主程序需要与Lib一致，否则会出错
+ MvvmlightLib的版本是5.4.11
+ */
+
+
+
+using CameraDebugLib.Vision;
+using CameraDebugLib.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,8 +23,9 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using CameraDebugLib.Vision.CameraCfg;
 
-namespace JPT_TosaTest.UserCtrl
+namespace CameraDebugLib
 {
     /// <summary>
     /// UC_CameraDebug.xaml 的交互逻辑
@@ -57,6 +65,7 @@ namespace JPT_TosaTest.UserCtrl
         {
             HalconVision.Instance.GetSyncSp(out SyncEvent, out Lock, 0);
             SyncEvent.WaitOne(100);
+            var hadle = CamDebug.HalconID;
             LoadDelay(2000);
             bFirstLoaded = true;
         }
@@ -75,7 +84,11 @@ namespace JPT_TosaTest.UserCtrl
                     Task.Delay(ms).Wait();
                     bFirstLoaded = false;
                 }
-                System.Windows.Application.Current.Dispatcher.Invoke(() => { SetAttachCamWindow(true); HalconWindowHandle = CamDebug.HalconID; });
+                System.Windows.Application.Current.Dispatcher.Invoke(() => {
+                    SetAttachCamWindow(true);
+                    HalconWindowHandle = CamDebug.HalconID;
+                    (GridRoot.DataContext as CamDebugViewModel).UserControlLoadedCommand.Execute(CameraConfigList);
+                });
                
             });
         }
@@ -93,7 +106,6 @@ namespace JPT_TosaTest.UserCtrl
                         SyncEvent.Set();
                 }
             }
-
         }
         #endregion
 
@@ -105,5 +117,30 @@ namespace JPT_TosaTest.UserCtrl
         {
             (ListBoxRoiModel.DataContext as CamDebugViewModel).SelectUseRoiModelCommand.Execute(ListBoxRoiModel.SelectedItem);
         }
+
+
+        #region 外界需要传入的
+        public const string CameraConfigListPropertyName = "CameraConfigList";
+        public List<CameraConfig> CameraConfigList
+        {
+            get
+            {
+                return (List<CameraConfig>)GetValue(CameraConfigListProperty);
+            }
+            set
+            {
+                SetValue(CameraConfigListProperty, value);
+            }
+        }
+        public static readonly DependencyProperty CameraConfigListProperty = DependencyProperty.Register(
+            CameraConfigListPropertyName,
+            typeof(List<CameraConfig>),
+            typeof(UC_CameraDebug),
+            new UIPropertyMetadata(new List<CameraConfig>()));
+
+
+
+
+        #endregion
     }
 }
