@@ -183,8 +183,8 @@ namespace JPT_TosaTest.MotionCards
                 CommandHome.AxisNo = (byte)AxisNo;
                 CommandHome.FrameLength = 0x09;
                 CommandHome.AccStep = (UInt16)(Acc * AxisStateList[AxisNo - 1].GainFactor);
-                CommandHome.LSpeed = (byte)((Speed1 * AxisStateList[AxisNo - 1].GainFactor) / 100.0f);
-                CommandHome.HSpeed = (byte)((Speed2 * AxisStateList[AxisNo - 1].GainFactor) / 100.0f);
+                CommandHome.LSpeed = (byte)(Speed1);
+                CommandHome.HSpeed = (byte)(Speed2);
                 byte[] cmd = CommandHome.ToBytes();
                 this.ExcuteCmd(cmd);
                 CheckAxisState(Enumcmd.HOST_CMD_HOME, AxisNo);
@@ -250,8 +250,6 @@ namespace JPT_TosaTest.MotionCards
                 {
                     return false;
                 }
-                var speedPuse = Speed * AxisStateList[AxisNo - 1].GainFactor;
-                byte speedPer = Convert.ToByte(Math.Floor(speedPuse / 100));
                 int PosTarget = Convert.ToInt32(Pos * AxisStateList[AxisNo - 1].GainFactor);
                 int RelPos = 0;
                 if (GetMcsuState(AxisNo, out AxisArgs axisArgs))
@@ -298,10 +296,6 @@ namespace JPT_TosaTest.MotionCards
                 {
                     return false;
                 }
-                var speedPuse = Speed * AxisStateList[AxisNo - 1].GainFactor;
-                byte speedPer = Convert.ToByte(Math.Floor(speedPuse / 100));
-
-
                 int PosTarget = Convert.ToInt32(Pos * AxisStateList[AxisNo - 1].GainFactor);
                 int RelPos = 0;
                 if (GetMcsuState(AxisNo, out AxisArgs axisArgs))
@@ -350,13 +344,13 @@ namespace JPT_TosaTest.MotionCards
                         return false;
                     }
                     SetMoveAcc(AxisNo, Acc);    //设置加速度
-                    var speedPuse = Speed * AxisStateList[AxisNo - 1].GainFactor;
-                    byte speedPer = Convert.ToByte(Math.Floor(speedPuse / 100));
+                    //var speedPuse = Speed * AxisStateList[AxisNo - 1].GainFactor;
+                    //byte speedPer = Convert.ToByte(Math.Floor(speedPuse / 100));
                     int distancePuse = Convert.ToInt32(Distance * AxisStateList[AxisNo - 1].GainFactor);
                     CommandMove.FrameLength = 0x0C;
                     CommandMove.AxisNo = (byte)AxisNo;
                     CommandMove.Distance = distancePuse;
-                    CommandMove.SpeedPercent = speedPer;
+                    CommandMove.SpeedPercent = (byte)Speed;
                     byte[] cmd = CommandMove.ToBytes();
                     this.ExcuteCmd(cmd);
                     CheckAxisState(Enumcmd.HOST_CMD_MOVE, AxisNo);
@@ -388,14 +382,14 @@ namespace JPT_TosaTest.MotionCards
                         return false;
                     }
                     SetMoveAcc(AxisNo, Acc);    //设置加速度
-                    var speedPuse = Speed * AxisStateList[AxisNo - 1].GainFactor;
-                    byte speedPer = Convert.ToByte(Math.Floor(speedPuse / 100));    //
+                    //var speedPuse = Speed * AxisStateList[AxisNo - 1].GainFactor;
+                    //byte speedPer = Convert.ToByte(Math.Floor(speedPuse / 100));    //
                     int distancePuse = Convert.ToInt32(Distance * AxisStateList[AxisNo - 1].GainFactor);
                     CommandMoveTrigger.FrameLength = 0x0E;
                     CommandMoveTrigger.TriggerType = TriggerType == EnumTriggerType.ADC ? Enumcmd.HOST_CMD_MOVE_T_ADC : Enumcmd.HOST_CMD_MOVE_T_OUT;
                     CommandMoveTrigger.AxisNo = (byte)AxisNo;
                     CommandMoveTrigger.Distance = distancePuse;
-                    CommandMoveTrigger.SpeedPercent = speedPer;
+                    CommandMoveTrigger.SpeedPercent = (byte)Speed;
                     CommandMoveTrigger.TriggerInterval = Interval;
                     byte[] cmd = CommandMoveTrigger.ToBytes();
                     this.ExcuteCmd(cmd);
@@ -427,7 +421,7 @@ namespace JPT_TosaTest.MotionCards
                     }
                     CommandSetMoveAcc.FrameLength = 0x07;
                     CommandSetMoveAcc.AxisNo = (byte)AxisNo;
-                    CommandSetMoveAcc.Acc = (UInt16)(Acc * AxisStateList[AxisNo - 1].GainFactor);
+                    CommandSetMoveAcc.Acc = (UInt16)(Acc);
                     byte[] cmd = CommandSetMoveAcc.ToBytes();
                     this.ExcuteCmd(cmd);
                     AccList[AxisNo - 1] = Math.Round(Acc, 6);
@@ -836,71 +830,72 @@ namespace JPT_TosaTest.MotionCards
 
         private void StartParsePackage()
         {
-            long TickStart = 0;
-            if (TaskParsePackage == null || TaskParsePackage.IsCanceled || TaskParsePackage.IsCompleted)
-            {
-                ctsParsePackage = new CancellationTokenSource();
+            #region 解析包放在中断中进行
+            //long TickStart = 0;
+            //if (TaskParsePackage == null || TaskParsePackage.IsCanceled || TaskParsePackage.IsCompleted)
+            //{
+            //ctsParsePackage = new CancellationTokenSource();
 
-                TaskParsePackage = new Task(() =>
-                {
-                    TickStart = DateTime.Now.Ticks;
-                    List<byte> TempList = new List<byte>();
-                    int ExpectLength = 0;
-                    while (!ctsParsePackage.IsCancellationRequested)
-                    {
-                        Thread.Sleep(1);
-                        if (FrameRecvByteQueue.Count > 0)
-                        {
-                            byte data = 0x00;
-                            lock (PackageQueueLock)
-                            {
-                                try
-                                {
-                                    data = FrameRecvByteQueue.Dequeue();
-                                }
-                                catch (InvalidOperationException ex)
-                                {
-                                    continue;
-                                }
-                            }
-                            if (data == PACKAGE_HEADER && TempList.Count == 0)
-                            {
-                                TempList.Add(data);
-                            }
-                            else if (TempList.Count > 0)
-                            {
-                                TempList.Add(data);
-                                if (TempList.Count == 3)
-                                {
-                                    ExpectLength = TempList[1] + (TempList[2] << 8);
-                                }
-                                else if (ExpectLength > 0)
-                                {
-                                    if (TempList.Count == ExpectLength + 7)
-                                    {
-                                        byte[] dataList = TempList.ToArray();
-                                        UInt32 Crc32 = (UInt32)(dataList[dataList.Length - 4] + (dataList[dataList.Length - 3] << 8) + (dataList[dataList.Length - 2] << 16) + (dataList[dataList.Length - 1] << 24));
-                                        UInt32 CalcCrc32 = Crc32Instance.Calculate(dataList, 0, dataList.Length - 4);
-                                        if (Crc32 == CalcCrc32) //校验成功
-                                        {
-                                            ProcessPackage(dataList);
-                                        }
-                                        ExpectLength = 0;
-                                        TempList = new List<byte>();
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
+            //TaskParsePackage = new Task(() =>
+            //{
+            //    TickStart = DateTime.Now.Ticks;
+            //    List<byte> TempList = new List<byte>();
+            //    int ExpectLength = 0;
+            //    while (!ctsParsePackage.IsCancellationRequested)
+            //    {
+            //        Thread.Sleep(1);
+            //        if (FrameRecvByteQueue.Count > 0)
+            //        {
+            //            byte data = 0x00;
+            //            lock (PackageQueueLock)
+            //            {
+            //                try
+            //                {
+            //                    data = FrameRecvByteQueue.Dequeue();
+            //                }
+            //                catch (InvalidOperationException ex)
+            //                {
+            //                    continue;
+            //                }
+            //            }
+            //            if (data == PACKAGE_HEADER && TempList.Count == 0)
+            //            {
+            //                TempList.Add(data);
+            //            }
+            //            else if (TempList.Count > 0)
+            //            {
+            //                TempList.Add(data);
+            //                if (TempList.Count == 3)
+            //                {
+            //                    ExpectLength = TempList[1] + (TempList[2] << 8);
+            //                }
+            //                else if (ExpectLength > 0)
+            //                {
+            //                    if (TempList.Count == ExpectLength + 7)
+            //                    {
+            //                        byte[] dataList = TempList.ToArray();
+            //                        UInt32 Crc32 = (UInt32)(dataList[dataList.Length - 4] + (dataList[dataList.Length - 3] << 8) + (dataList[dataList.Length - 2] << 16) + (dataList[dataList.Length - 1] << 24));
+            //                        UInt32 CalcCrc32 = Crc32Instance.Calculate(dataList, 0, dataList.Length - 4);
+            //                        if (Crc32 == CalcCrc32) //校验成功
+            //                        {
+            //                            ProcessPackage(dataList);
+            //                        }
+            //                        ExpectLength = 0;
+            //                        TempList = new List<byte>();
+            //                    }
+            //                }
+            //            }
+            //        }
+            //        else
+            //        {
 
-                        }
-                    }
+            //        }
+            //    }
 
-                }, ctsParsePackage.Token);
-                //TaskParsePackage.Start();
-            }
-            Thread.Sleep(1000);
+            //}, ctsParsePackage.Token);
+            //TaskParsePackage.Start();
+            //}
+            #endregion
             GetStateWhenFirstLoad();
         }
         //处理收到的包
@@ -1022,14 +1017,15 @@ namespace JPT_TosaTest.MotionCards
 
         }
 
-        private void GetStateWhenFirstLoad()
+        private async void GetStateWhenFirstLoad()
         {
             //第一次需要先查询一下位置
-            Task.Run(() =>
+            await Task.Run(() =>
             {
+                Thread.Sleep(5000);
                 for (int i = 0; i < 10; i++)
                 {
-                    Thread.Sleep(1000);
+                    Thread.Sleep(500);
                     UInt16? realValue = null;
                     if (ReadIoOutWord(0, out int value))
                     {
@@ -1039,16 +1035,14 @@ namespace JPT_TosaTest.MotionCards
                     if (i == 9 || realValue.HasValue)
                         break;
                 }
+
+                for (int i = 1; i <= 12; i++)
+                {
+                    CheckAxisState(Enumcmd.HOST_CMD_MOVE, i);
+                }
             });
-            for (int i = 1; i <= 12; i++)
-            {
-                CheckAxisState(Enumcmd.HOST_CMD_MOVE, i);
-            }
+           
         }
-
-
         #endregion
-
-
     }
 }

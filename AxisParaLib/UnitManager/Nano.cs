@@ -16,5 +16,7 @@ namespace AxisParaLib.UnitManager
         public override string DisplayNameCH => "纳米";
 
         public override EnumUnitCategory Category => EnumUnitCategory.Length;
+
+        public override byte DecimalPoint => 1;
     }
 }

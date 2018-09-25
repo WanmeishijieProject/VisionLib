@@ -12,13 +12,17 @@ namespace JPT_TosaTest.Converter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value.ToString();
+            if (double.TryParse(value.ToString(), out double d))
+            {
+                return d.ToString("0.######");
+            }
+            return "";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (double.TryParse(value.ToString(), out double fValue))
-                return Math.Round(fValue,4);
+                return Math.Round(fValue,6);
             return 0;
         }
     }

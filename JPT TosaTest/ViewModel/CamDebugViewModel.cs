@@ -53,8 +53,10 @@ namespace JPT_TosaTest.ViewModel
         }
         ~CamDebugViewModel()
         {
+            HalconVision.Instance.CloseCamera();
             Messenger.Default.Unregister<string>("UpdateRoiFiles");
             Messenger.Default.Unregister<string>("UpdateModelFiles");
+
         }
 
         private ObservableCollection<CameraItem> _cameraCollection = new ObservableCollection<CameraItem>();

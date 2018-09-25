@@ -239,7 +239,7 @@ namespace JPT_TosaTest.ViewModel
             {
                 if (ConfigMgr.Instance.HardwareCfgMgr.AxisSettings[j].AxisNo == AxisNoTotal)
                 {
-                    AxisStateCollection[j].CurAbsPos = args.CurAbsPos;
+                    AxisStateCollection[j].CurAbsPos = args.CurAbsPos* AxisStateCollection[j].Unit.Factor;
                     AxisStateCollection[j].IsHomed = args.IsHomed;
                     AxisStateCollection[j].IsBusy = args.IsBusy;
                     AxisStateCollection[j].ErrorCode = args.ErrorCode;

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Package
 {
 
-    public class ZigBeePackage : IPackage
+    public abstract class ZigBeePackage : IPackage
     {
         protected MemoryStream stream = null;
         protected BinaryWriter writer = null;
@@ -58,10 +58,7 @@ namespace Package
             stream.Close();
             return data;
         }
-        protected virtual void WriteData()
-        {
-            return;
-        }
+        protected abstract void WriteData();
 
         public virtual ZigBeePackage ByteArrToPackage(byte[] RawData)
         {

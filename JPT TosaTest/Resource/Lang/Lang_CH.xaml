@@ -63,7 +63,7 @@
         <system:String x:Key="SettingPage_BtnSave">保存</system:String>
 
         <system:String x:Key="TeachBox_Title">示教器</system:String>
-        <system:String x:Key="TeachBox_Speed">速度(mm/s)</system:String>
+        <system:String x:Key="TeachBox_Speed">速度(%)</system:String>
         <system:String x:Key="TeachBox_Position">位置(mm)</system:String>
         <system:String x:Key="TeachBox_Step">步进(mm)</system:String>
 

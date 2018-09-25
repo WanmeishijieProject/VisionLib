@@ -12,5 +12,6 @@ namespace AxisParaLib.UnitManager
         public override string DisplayNameEN => "mm";
         public override string DisplayNameCH => "毫米";
         public override EnumUnitCategory Category => EnumUnitCategory.Length;
+        public override byte DecimalPoint => 6;
     }
 }

@@ -335,7 +335,8 @@ namespace JPT_TosaTest.MotionCards
             AxisArgsList[AxisNo].LimitP = Setting.LimitP;
             AxisArgsList[AxisNo].HomeOffset = Setting.HomeOffset;
             AxisArgsList[AxisNo].HomeMode = (int)Setting.HomeMode;
-
+            AxisArgsList[AxisNo].AxisType = Setting.AxisType;
+         
             _controller.SetAxisPara(AxisNo + 1, Setting.GainFactor, Setting.LimitP, Setting.LimitN, Setting.HomeOffset, (int)Setting.HomeMode, Setting.AxisName);
         }
 

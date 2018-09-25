@@ -8,10 +8,10 @@ namespace AxisParaLib.UnitManager
 {
     public class UnitHelper
     {
-        public static double ConvertUnit(UnitBase FromUnit, UnitBase ToUnit, double value, int DecimalPoint)
+        public static double ConvertUnit(UnitBase FromUnit, UnitBase ToUnit, double value)
         {
             if (FromUnit.Category == ToUnit.Category)
-                return Math.Round(value * (ToUnit.Factor / FromUnit.Factor), DecimalPoint);
+                return Math.Round(value * (ToUnit.Factor / FromUnit.Factor), ToUnit.DecimalPoint);
             else
                 throw new Exception($"Can't trans unit from {FromUnit.DisplayNameEN} to {ToUnit.DisplayNameEN}");
         }

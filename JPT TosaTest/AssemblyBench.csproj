@@ -145,7 +145,6 @@
     <Compile Include="Classes\ObservableCollectionThreadSafe.cs" />
     <Compile Include="Classes\PasswordBoxBehavior.cs" />
     <Compile Include="Classes\PSSWraper.cs" />
-    <Compile Include="Classes\UniteHelper.cs" />
     <Compile Include="Communication\CommunicationMgr.cs" />
     <Compile Include="Communication\Comport.cs" />
     <Compile Include="Communication\CommunicationPortBase.cs" />
@@ -205,7 +204,7 @@
     <Compile Include="Model\RoiItem.cs" />
     <Compile Include="Model\ModelItem.cs" />
     <Compile Include="Model\RoiModelBase.cs" />
-    <Compile Include="MotionCards\AxisSetting.cs" />
+    <Compile Include="Config\HardwareManager\AxisSetting.cs" />
     <Compile Include="MotionCards\IMotion.cs" />
     <Compile Include="MotionCards\MotionMgr.cs" />
     <Compile Include="MotionCards\Motion_IrixiEE0017.cs" />

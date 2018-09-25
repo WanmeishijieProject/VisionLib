@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AxisParaLib;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JPT_TosaTest.MotionCards
+namespace JPT_TosaTest.Config.HardwareManager
 {
     /// <summary>
     /// 回原点方式
@@ -23,6 +24,11 @@ namespace JPT_TosaTest.MotionCards
     /// </summary>
     public class AxisSetting : INotifyPropertyChanged
     {
+        public AxisSetting()
+        {
+            AxisType = EnumAxisType.LinearAxis;
+        }
+
         public string AxisName { get; set; }
         public int AxisNo { set; get; }
         public UInt32 GainFactor { get; set; }
@@ -30,7 +36,7 @@ namespace JPT_TosaTest.MotionCards
         public double LimitN { get; set; }
         public double HomeOffset { get; set; }
         public EnumHomeMode HomeMode {get;set;}
-
+        public EnumAxisType AxisType { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void RaisePropertyChanged([CallerMemberName]string PropertyName = "")

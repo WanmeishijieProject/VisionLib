@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AxisParaLib.UnitManager;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace AxisParaLib
         private double _speed;
         private double _distance;
         private int _moveMode;
+        private UnitBase _unit = new Millimeter();
         public AxisMoveArgs()
         {
             Speed = 0;
@@ -55,7 +57,23 @@ namespace AxisParaLib
                 }
             }
         }
-
+        public UnitBase Unit
+        {
+            get { return _unit; }
+            set
+            {
+                if (_unit != value)
+                {
+                    Distance = UnitHelper.ConvertUnit(_unit, value, Distance);
+                    _unit = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+        public void SetUnitPrivate(UnitBase unit)
+        {
+            _unit = unit;
+        }
         public event PropertyChangedEventHandler PropertyChanged;
         private void RaisePropertyChanged([CallerMemberName] string Name = "")
         {

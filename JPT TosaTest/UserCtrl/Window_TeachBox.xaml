@@ -26,23 +26,44 @@
         </Button>
         <Grid Grid.RowSpan="2" Background="White" MouseDown="Grid_MouseDown" Margin="30,60,30,30">
             <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="5"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="110"/>
+                    <ColumnDefinition Width="110"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Axis" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="Position" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <TextBlock  Grid.Column="2" Text="Speed" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <TextBlock  Grid.Column="3" Text="Distance" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <TextBlock  Grid.Column="4" Text="Mode" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            </Grid>
+            <Grid Grid.Row="1">
+                <Line X1="3" Y1="1" X2="700" Y2="1" Stroke="Black" StrokeThickness="1"/>
+            </Grid>
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <UserCtrl:UC_AxisPos  CtrlFontSize="20" HeaderBrush="White" LabelPosBrush="LightGray"/>
-
                 <ItemsControl Grid.Column="1" ItemsSource="{Binding MonitorVM.AxisStateCollection, Source={StaticResource Locator}}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <TextBox  Width="70" Margin="2" materialDesign:HintAssist.Hint="{DynamicResource TeachBox_Speed}" Text="{Binding MoveArgs.Speed, Converter={StaticResource Double2Text}, Mode=OneWayToSource}" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="2"
+                                <TextBox  Width="110" Margin="2" materialDesign:HintAssist.Hint="{DynamicResource TeachBox_Speed}" Text="{Binding MoveArgs.Speed, Converter={StaticResource Double2Text}}" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="2"
                                         VerticalAlignment="Center" HorizontalAlignment="Center"  FontSize="13" materialDesign:HintAssist.FloatingOffset="0,-20" materialDesign:HintAssist.FloatingScale="3"/>
-                                <TextBox  Width="90" Margin="2" materialDesign:HintAssist.Hint="{DynamicResource TeachBox_Position}" Text="{Binding MoveArgs.Distance, Converter={StaticResource Double2Text}, Mode=OneWayToSource}" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="2"
+                                <TextBox  Width="110" Margin="2" materialDesign:HintAssist.Hint="{DynamicResource TeachBox_Position}" Text="{Binding MoveArgs.Distance, Converter={StaticResource Double2Text}}" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="2"
                                         VerticalAlignment="Center" HorizontalAlignment="Center"  FontSize="13" materialDesign:HintAssist.FloatingOffset="0,-20" materialDesign:HintAssist.FloatingScale="3" />
                                 <ComboBox SelectedIndex="{Binding MoveArgs.MoveMode, Mode=TwoWay}" Width="55" FontSize="17" Margin="2">
                                     <ComboBox.Items>
@@ -68,7 +89,7 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </Grid>
-            <Grid Grid.Row="1" VerticalAlignment="Bottom">
+            <Grid Grid.Row="3" VerticalAlignment="Bottom">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="40"/>
                     <RowDefinition Height="*"/>

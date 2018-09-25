@@ -17,5 +17,6 @@ namespace AxisParaLib.UnitManager
         public abstract string DisplayNameEN { get; }
         public abstract string DisplayNameCH { get; }
         public abstract EnumUnitCategory Category {get;}
+        public abstract byte DecimalPoint { get; }
     }
 }

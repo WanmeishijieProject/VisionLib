@@ -15,5 +15,7 @@ namespace AxisParaLib.UnitManager
         public override string DisplayNameCH => "弧度";
 
         public override EnumUnitCategory Category => EnumUnitCategory.Angle;
+
+        public override byte DecimalPoint => 6;
     }
 }

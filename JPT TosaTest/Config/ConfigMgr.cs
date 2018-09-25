@@ -111,7 +111,6 @@ namespace JPT_TosaTest.Config
                                 motionBase = hardWareMgrType.Assembly.CreateInstance("JPT_TosaTest.MotionCards." + motionCfg.Name.Substring(0, motionCfg.Name.IndexOf("[")), true, BindingFlags.CreateInstance, null, /*new object[] { motionCfg }*/null, null, null) as IMotion;
                                 if (motionBase != null)
                                 {
-  
                                     if (motionCfg.ConnectMode.ToLower() != "none")
                                     {
                                         var p = hardWareMgrType.GetProperty($"{motionCfg.ConnectMode}s");
@@ -121,19 +120,20 @@ namespace JPT_TosaTest.Config
                                         {
                                             if (motionBase.Init(motionCfg, ports.ElementAt(0)))
                                             {
-                                                MotionMgr.Instance.AddMotionCard(motionCfg.Name, motionBase);
-                                                for (int i = 0; i < motionBase.MAX_AXIS-motionBase.MIN_AXIS; i++)
+                                                //设置单位，轴类型， 软限位等
+                                                for (int i = 0; i < motionBase.MAX_AXIS - motionBase.MIN_AXIS; i++)
                                                 {
-                                                    var settings = HardwareCfgMgr.AxisSettings.Where(a => a.AxisNo == (i + motionBase.MIN_AXIS));
+                                                    var settings = HardwareCfgMgr.AxisSettings.Where(a => a.AxisNo == i + motionBase.MIN_AXIS);
                                                     try
                                                     {
-                                                        motionBase.SetAxisPara(i, settings.Count() == 0 ? null : settings.First());
+                                                        motionBase.SetAxisPara(i, settings == null ? null : settings.First());
                                                     }
                                                     catch (Exception ex)
                                                     {
                                                         errList.Add($"{ex.Message}");
                                                     }
                                                 }
+                                                MotionMgr.Instance.AddMotionCard(motionCfg.Name, motionBase);
                                             }
                                             else
                                                 errList.Add($"{motionCfg.Name} init failed");
@@ -143,12 +143,13 @@ namespace JPT_TosaTest.Config
                                     }
                                     else  //无需选择通信端口
                                     {
+                                    
                                         if (motionBase.Init(motionCfg, null))
                                         {
-                                            MotionMgr.Instance.AddMotionCard(motionCfg.Name, motionBase);
+                                            //设置单位，轴类型， 软限位等
                                             for (int i = 0; i < motionBase.MAX_AXIS - motionBase.MIN_AXIS; i++)
                                             {
-                                                var settings = HardwareCfgMgr.AxisSettings.Where(a => a.AxisNo == i+ motionBase.MIN_AXIS);
+                                                var settings = HardwareCfgMgr.AxisSettings.Where(a => a.AxisNo == i + motionBase.MIN_AXIS);
                                                 try
                                                 {
                                                     motionBase.SetAxisPara(i, settings == null ? null : settings.First());
@@ -158,6 +159,7 @@ namespace JPT_TosaTest.Config
                                                     errList.Add($"{ex.Message}");
                                                 }
                                             }
+                                            MotionMgr.Instance.AddMotionCard(motionCfg.Name, motionBase);
                                         }
                                         else
                                             errList.Add($"{motionCfg.Name} init failed");

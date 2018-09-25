@@ -63,7 +63,7 @@
     <system:String x:Key="SettingPage_BtnSave">Save</system:String>
 
     <system:String x:Key="TeachBox_Title">TeachBox</system:String>
-    <system:String x:Key="TeachBox_Speed">Speed(mm/s)</system:String>
+    <system:String x:Key="TeachBox_Speed">Speed(%)</system:String>
     <system:String x:Key="TeachBox_Position">Position(mm)</system:String>
     <system:String x:Key="TeachBox_Step">Step(mm)</system:String>
 

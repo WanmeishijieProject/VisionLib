@@ -10,6 +10,11 @@ using System.Threading.Tasks;
 
 namespace AxisParaLib
 {
+    public enum EnumAxisType
+    {
+        LinearAxis,
+        RotaryAxis,
+    }
 
     public class AxisArgs : INotifyPropertyChanged
     {
@@ -21,10 +26,11 @@ namespace AxisParaLib
         private bool _limitPTrigged;
         private bool _limitNTrigged;
         private bool _originTrigged;
+        private UnitBase _unit=new Millimeter();
+        private EnumAxisType _axisType;
 
         public AxisArgs()
         {
-            
             CurAbsPos = 0;
             IsHomed = false;
             IsBusy = false;
@@ -34,6 +40,7 @@ namespace AxisParaLib
             TimeOut = 10;
             IsInRequest = false;
             MoveArgs = new AxisMoveArgs();
+            _axisType = EnumAxisType.LinearAxis;
         }
         public double CurAbsPos
         {
@@ -155,7 +162,44 @@ namespace AxisParaLib
         {
             get;set;
         }
-        public UnitBase Unit { get; set; }
+        public UnitBase Unit
+        {
+            get { return _unit; }
+            set {
+                if (_unit != value)
+                {
+                    CurAbsPos = UnitHelper.ConvertUnit(_unit, value, CurAbsPos);
+                    LimitP = UnitHelper.ConvertUnit(_unit, value, LimitP);
+                    LimitN = UnitHelper.ConvertUnit(_unit, value, LimitN);
+                    HomeOffset = UnitHelper.ConvertUnit(_unit, value, HomeOffset);
+                    MoveArgs.Unit = value;
+                    _unit = value;
+                    UpdateProperty(ref _unit, value);                
+                }
+            }
+        }
+        public EnumAxisType AxisType
+        {
+            get { return _axisType; }
+            set
+            {
+                if (_axisType != value)
+                {
+                    if (value == EnumAxisType.RotaryAxis)
+                    {
+                        _unit = new Degree();
+                    }
+                    else
+                    {
+                        _unit = new Millimeter();
+                    }
+                    MoveArgs.SetUnitPrivate(_unit);
+                    _axisType = value;
+                    UpdateProperty(ref _axisType, value);
+                }
+            }
+        }
+
 
         public object AxisLock { get; }
 

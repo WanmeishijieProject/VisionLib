@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using System.Windows;
 using System.Linq;
 using AxisParaLib.UnitManager;
+using Microsoft.Practices.ServiceLocation;
 
 namespace JPT_TosaTest.ViewModel
 {
@@ -21,6 +22,12 @@ namespace JPT_TosaTest.ViewModel
     {
 
         private Dictionary<string,Tuple<HotKey,HotKey>> HotKeyDic = new Dictionary<string, Tuple<HotKey, HotKey>>();
+        private UnitBase _currentLengthUint, _currentAngleUint;
+
+        //是否需要这样做
+        private MonitorViewModel monitorVM= ServiceLocator.Current.GetInstance<MonitorViewModel>();
+
+
         public TeachBoxViewModel()
         {
             HotKeyCollect = new ObservableCollection<HotKeyModel>();
@@ -49,15 +56,50 @@ namespace JPT_TosaTest.ViewModel
                 new Degree(),
                 new Radian(),
             };
-            CurrentLengthUint = LengthUnitCollection[0];
-            CurrentAngleUint = AngleUnitCollection[0];
+            _currentLengthUint = LengthUnitCollection[0];
+            _currentAngleUint = AngleUnitCollection[0];
         }
         #region Property
         public ObservableCollection<HotKeyModel> HotKeyCollect { get; set; }
         public ObservableCollection<UnitBase> LengthUnitCollection { get; set; }
         public ObservableCollection<UnitBase> AngleUnitCollection { get; set; }
-        public UnitBase CurrentLengthUint { get; set; }
-        public UnitBase CurrentAngleUint { get; set; }
+        public UnitBase CurrentLengthUint
+        {
+            get { return _currentLengthUint; }
+            set {
+                if (_currentLengthUint != value)
+                {
+                    foreach (var it in monitorVM.AxisStateCollection)
+                    {
+                        if (it.Unit.Category == value.Category)
+                        {
+                            it.Unit = value;
+                        }
+                    }
+                    _currentLengthUint = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+        public UnitBase CurrentAngleUint
+        {
+            get { return _currentAngleUint; }
+            set
+            {
+                if (_currentAngleUint != value)
+                {
+                    foreach (var it in monitorVM.AxisStateCollection)
+                    {
+                        if (it.Unit.Category == value.Category)
+                        {
+                            it.Unit = value;
+                        }
+                    }
+                    _currentAngleUint = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
         #endregion
 
         #region Command
@@ -69,7 +111,7 @@ namespace JPT_TosaTest.ViewModel
                 {
                     try
                     {
-                        MotionMgr.Instance.Home(args.AxisNo,0, 500,2000,10000);
+                        MotionMgr.Instance.Home(args.AxisNo,0, 500,5,10);
                     }
                     catch (Exception ex)
                     {
@@ -87,9 +129,11 @@ namespace JPT_TosaTest.ViewModel
                     try
                     {
                         if (args.MoveArgs.MoveMode == 0)
-                            MotionMgr.Instance.MoveAbs(args.AxisNo, 0, args.MoveArgs.Speed, args.MoveArgs.Distance);
+                        {
+                            MotionMgr.Instance.MoveAbs(args.AxisNo, 200, args.MoveArgs.Speed, args.MoveArgs.Distance/args.Unit.Factor);
+                        }
                         else
-                            MotionMgr.Instance.MoveRel(args.AxisNo, 0, args.MoveArgs.Speed, -Math.Abs(args.MoveArgs.Distance));
+                            MotionMgr.Instance.MoveRel(args.AxisNo, 200, args.MoveArgs.Speed, -Math.Abs(args.MoveArgs.Distance/args.Unit.Factor));
                     }
                     catch (Exception ex)
                     {
@@ -107,9 +151,9 @@ namespace JPT_TosaTest.ViewModel
                     try
                     {
                         if (args.MoveArgs.MoveMode == 0)
-                            MotionMgr.Instance.MoveAbs(args.AxisNo, 0, args.MoveArgs.Speed, args.MoveArgs.Distance);
+                            MotionMgr.Instance.MoveAbs(args.AxisNo, 100, args.MoveArgs.Speed, args.MoveArgs.Distance/args.Unit.Factor);
                         else
-                            MotionMgr.Instance.MoveRel(args.AxisNo, 0, args.MoveArgs.Speed, Math.Abs(args.MoveArgs.Distance));
+                            MotionMgr.Instance.MoveRel(args.AxisNo, 100, args.MoveArgs.Speed, Math.Abs(args.MoveArgs.Distance/args.Unit.Factor));
                     }
                     catch (Exception ex)
                     {
@@ -197,7 +241,7 @@ namespace JPT_TosaTest.ViewModel
                             HotKeyModel hotkeyModel = Model.First();
                             var motion = MotionMgr.Instance.FindMotionCardByAxisIndex(hotkeyModel.AxisNo);
                             var arg = motion.AxisArgsList[hotkeyModel.AxisNo - motion.MIN_AXIS].MoveArgs;
-                            MotionMgr.Instance.MoveRel(hotkeyModel.AxisNo, 0, arg.Speed, Math.Abs(arg.Distance));
+                            MotionMgr.Instance.MoveRel(hotkeyModel.AxisNo, 100, arg.Speed, Math.Abs(arg.Distance/arg.Unit.Factor));
                         }
                         break;
                     }
@@ -223,7 +267,7 @@ namespace JPT_TosaTest.ViewModel
                             HotKeyModel hotkeyModel = Model.First();
                             var motion = MotionMgr.Instance.FindMotionCardByAxisIndex(hotkeyModel.AxisNo);
                             var arg = motion.AxisArgsList[hotkeyModel.AxisNo - motion.MIN_AXIS].MoveArgs;
-                            MotionMgr.Instance.MoveRel(hotkeyModel.AxisNo, 0, arg.Speed, -Math.Abs(arg.Distance));
+                            MotionMgr.Instance.MoveRel(hotkeyModel.AxisNo, 100, arg.Speed, -Math.Abs(arg.Distance/arg.Unit.Factor));
                         }
                         break;
                     }
