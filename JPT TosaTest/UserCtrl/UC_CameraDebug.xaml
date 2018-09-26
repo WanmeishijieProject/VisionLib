@@ -52,7 +52,7 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Button Background="LightGreen" Style="{StaticResource RoundButtonStyle1}" Height="50" ToolTip="单帧采集" Margin="5"  Command="{Binding GrabOnceCommand}" 
+                    <Button Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Height="50" ToolTip="单帧采集" Margin="5"  Command="{Binding GrabOnceCommand}" 
                         IsEnabled="{Binding CamSnapState,ConverterParameter=SnapOnce,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}">
                         <Button.Content>
                             <Grid>
@@ -60,12 +60,12 @@
                                     <ColumnDefinition Width="35"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Image Source="/JPT TosaTest;component/Images/GrabOnce.png" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="1" Text="{DynamicResource CameraPage_SnapOnce}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
+                                <!--<Image Source="/JPT TosaTest;component/Images/GrabOnce.png" HorizontalAlignment="Center" VerticalAlignment="Center"/>-->
+                                <TextBlock Grid.Column="1" Text="{DynamicResource CameraPage_SnapOnce}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                             </Grid>
                         </Button.Content>
                     </Button>
-                    <Button Grid.Column="1" Background="LightGreen" Style="{StaticResource RoundButtonStyle1}" Height="50" ToolTip="连续采集" Margin="5" Command="{Binding GrabContinusCommand}" 
+                    <Button Grid.Column="1" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Height="50" ToolTip="连续采集" Margin="5" Command="{Binding GrabContinusCommand}" 
                         IsEnabled="{Binding CamSnapState,ConverterParameter=SnapContinuous,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}">
                         <Button.Content>
                             <Grid>
@@ -73,12 +73,12 @@
                                     <ColumnDefinition Width="35"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Image Source="/JPT TosaTest;component/Images/GrabRepeat.png" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="1" Text="{DynamicResource CameraPage_SnapContinus}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
+                                <!--<Image Source="/JPT TosaTest;component/Images/GrabRepeat.png" HorizontalAlignment="Center" VerticalAlignment="Center"/>-->
+                                <TextBlock Grid.Column="1" Text="{DynamicResource CameraPage_SnapContinus}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                             </Grid>
                         </Button.Content>
                     </Button>
-                    <Button Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource RoundButtonStyle1}"  Background="LightGreen" ToolTip="停止采集" Margin="5" Height="50" Command="{Binding StopGrabCommand}"
+                    <Button Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource RoundButtonStyle1}"  Background="{StaticResource ThemColor}" ToolTip="停止采集" Margin="5" Height="50" Command="{Binding StopGrabCommand}"
                         IsEnabled="{Binding CamSnapState,ConverterParameter=StopSnap,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}">
                         <Button.Content>
                             <Grid>
@@ -86,13 +86,13 @@
                                     <ColumnDefinition Width="35"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Image Source="/JPT TosaTest;component/Images/StopGrab.png" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="1" Text="{DynamicResource CameraPage_StopGrab}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="30,0,0,0"/>
+                                <!--<Image Source="/JPT TosaTest;component/Images/StopGrab.png" HorizontalAlignment="Center" VerticalAlignment="Center"/>-->
+                                <TextBlock Grid.Column="1" Text="{DynamicResource CameraPage_StopGrab}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 
                             </Grid>
                         </Button.Content>
                     </Button>
-                    <Button Name="BtnSaveImage" Grid.Row="2" Grid.Column="1" Style="{StaticResource RoundButtonStyle1}"  Background="LightGreen" ToolTip="保存图像" Margin="5" Height="50"
+                    <Button Name="BtnSaveImage" Grid.Row="2" Grid.Column="1" Style="{StaticResource RoundButtonStyle1}"  Background="{StaticResource ThemColor}" ToolTip="保存图像" Margin="5" Height="50"
                         IsEnabled="{Binding CamSnapState,ConverterParameter=SnapOnce,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}" 
                         Command="{Binding SaveImagerCommand}" CommandParameter="{Binding HalconWindowHandle, RelativeSource={RelativeSource AncestorType=UserControl}}">
                         <Button.Content>
@@ -101,7 +101,7 @@
                                     <ColumnDefinition Width="70"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <StackPanel Orientation="Vertical" Background="Gray">
+                                <StackPanel Orientation="Vertical" Background="Transparent">
                                     <RadioButton Name="RbImage" Content="{DynamicResource CameraPage_TypeImage}" IsChecked="{Binding SaveImageType}"/>
                                     <RadioButton Name="RbWindow" Content="{DynamicResource CameraPage_TypeWindow}"/>
                                 </StackPanel>
@@ -109,7 +109,7 @@
                             </Grid>
                         </Button.Content>
                     </Button>
-                    <Button Name="BtnOpenImage" Grid.Row="2" Style="{StaticResource RoundButtonStyle1}"  Background="LightGreen" ToolTip="打开图片" Margin="5" Height="50"
+                    <Button Name="BtnOpenImage" Grid.Row="2" Style="{StaticResource RoundButtonStyle1}"  Background="{StaticResource ThemColor}" ToolTip="打开图片" Margin="5" Height="50"
                         IsEnabled="{Binding CamSnapState,ConverterParameter=SnapOnce,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}"
                         Command="{Binding OpenImageCommand}" CommandParameter="{Binding HalconWindowHandle, RelativeSource={RelativeSource AncestorType=UserControl}}">
                         <Button.Content>
@@ -138,10 +138,10 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <Rectangle Grid.Row="4" RadiusX="20" RadiusY="20" Margin="0,13,0,13"  StrokeThickness="1"  Stroke="Orange"/>
+                    <Rectangle Grid.Row="4" RadiusX="20" RadiusY="20" Margin="0,13,0,13"  StrokeThickness="1"  Stroke="{StaticResource ThemColor}"/>
                     <Button Grid.Row="4" VerticalAlignment="Center" Content="{DynamicResource CameraPage_AddRoi}" FontSize="20" Margin="12,18,94,18" Style="{StaticResource RoundButtonStyle1}" Background="Transparent" BorderThickness="0" Width="70" Command="{Binding NewRoiCommand}" CommandParameter="{Binding SelectedIndex,ElementName=Cb_Cameras}"/>
                     <Button Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Content="{DynamicResource CameraPage_AddModel}" FontSize="20" Margin="90,0,0,0" Style="{StaticResource RoundButtonStyle1}" Background="Transparent" BorderThickness="0" Command="{Binding PreCreateModelCommand}" CommandParameter="{Binding SelectedIndex,ElementName=Cb_Cameras}"/>
-                    <Rectangle Grid.Row="4" RadiusX="20" RadiusY="20" Margin="0,13,88,13" Fill="Orange">
+                    <Rectangle Grid.Row="4" RadiusX="20" RadiusY="20" Margin="0,13,88,13" Fill="{StaticResource ThemColor}">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="MouseDown">
                                 <cmd:EventToCommand Command="{Binding SwitchRoiModelCommand}" CommandParameter="{Binding ElementName=CameDebugUC}"/>
@@ -174,7 +174,7 @@
                             <RadioButton  VerticalAlignment="Center" Content="{DynamicResource CameraPage_TypeCircle}" FontSize="15" VerticalContentAlignment="Center" IsChecked="{Binding RegionType, Converter={StaticResource IsChecked2RegionType}}"/>
                             <RadioButton Grid.Row="1"  VerticalAlignment="Center" Content="{DynamicResource CameraPage_TypeRectangle}" FontSize="15" VerticalContentAlignment="Center" />
                         </Grid>
-                        <Button Name="BtnDrawModelRegion" Grid.Column="2" Style="{StaticResource RoundButtonStyle1}" Background="LightGreen" Content="{DynamicResource CameraPage_BtnDraw}" FontSize="15" Margin="3" 
+                        <Button Name="BtnDrawModelRegion" Grid.Column="2" Style="{StaticResource RoundButtonStyle1}" Background="{StaticResource ThemColor}" Content="{DynamicResource CameraPage_BtnDraw}" FontSize="15" Margin="3" 
                             Command="{Binding PreDrawModelRegionCommand}" CommandParameter="{Binding SelectedItem, ElementName=ListBoxRoiModel}"/>
                     </Grid>
                     <ListBox x:Name="ListBoxRoiModel" Grid.Row="5" Grid.ColumnSpan="2" Grid.RowSpan="3" Margin="5" SelectedIndex="0" ItemsSource="{Binding RoiModelList}" 
@@ -274,9 +274,9 @@
                                 <TextBox Grid.Column="1" Margin="3" FontSize="15" VerticalContentAlignment="Center"/>
                             </Grid>
                             <Button Name="BtnSaveModelPara"  Margin="5,2,5,7" Content="{DynamicResource CameraPage_SaveModel}" FontSize="15" Grid.Row="4" Grid.Column="0" 
-                                    Command="{Binding SaveModelParaCommand}" CommandParameter="{Binding SelectedItem, ElementName=ListBoxRoiModel}" Style="{StaticResource RoundButtonStyle1}" Background="LightBlue"/>
+                                    Command="{Binding SaveModelParaCommand}" CommandParameter="{Binding SelectedItem, ElementName=ListBoxRoiModel}" Style="{StaticResource RoundButtonStyle1}" Background="{StaticResource ThemColor}"/>
                             <Button Name="BtnTestModel" Margin="5,2,5,7" Content="{DynamicResource CameraPage_TestModel}" FontSize="15" Grid.Row="4" Grid.Column="1" 
-                                    Command="{Binding TestModelParaCommand}" CommandParameter="{Binding SelectedIndex, ElementName=ListBoxRoiModel}" Style="{StaticResource RoundButtonStyle1}" Background="LightBlue"/>
+                                    Command="{Binding TestModelParaCommand}" CommandParameter="{Binding SelectedIndex, ElementName=ListBoxRoiModel}" Style="{StaticResource RoundButtonStyle1}" Background="{StaticResource ThemColor}"/>
                         </Grid>
                     </Grid>
                 </Grid>

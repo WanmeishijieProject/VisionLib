@@ -13,6 +13,8 @@ using System.Data;
 using AxisParaLib;
 using System.Windows.Controls;
 using JPT_TosaTest.Classes;
+using JPT_TosaTest.MotionCards;
+using AxisParaLib.UnitManager;
 
 namespace JPT_TosaTest.ViewModel
 {
@@ -36,8 +38,6 @@ namespace JPT_TosaTest.ViewModel
                 Application.Current.Dispatcher.Invoke(()=>ShowErrorinfo(msg));
             });
 
-
-
             ResultCollection = new ObservableCollection<ResultItem>()
             {
               new ResultItem(){ Index=1, HSG_X=1, HSG_Y=2, HSG_R=3, PLC_X=5, PLC_Y=6, PLC_R=7 }
@@ -59,6 +59,10 @@ namespace JPT_TosaTest.ViewModel
             for (int i = 0; i < 10; i++)
                 stationLock[i] = new object();
 
+
+
+
+            // 初始化示教点
             List<string> PrePointColumns = new List<string>();
             DataForPreSetPosition = new DataTable();
             DataForPreSetPosition.Columns.Add("PointName");
@@ -306,7 +310,13 @@ namespace JPT_TosaTest.ViewModel
                     {
                         DataRow dr = DataForPreSetPosition.NewRow();
                         for (int i = 0; i < AxisStatecollection.Count; i++)
-                            dr[i + 1] = AxisStatecollection[i].CurAbsPos;
+                        {
+                            if(AxisStatecollection[i].Unit.Category==EnumUnitCategory.Length)
+                                dr[i + 1] = UnitHelper.ConvertUnit(AxisStatecollection[i].Unit, new Millimeter(), AxisStatecollection[i].CurAbsPos);
+                            else
+                                dr[i+1]=UnitHelper.ConvertUnit(AxisStatecollection[i].Unit, new Degree(), AxisStatecollection[i].CurAbsPos);
+
+                        }
                         DataForPreSetPosition.Rows.Add(dr);
                     }
                 });
@@ -331,25 +341,6 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
-        /// <summary>
-        /// 主菜单弹出示教盒按钮
-        /// </summary>
-        public RelayCommand BtnTeachCommand
-        {
-            get
-            {
-                return new RelayCommand(() =>
-               {
-
-                   if (OpenedEvent.WaitOne(200))
-                   {
-                       Window_TeachBox dlg = new Window_TeachBox(ref OpenedEvent);
-                       dlg.Show();
-                       //dlg.Topmost = true;
-                   }
-               });
-            }
-        }
 
         public RelayCommand<DataGridCellInfo> MoveToPtCommand
         {
@@ -366,7 +357,8 @@ namespace JPT_TosaTest.ViewModel
                         {
                             var data = item[index];
                             int AxisNo = Config.ConfigMgr.Instance.HardwareCfgMgr.AxisSettings[index - 1].AxisNo;
-                            MotionCards.MotionMgr.Instance.MoveAbs(AxisNo, 0, 10000, double.Parse(data.ToString()));
+                            MotionMgr.Instance.GetAxisState(AxisNo, out AxisArgs arg);
+                            MotionMgr.Instance.MoveAbs(AxisNo, 100, 10, double.Parse(data.ToString()));
                         }
                     }
                 });

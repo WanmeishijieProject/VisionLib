@@ -96,5 +96,24 @@ namespace JPT_TosaTest.UserCtrl
             typeof(Brush),
             typeof(UC_AxisPos),
             new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0, 0, 0))));
+
+
+        public const string ItemHeightPropertyName = "ItemHeight";
+        public int ItemHeight
+        {
+            get
+            {
+                return (int)GetValue(ItemHeightProperty);
+            }
+            set
+            {
+                SetValue(ItemHeightProperty, value);
+            }
+        }
+        public static readonly DependencyProperty ItemHeightProperty = DependencyProperty.Register(
+            ItemHeightPropertyName,
+            typeof(int),
+            typeof(UC_AxisPos),
+            new UIPropertyMetadata(20));
     }
 }

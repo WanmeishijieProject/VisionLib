@@ -30,21 +30,6 @@ namespace JPT_TosaTest.ViewModel
 
         public TeachBoxViewModel()
         {
-            HotKeyCollect = new ObservableCollection<HotKeyModel>();
-            foreach (var it in ConfigMgr.Instance.HardwareCfgMgr.AxisSettings)
-            {
-                var MotionCard = MotionMgr.Instance.FindMotionCardByAxisIndex(it.AxisNo);
-                if (MotionCard != null)
-                    HotKeyCollect.Add(new HotKeyModel()
-                    {
-                        AxisName = MotionCard.AxisArgsList[it.AxisNo - MotionCard.MIN_AXIS].AxisName,
-                        AxisNo = MotionCard.AxisArgsList[it.AxisNo - MotionCard.MIN_AXIS].AxisNo,
-                    });
-                else
-                    HotKeyCollect.Add(new HotKeyModel());
-            }
-
-
             LengthUnitCollection = new ObservableCollection<UnitBase>()
             {
                 new Millimeter(),
@@ -60,7 +45,6 @@ namespace JPT_TosaTest.ViewModel
             _currentAngleUint = AngleUnitCollection[0];
         }
         #region Property
-        public ObservableCollection<HotKeyModel> HotKeyCollect { get; set; }
         public ObservableCollection<UnitBase> LengthUnitCollection { get; set; }
         public ObservableCollection<UnitBase> AngleUnitCollection { get; set; }
         public UnitBase CurrentLengthUint
@@ -162,12 +146,6 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
-        public RelayCommand<Tuple<Window, bool>> RegisterHotKeyCommand
-        {
-            get { return new RelayCommand<Tuple<Window,bool>>(tuple=> {
-                RegisterHotKey(tuple.Item2, tuple.Item1);
-            }); }
-        }
         public RelayCommand WindowLoadCommand
         {
             get
@@ -188,95 +166,19 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
+        public RelayCommand StopAllAxisCommand { get; } = new RelayCommand(()=> {
+            foreach (var it in MotionMgr.Instance.MotionDic)
+            {
+                it.Value.Stop();
+            }
+        });
+   
         #endregion
 
         #region private
-
         private void ShowError(string msg)
         {
             Messenger.Default.Send<string>(msg, "Error");
-        }
-
-        private void RegisterHotKey(bool bRegister, System.Windows.Window win)
-        {
-            if (bRegister)
-            {
-                foreach (var it in HotKeyCollect)
-                {
-                    if (!string.IsNullOrEmpty(it.BackwardKeyValue) && !string.IsNullOrEmpty(it.ForwardKeyValue))
-                    {
-                        if (Enum.TryParse(it.BackwardKeyValue, out Keys backwardKey) && Enum.TryParse(it.ForwardKeyValue, out Keys forwardKey))
-                        {
-                            HotKey BackWardHotKey = new HotKey(win, HotKey.KeyFlags.MOD_NOREPEAT, backwardKey);
-                            HotKey ForWardHotKey = new HotKey(win, HotKey.KeyFlags.MOD_NOREPEAT, forwardKey);
-                            BackWardHotKey.OnHotKey += BackWardHotKey_OnHotKey;
-                            ForWardHotKey.OnHotKey += ForWardHotKey_OnHotKey;
-                            if (!HotKeyDic.ContainsKey(it.AxisName))
-                                HotKeyDic.Add(it.AxisName, new Tuple<HotKey, HotKey>(BackWardHotKey, ForWardHotKey));
-                        }
-                    }
-                }
-            }
-            else
-            {
-                foreach (var it in HotKeyDic)
-                {
-                    it.Value.Item1.UnRegisterHotKey();
-                    it.Value.Item2.UnRegisterHotKey();
-                }
-            }
-        }
-
-        private void ForWardHotKey_OnHotKey(Keys key)
-        {
-            try
-            {
-                foreach (var it in HotKeyDic)
-                {
-                    if (it.Value.Item2.Key == (uint)key)
-                    {
-                        var Model = from models in HotKeyCollect where models.AxisName == it.Key select models;
-                        if (Model != null && Model.Count() > 0)
-                        {
-                            HotKeyModel hotkeyModel = Model.First();
-                            var motion = MotionMgr.Instance.FindMotionCardByAxisIndex(hotkeyModel.AxisNo);
-                            var arg = motion.AxisArgsList[hotkeyModel.AxisNo - motion.MIN_AXIS].MoveArgs;
-                            MotionMgr.Instance.MoveRel(hotkeyModel.AxisNo, 100, arg.Speed, Math.Abs(arg.Distance/arg.Unit.Factor));
-                        }
-                        break;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Messenger.Default.Send<string>(ex.Message, "Error");
-            }
-        }
-
-        private void BackWardHotKey_OnHotKey(Keys key)
-        {
-            try
-            {
-                foreach (var it in HotKeyDic)
-                {
-                    if (it.Value.Item1.Key == (uint)key)
-                    {
-                        var Model = from models in HotKeyCollect where models.AxisName == it.Key select models;
-                        if (Model != null && Model.Count() > 0)
-                        {
-                            HotKeyModel hotkeyModel = Model.First();
-                            var motion = MotionMgr.Instance.FindMotionCardByAxisIndex(hotkeyModel.AxisNo);
-                            var arg = motion.AxisArgsList[hotkeyModel.AxisNo - motion.MIN_AXIS].MoveArgs;
-                            MotionMgr.Instance.MoveRel(hotkeyModel.AxisNo, 100, arg.Speed, -Math.Abs(arg.Distance/arg.Unit.Factor));
-                        }
-                        break;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Messenger.Default.Send<string>(ex.Message, "Error");
-            }
         }
         #endregion
     }

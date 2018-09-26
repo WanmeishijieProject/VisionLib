@@ -180,6 +180,7 @@ namespace JPT_TosaTest.MotionCards
                 {
                     return false;
                 }
+                SetMoveAcc(AxisNo, Acc);
                 CommandHome.AxisNo = (byte)AxisNo;
                 CommandHome.FrameLength = 0x09;
                 CommandHome.AccStep = (UInt16)(Acc * AxisStateList[AxisNo - 1].GainFactor);
@@ -250,8 +251,7 @@ namespace JPT_TosaTest.MotionCards
                 {
                     return false;
                 }
-                int PosTarget = Convert.ToInt32(Pos * AxisStateList[AxisNo - 1].GainFactor);
-                int RelPos = 0;
+                double RelPos = 0;
                 if (GetMcsuState(AxisNo, out AxisArgs axisArgs))
                 {
                     if (axisArgs != null)
@@ -260,7 +260,7 @@ namespace JPT_TosaTest.MotionCards
                         {
                             if (axisArgs.ErrorCode == 0)
                             {
-                                RelPos = PosTarget - Convert.ToInt32(axisArgs.CurAbsPos * axisArgs.GainFactor);
+                                RelPos = Pos - axisArgs.CurAbsPos/axisArgs.Unit.Factor;
                             }
                         }
                     }
@@ -287,7 +287,7 @@ namespace JPT_TosaTest.MotionCards
         /// <param name="Speed">速度</param>
         /// <param name="Pos">绝对位置</param>
         /// <returns></returns>
-        public bool MoveAbs(int AxisNo, double Acc, double Speed, double Pos, EnumTriggerType TriggerType, UInt16 Interval)
+        public bool MoveAbs(int AxisNo, double Acc, double Speed, double Pos, EnumTriggerType TriggerType, double Interval)
         {
 
             try
@@ -296,8 +296,7 @@ namespace JPT_TosaTest.MotionCards
                 {
                     return false;
                 }
-                int PosTarget = Convert.ToInt32(Pos * AxisStateList[AxisNo - 1].GainFactor);
-                int RelPos = 0;
+                double RelPos = 0;
                 if (GetMcsuState(AxisNo, out AxisArgs axisArgs))
                 {
                     if (axisArgs != null)
@@ -306,7 +305,7 @@ namespace JPT_TosaTest.MotionCards
                         {
                             if (axisArgs.ErrorCode == 0)
                             {
-                                RelPos = PosTarget - Convert.ToInt32(axisArgs.CurAbsPos * axisArgs.GainFactor);
+                                RelPos = Pos - axisArgs.CurAbsPos / axisArgs.Unit.Factor;
                             }
                         }
                     }
@@ -371,7 +370,7 @@ namespace JPT_TosaTest.MotionCards
         /// <param name="Speed">速度</param>
         /// <param name="Distance">相对距离</param>
         /// <returns></returns>
-        public bool MoveRel(int AxisNo, double Acc, double Speed, double Distance, EnumTriggerType TriggerType, UInt16 Interval)
+        public bool MoveRel(int AxisNo, double Acc, double Speed, double Distance, EnumTriggerType TriggerType, double Interval)
         {
             lock (ComportLock)
             {
@@ -390,7 +389,7 @@ namespace JPT_TosaTest.MotionCards
                     CommandMoveTrigger.AxisNo = (byte)AxisNo;
                     CommandMoveTrigger.Distance = distancePuse;
                     CommandMoveTrigger.SpeedPercent = (byte)Speed;
-                    CommandMoveTrigger.TriggerInterval = Interval;
+                    CommandMoveTrigger.TriggerInterval = (UInt16)(Interval*AxisStateList[AxisNo - 1].GainFactor);
                     byte[] cmd = CommandMoveTrigger.ToBytes();
                     this.ExcuteCmd(cmd);
                     CheckAxisState(Enumcmd.HOST_CMD_MOVE, AxisNo);

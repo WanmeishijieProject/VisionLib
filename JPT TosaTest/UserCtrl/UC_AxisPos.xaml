@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:JPT_TosaTest.UserCtrl"
              mc:Ignorable="d" 
-             d:DesignHeight="500" d:DesignWidth="500">
+             d:DesignHeight="200" d:DesignWidth="500">
     <Grid DataContext="{Binding MonitorVM, Source={StaticResource Locator}}">
         <ItemsControl ItemsSource="{Binding AxisStateCollection}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled">
             <ItemsControl.ItemsPanel>
@@ -15,10 +15,14 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <Label Margin="1" Width="50" Content="{Binding AxisName}" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center"  Background="{Binding HeaderBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                        <Label Margin="1" Width="150" Grid.Column="1" Content="{Binding CurAbsPos}" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center"  Background="{Binding LabelPosBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" Foreground="{Binding CtrlFontColor, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                    </StackPanel>
+                    <Grid Height="{Binding ItemHeight, RelativeSource={RelativeSource Mode=Self}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="200"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Margin="1" Grid.Column="0" Content="{Binding AxisName}" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalAlignment="Center"  Background="{Binding HeaderBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        <Label Margin="1" Grid.Column="1" Content="{Binding CurAbsPos}" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalAlignment="Center"  Background="{Binding LabelPosBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" Foreground="{Binding CtrlFontColor, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                    </Grid>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

@@ -33,45 +33,53 @@ namespace JPT_TosaTest.WorkFlow
         private IO_IrixiEE0017 io = null;
         protected override bool UserInit()
         {
-            motion = MotionMgr.Instance.FindMotionCardByAxisIndex(4) as Motion_IrixiEE0017;
-            io = IOCardMgr.Instance.FindIOCardByCardName("IO_IrixiEE0017[0]") as IO_IrixiEE0017;
-      
-            motion.Home(2,0,0,0,0);
-            motion.Home(3,0,0, 0, 0);
-            motion.MoveRel(2, 0, 1000, 10000);
-            motion.MoveAbs(3, 0, 1000, 10000);
-            // motion.MoveAbs(3, 0, 10000, 10000);
-            //motion.SetTrigConfig(0xFF);
-            //motion.ClearMem();
-            //motion.MoveRel(4, 0, 5000, 1000, EnumTriggerType.ADC, 100);
-            //motion.ClearMem();
+            try
+            {
+                motion = MotionMgr.Instance.FindMotionCardByAxisIndex(4) as Motion_IrixiEE0017;
+                io = IOCardMgr.Instance.FindIOCardByCardName("IO_IrixiEE0017[0]") as IO_IrixiEE0017;
 
-            //motion.GetMemLength(out UInt32 Len);
-            //motion.ReadMem(0, Len, out List<Int16> RawData);
-            //motion.GetCurrentPos(4, out double pos);
-            /*io.WriteIoOutBit(1, false);
-            io.WriteIoOutBit(2, false);
-            io.WriteIoOutBit(4, false);
-            io.WriteIoOutBit(3, false);
+                motion.Home(2, 0, 0, 0, 0);
+                motion.Home(3, 0, 0, 0, 0);
+                motion.MoveRel(2, 0, 1000, 10000);
+                motion.MoveAbs(3, 0, 1000, 10000);
+                // motion.MoveAbs(3, 0, 10000, 10000);
+                //motion.SetTrigConfig(0xFF);
+                //motion.ClearMem();
+                //motion.MoveRel(4, 0, 5000, 1000, EnumTriggerType.ADC, 100);
+                //motion.ClearMem();
 
-            io.WriteIoOutBit(1, true);
-            io.WriteIoOutBit(2, true);
-            io.WriteIoOutBit(4, true);
-            io.WriteIoOutBit(3, true);*/
-            //io.ReadIoInWord(0, out int inValue);
-            //io.WriteIoOutBit(0, false);
-            //io.WriteIoOutBit(1, false);
-            io.ReadIoInWord(0, out int value);
-            io.ReadIoOutWord(0, out value);
-            //motion.DoBlindSearch(3, 4, 500, 10, 5000, 2);
-            //motion.Stop();
+                //motion.GetMemLength(out UInt32 Len);
+                //motion.ReadMem(0, Len, out List<Int16> RawData);
+                //motion.GetCurrentPos(4, out double pos);
+                /*io.WriteIoOutBit(1, false);
+                io.WriteIoOutBit(2, false);
+                io.WriteIoOutBit(4, false);
+                io.WriteIoOutBit(3, false);
 
-            //bool bRet=io.ReadIoOutWord(0, out int value1);
-            //io.ReadIoInWord(0, out value1);
-            //if(!bRet)
-            //    Console.WriteLine("----------------------Failed------------------------");
+                io.WriteIoOutBit(1, true);
+                io.WriteIoOutBit(2, true);
+                io.WriteIoOutBit(4, true);
+                io.WriteIoOutBit(3, true);*/
+                //io.ReadIoInWord(0, out int inValue);
+                //io.WriteIoOutBit(0, false);
+                //io.WriteIoOutBit(1, false);
+                io.ReadIoInWord(0, out int value);
+                io.ReadIoOutWord(0, out value);
+                //motion.DoBlindSearch(3, 4, 500, 10, 5000, 2);
+                //motion.Stop();
 
-            return false;
+                //bool bRet=io.ReadIoOutWord(0, out int value1);
+                //io.ReadIoInWord(0, out value1);
+                //if(!bRet)
+                //    Console.WriteLine("----------------------Failed------------------------");
+
+                return false;
+            }
+            catch(Exception ex)
+            {
+                ShowInfo(ex.Message);
+                return false;
+            }
         }
         public WorkTemplate(WorkFlowConfig cfg) : base(cfg)
         {

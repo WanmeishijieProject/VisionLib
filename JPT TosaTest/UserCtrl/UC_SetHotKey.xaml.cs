@@ -17,14 +17,15 @@ using System.Windows.Shapes;
 namespace JPT_TosaTest.UserCtrl
 {
     /// <summary>
-    /// UC_TeachBox.xaml 的交互逻辑
+    /// UC_SetHotKey.xaml 的交互逻辑
     /// </summary>
-    public partial class UC_TeachBox : UserControl
+    public partial class UC_SetHotKey : UserControl
     {
-        public UC_TeachBox()
+        public UC_SetHotKey()
         {
             InitializeComponent();
         }
+
         private void TextBox_KeyDown(object sender, KeyEventArgs e)
         {
             (sender as TextBox).Text = e.Key.ToString();
@@ -35,6 +36,15 @@ namespace JPT_TosaTest.UserCtrl
         {
             (sender as TextBox).Text = e.Key.ToString();
             e.Handled = true;
+        }
+
+        private void Cb_Usehotkey_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as CheckBox).IsChecked.HasValue)
+            {
+                bool bChecked = (bool)(sender as CheckBox).IsChecked;
+                (DataContext as SettingViewModel).RegisterHotKeyCommand.Execute(new Tuple<Window, bool>(Application.Current.MainWindow, bChecked));
+            }
         }
     }
 }

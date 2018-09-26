@@ -10,14 +10,14 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core" 
         xmlns:UserCtrl="clr-namespace:JPT_TosaTest.UserCtrl"
-        dx:ThemeManager.Theme="Office2007Blue"
         mc:Ignorable="d ignore"
         Height="800"
         Width="1200"
         Title="{DynamicResource Appliction_Title}"
         Icon="Images/AppIcon.png"
         Loaded="Window_Loaded"
-        DataContext="{Binding Main, Source={StaticResource Locator}}">
+        DataContext="{Binding Main, Source={StaticResource Locator}}"
+        dx:ThemeManager.Theme="Office2007Blue">
 
     <Window.Resources>
         <ResourceDictionary>
@@ -86,11 +86,6 @@
                             Command="{Binding BtnMonitorCommand}"
                             IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Boolean}, ConverterParameter=0}"/>
                         <dxb:BarButtonItem 
-                            Content="{DynamicResource Menu_Teach}" 
-                            RibbonStyle="Large" Glyph="Images/joypad.png"
-                            Command="{Binding BtnTeachCommand}"
-                            IsVisible="{Binding LogInVM.Level,Source={StaticResource Locator} ,Converter={StaticResource Level2Boolean}, ConverterParameter=0}"/>
-                        <dxb:BarButtonItem 
                             Content="{DynamicResource Menu_User}" 
                             RibbonStyle="Large" Glyph="Images/User.png"
                             Command="{Binding BtnUserCommand}"
@@ -99,10 +94,6 @@
                 </dxr:RibbonPage>
             </dxr:RibbonDefaultPageCategory>
         </dxr:RibbonControl>
-        <!--<Grid Width="{Binding Width, ElementName=GridAxisPos}" HorizontalAlignment="Right" Background="White" Opacity="0.5"/>-->
-        <Grid Background="White" Opacity="0.5" Name="GridAxisPos" Width="Auto" Grid.RowSpan="2"  HorizontalAlignment="Right" Height="170" VerticalAlignment="Top">
-            <UserCtrl:UC_AxisPos CtrlFontSize="20"/>
-        </Grid>
         <useCtrl:UC_HomeView Grid.Row="1"  Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=1}"/>
         <useCtrl:UC_Setting Grid.Row="1"  Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=2}"/>
         <useCtrl:UC_ErrorInfo Grid.Row="1"  Visibility="{Binding ViewIndex, Converter={StaticResource int2Visibility},ConverterParameter=3}"/>
@@ -129,7 +120,7 @@
             <TextBlock Grid.Column="0" Text="{DynamicResource Status_Version}" VerticalAlignment="Center" Margin="5" Foreground="White"/>
             <TextBlock Grid.Column="1"  Text="{DynamicResource Status_User}" VerticalAlignment="Center" Margin="5" Foreground="White"/>
             <TextBlock Grid.Column="2" Text="{Binding LogInVM.CurrentStrUserName, Source={StaticResource Locator}}" VerticalAlignment="Center" Margin="5" Foreground="White"/>
-            <Grid Name="StationInfoGrid" Grid.Column="3" Background="LightBlue"/>
+            <Grid Name="StationInfoGrid" Grid.Column="3" Background="{StaticResource ThemColor}"/>
             <materialDesign:Badged Grid.Column="4" Badge="{Binding ErrorCount}" BadgeBackground="LightBlue" BadgeForeground="{Binding ErrorCount,Converter={StaticResource Int2BackgroundBrush}}" Width="150">
                 <Button Background="{Binding ErrorCount,Converter={StaticResource Int2BackgroundBrush}}" Width="150" Command="{Binding ShowInfoListCommand}" Content="{DynamicResource Status_Info}"/>
             </materialDesign:Badged>

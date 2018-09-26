@@ -10,9 +10,9 @@
              d:DesignHeight="800" d:DesignWidth="800"
              >
 
-    <UserControl.Background>
+    <!--<UserControl.Background>
         <ImageBrush ImageSource="/JPT TosaTest;component/Images/bk.jpg"/>
-    </UserControl.Background>
+    </UserControl.Background>-->
     <Grid DataContext="{Binding LogInVM , Source={StaticResource Locator}}">
         <Grid.RowDefinitions>
             <RowDefinition Height="200"/>
@@ -22,10 +22,10 @@
             <ImageBrush/>
         </Grid.Background>
 
-        <Rectangle Fill="LightBlue" Height="100" Opacity="0.5"/>
+        <Rectangle Fill="{StaticResource ThemColor}" Height="100"/>
         <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="30" Text="{Binding CurrentStrUserName}"/>
         <Grid x:Name="GridPasd" Visibility="{Binding ShowSerUserPsw, Converter={StaticResource Bool2Visibility}}" Width="400" Margin="2">
-            <Grid  Background="White" Opacity="0.8" />
+            <Grid  Background="{StaticResource ThemColor}" Opacity="0.4" />
             <Grid  Margin="0,20,0,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -54,7 +54,7 @@
         </Grid>
 
 
-        <Border Grid.Row="1" Width="600" Height="400" CornerRadius="20" BorderThickness="1">
+        <Border Grid.Row="1" Width="600" Height="400" CornerRadius="20" BorderThickness="1" Background="{StaticResource ThemColor}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="50"/>

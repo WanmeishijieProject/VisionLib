@@ -14,9 +14,9 @@ namespace JPT_TosaTest.Converter
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if ((bool)value)
-                return new SolidColorBrush(Color.FromRgb(0, 255, 0));
+                return new SolidColorBrush(Color.FromRgb(0x02, 0x88, 0xD1));
             else
-                return new SolidColorBrush(Color.FromRgb(128, 128, 128));
+                return new SolidColorBrush(Color.FromRgb(220, 220, 220));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

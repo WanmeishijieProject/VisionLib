@@ -89,7 +89,7 @@ namespace JPT_TosaTest.MotionCards
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 

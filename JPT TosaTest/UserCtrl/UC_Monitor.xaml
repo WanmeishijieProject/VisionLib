@@ -20,9 +20,9 @@
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <GroupBox Header="{DynamicResource MonitorPage_Input}" Margin="16">
+        <GroupBox Header="{DynamicResource MonitorPage_Input}" Margin="16" materialDesign:ColorZoneAssist.Mode="PrimaryLight">
             <Grid>
-                <TextBlock RenderTransformOrigin="0.5,0.5" FontSize="70" Text="{Binding CurrentIoCardCollectionInput[0].CardName}"  HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.1"/>
+                <TextBlock RenderTransformOrigin="0.5,0.5" FontSize="30" Text="{Binding CurrentIoCardCollectionInput[0].CardName}"  HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.1"/>
                 <ListView ItemsSource="{Binding CurrentIoCardCollectionInput}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -45,9 +45,9 @@
                 </ListView>
             </Grid>
         </GroupBox>
-        <GroupBox Header="{DynamicResource MonitorPage_Output}" Margin="16" Grid.Column="1">
+        <GroupBox Header="{DynamicResource MonitorPage_Output}" Margin="16" Grid.Column="1" materialDesign:ColorZoneAssist.Mode="PrimaryLight">
             <Grid>
-                <TextBlock RenderTransformOrigin="0.5,0.5" FontSize="70" Text="{Binding CurrentIoCardCollectionOutput[0].CardName}"  HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.1"/>
+                <TextBlock RenderTransformOrigin="0.5,0.5" FontSize="30" Text="{Binding CurrentIoCardCollectionOutput[0].CardName}"  HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.1"/>
                 <ListView ItemsSource="{Binding CurrentIoCardCollectionOutput}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -101,8 +101,8 @@
                     Opacity="0.3">
             <materialDesign:PackIcon Kind="StepForward" />
         </Button>
-        <GridSplitter Height="5" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch"/>
-        <GroupBox Header="{DynamicResource MonitorPage_MotionState}" Margin="16" Grid.Row="2" Grid.ColumnSpan="2">
+        <GridSplitter Height="5" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Background="{StaticResource ThemColor}"/>
+        <GroupBox Header="{DynamicResource MonitorPage_MotionState}" Margin="16" Grid.Row="2" Grid.ColumnSpan="2" materialDesign:ColorZoneAssist.Mode="PrimaryLight">
             <ListView ItemsSource="{Binding AxisStateCollection}" ScrollViewer.VerticalScrollBarVisibility="Disabled">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>

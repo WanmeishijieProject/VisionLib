@@ -248,14 +248,17 @@
     <Compile Include="UserCtrl\UC_Para.xaml.cs">
       <DependentUpon>UC_Para.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserCtrl\UC_SetHotKey.xaml.cs">
+      <DependentUpon>UC_SetHotKey.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserCtrl\UC_Setting.xaml.cs">
       <DependentUpon>UC_Setting.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserCtrl\UC_TeachBox.xaml.cs">
+      <DependentUpon>UC_TeachBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserCtrl\Window_AddRoiModel.xaml.cs">
       <DependentUpon>Window_AddRoiModel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UserCtrl\Window_TeachBox.xaml.cs">
-      <DependentUpon>Window_TeachBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\AligmentViewModel.cs" />
     <Compile Include="ViewModel\CamDebugViewModel.cs" />
@@ -359,15 +362,19 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="UserCtrl\UC_SetHotKey.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserCtrl\UC_Setting.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UserCtrl\Window_AddRoiModel.xaml">
+    <Page Include="UserCtrl\UC_TeachBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UserCtrl\Window_TeachBox.xaml">
+    <Page Include="UserCtrl\Window_AddRoiModel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

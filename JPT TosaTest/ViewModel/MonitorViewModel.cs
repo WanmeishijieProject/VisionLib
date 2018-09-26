@@ -207,7 +207,8 @@ namespace JPT_TosaTest.ViewModel
                     Console.WriteLine(index);
                     IIO io = IOCards.IOCardMgr.Instance.FindIOCardByCardNo(CurrentIoCardIndex_Output);
                     bool value = IOCollectionListOutput[CurrentIoCardIndex_Output][index-1].IsChecked;
-                    io.WriteIoOutBit(index - 1, !value);
+                    if (!io.WriteIoOutBit(index - 1, !value))
+                        Messenger.Default.Send<string>($"Can't set output{index} to {!value}");
                 });
             }
         }
