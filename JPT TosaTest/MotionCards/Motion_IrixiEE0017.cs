@@ -294,13 +294,18 @@ namespace JPT_TosaTest.MotionCards
         {
             int AxisNo = e.Item1 - 1;
             AxisArgsList[AxisNo].CurAbsPos = e.Item2.CurAbsPos;
-            AxisArgsList[AxisNo].ErrorCode = e.Item2.ErrorCode;
             AxisArgsList[AxisNo].IsBusy = e.Item2.IsBusy;
             AxisArgsList[AxisNo].IsHomed= e.Item2.IsHomed;
             AxisArgsList[AxisNo].IsInRequest = e.Item2.IsInRequest;
             OnAxisStateChanged?.Invoke(this,e.Item1 - 1, AxisArgsList[AxisNo]);
-            if (e.Item2.ErrorCode != 0)
-                OnErrorOccured?.Invoke(this,e.Item2.ErrorCode, ParseErrorCode(e.Item2.ErrorCode));
+            if (AxisArgsList[AxisNo].ErrorCode != e.Item2.ErrorCode)
+            {
+                AxisArgsList[AxisNo].ErrorCode = e.Item2.ErrorCode;
+                if (e.Item2.ErrorCode != 0)
+                {
+                    OnErrorOccured?.Invoke(this, e.Item2.ErrorCode, ParseErrorCode(e.Item2.ErrorCode));
+                }
+            }
         }
 
         public bool SetCurrentPos(int AxisNo, double Pos)

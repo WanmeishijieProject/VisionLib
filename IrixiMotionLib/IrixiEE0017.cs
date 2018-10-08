@@ -965,16 +965,14 @@ namespace JPT_TosaTest.MotionCards
                         if (this.GetMcsuState(Index, out AxisArgs state))   //更新状态
                         {
                             OnAxisStateChanged?.Invoke(this, new Tuple<byte, AxisArgs>((byte)(Index), state));
-                            if (AxisStateList[IndexBase0].ErrorCode == 0)
+                            Console.WriteLine($"Pos：{state.CurAbsPos}, ErrorCode: {state.ErrorCode}");
+                            //if (AxisStateList[IndexBase0].ErrorCode == 0)
                             {
                                 if (AxisStateList[IndexBase0].IsBusy)
                                     AxisStateList[IndexBase0].ReqStartTime = DateTime.Now.Ticks;
                             }
-                            else
-                                return;
-
                         }
-                        Thread.Sleep(1);
+                        Thread.Sleep(10);
                         if (TimeSpan.FromTicks(DateTime.Now.Ticks - AxisStateList[IndexBase0].ReqStartTime).TotalSeconds > 1)
                         {
                             break; ;

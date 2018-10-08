@@ -15,13 +15,13 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Grid Height="{Binding ItemHeight, RelativeSource={RelativeSource Mode=Self}}">
+                    <Grid Height="40">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="40"/>
                             <ColumnDefinition Width="200"/>
                         </Grid.ColumnDefinitions>
                         <Label Margin="1" Grid.Column="0" Content="{Binding AxisName}" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalAlignment="Center"  Background="{Binding HeaderBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                        <Label Margin="1" Grid.Column="1" Content="{Binding CurAbsPos}" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center" HorizontalAlignment="Center"  Background="{Binding LabelPosBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" Foreground="{Binding CtrlFontColor, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        <Label Margin="1" Grid.Column="1" Content="{Binding CurAbsPos, Converter={StaticResource double2CurPosString}}" HorizontalAlignment="Center" FontSize="{Binding CtrlFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" VerticalContentAlignment="Center"  Background="{Binding LabelPosBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" Foreground="{Binding CtrlFontColor, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                     </Grid>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

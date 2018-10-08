@@ -24,7 +24,7 @@ namespace JPT_TosaTest.Models
                     sb.Append("VisionData\\Model\\");
                     sb.Append(item.StrFullName);
                     int nCamID = Convert.ToInt16(item.StrFullName.Substring(3, 1));
-                    if (UC_MessageBox.ShowMsgBox(string.Format("确定要删除{0}吗?", item.StrName)) == System.Windows.MessageBoxResult.Yes)
+                    if (UC_MessageBox.ShowMsgBox(string.Format("确定要删除{0}吗?", item.StrName),"确认信息",MsgType.Question) == System.Windows.MessageBoxResult.Yes)
                     {
                         //三个文件同时删除
                         FileHelper.DeleteFile(sb.ToString()+".shm");

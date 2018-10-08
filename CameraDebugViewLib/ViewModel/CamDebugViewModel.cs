@@ -484,27 +484,26 @@ namespace CameraDebugLib.ViewModel
                 });
             }
         }
-        public RelayCommand<int> TestModelParaCommand
+        public RelayCommand<ModelItem> TestModelParaCommand
         {
             get
             {
-                return new RelayCommand<int>(nCamID =>
+                int nCamID = CurrentSelectedCamera;
+                return new RelayCommand<ModelItem>(item =>
                 {
+                    if (item == null)
+                    {
+                        UC_MessageBox.ShowMsgBox("请选择一个模板进行测试", "错误");
+                        return;
+                    }
                     if (nCamID >= 0)
                     {
                         double angle = 0.0f;
-                        string strRecParaFileName = "";
-                        string strModelFileName = "";
-                        if (strRecParaFileName == "" || strModelFileName == "")
-                        {
-                            UC_MessageBox.ShowMsgBox("请确认当前使用的配方选择了Roi和Model");
-                            return;
-                        }
-                        else
-                        {
-                            strRecParaFileName = $"VisionData\\Roi\\Cam{nCamID}_{strRecParaFileName}.tup";
-                            strModelFileName = $"VisionData\\Model\\Cam{nCamID}_{strModelFileName}.shm";
-                        }
+                        
+                     
+                        string strRecParaFileName = $"VisionData\\Roi\\{item.StrName}.tup";
+                        string strModelFileName = $"VisionData\\Model\\{item.StrName}.shm";
+                        
                         try
                         {
                             bool bRet = HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.GET_ANGLE_TUNE1, nCamID, $"{strRecParaFileName}&{strModelFileName}", out object result);

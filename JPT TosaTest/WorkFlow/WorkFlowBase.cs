@@ -11,7 +11,6 @@ using JPT_TosaTest.Config.SystemCfgManager;
 namespace JPT_TosaTest.WorkFlow
 {
     public delegate void StationInfoHandler(int Index, string StationName, string Msg);
-   
     public class WorkFlowBase
     {
         public bool Enable;
@@ -77,5 +76,9 @@ namespace JPT_TosaTest.WorkFlow
             //    t.Wait(5000);
         }
         protected SystemParaModel SysPara = null;
+        protected void ShowError(string ErrorMsg)
+        {
+            Messenger.Default.Send<string>(ErrorMsg, "Error");
+        }
     }
 }

@@ -122,12 +122,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CameraDebugViewLib\CameraDebugViewLib.csproj">
-      <Project>{84b618a3-4a66-4ba8-b547-e7fb001bdde0}</Project>
-      <Name>CameraDebugViewLib</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -276,7 +276,7 @@
                             <Button Name="BtnSaveModelPara"  Margin="5,2,5,7" Content="{DynamicResource CameraPage_SaveModel}" FontSize="15" Grid.Row="4" Grid.Column="0" 
                                     Command="{Binding SaveModelParaCommand}" CommandParameter="{Binding SelectedItem, ElementName=ListBoxRoiModel}" Style="{StaticResource RoundButtonStyle1}" Background="{StaticResource ThemColor}"/>
                             <Button Name="BtnTestModel" Margin="5,2,5,7" Content="{DynamicResource CameraPage_TestModel}" FontSize="15" Grid.Row="4" Grid.Column="1" 
-                                    Command="{Binding TestModelParaCommand}" CommandParameter="{Binding SelectedIndex, ElementName=ListBoxRoiModel}" Style="{StaticResource RoundButtonStyle1}" Background="{StaticResource ThemColor}"/>
+                                    Command="{Binding TestModelParaCommand}" CommandParameter="{Binding SelectedItem, ElementName=ListBoxRoiModel}" Style="{StaticResource RoundButtonStyle1}" Background="{StaticResource ThemColor}"/>
                         </Grid>
                     </Grid>
                 </Grid>

@@ -132,7 +132,7 @@ namespace JPT_TosaTest.ViewModel
                     {
                         if (user.Password.Trim() == "")
                         {
-                            UC_MessageBox.ShowMsgBox("密码不能为空", "提示");
+                            UC_MessageBox.ShowMsgBox("密码不能为空", "错误",MsgType.Error);
                             return;
                         }
                         ConfigMgr.Instance.SaveConfig(EnumConfigType.UserCfg, UserModelCollection.ToArray());
@@ -140,7 +140,7 @@ namespace JPT_TosaTest.ViewModel
                     }
                     catch (Exception ex)
                     {
-                        UC_MessageBox.ShowMsgBox(ex.Message);
+                        UC_MessageBox.ShowMsgBox(ex.Message, "错误", MsgType.Error);
                     }
                 });
             }

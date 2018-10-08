@@ -95,7 +95,7 @@ namespace JPT_TosaTest.ViewModel
                 {
                     try
                     {
-                        MotionMgr.Instance.Home(args.AxisNo,0, 500,5,10);
+                        MotionMgr.Instance.Home(args.AxisNo,500, 500,5,10);
                     }
                     catch (Exception ex)
                     {

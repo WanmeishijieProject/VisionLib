@@ -32,6 +32,7 @@
             <Convert:Double2Text x:Key="Double2Text"/>
             <Convert:Uint2bool x:Key="Uint2bool"/>
             <Convert:Bool2LimitColor x:Key="Bool2LimitColor"/>
+            <Convert:double2CurPosString x:Key="double2CurPosString"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resource/MDStyle.xaml"/>
                 <ResourceDictionary Source="Resource/StylesResourceDictionary.xaml"/>

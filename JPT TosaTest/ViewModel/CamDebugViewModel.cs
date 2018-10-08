@@ -328,7 +328,7 @@ namespace JPT_TosaTest.ViewModel
                             {
                                 if (it.StrName == Window_AddRoiModel.ProfileValue)
                                 {
-                                    UC_MessageBox.ShowMsgBox("该文件已经存在，请重新命名");
+                                    UC_MessageBox.ShowMsgBox("该文件已经存在，请重新命名","警告", MsgType.Warning);
                                     return;
                                 }
                             }
@@ -354,7 +354,7 @@ namespace JPT_TosaTest.ViewModel
                             {
                                 if (it.StrName == Window_AddRoiModel.ProfileValue)
                                 {
-                                    UC_MessageBox.ShowMsgBox("该文件已经存在，请重新命名");
+                                    UC_MessageBox.ShowMsgBox("该文件已经存在，请重新命名", "警告", MsgType.Warning);
                                     return;
                                 }
                             }
@@ -499,32 +499,28 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
-        public RelayCommand<int> TestModelParaCommand
+        public RelayCommand<ModelItem> TestModelParaCommand
         {
             get
             {
-                return new RelayCommand<int>(nCamID =>
+
+                return new RelayCommand<ModelItem>(item =>
                 {
+                    int nCamID = CurrentSelectedCamera;
+                    if (item == null)
+                    {
+                        UC_MessageBox.ShowMsgBox("请选择一个模板进行操作", "请选择模板", MsgType.Error);
+                        return;
+                    }
+                      
                     if (nCamID >= 0)
                     {
-                        double angle = 0.0f;
-                        string strRecParaFileName = "";
-                        string strModelFileName = "";
-                        if (strRecParaFileName == "" || strModelFileName == "")
-                        {
-                            UC_MessageBox.ShowMsgBox("请确认当前使用的配方选择了Roi和Model");
-                            return;
-                        }
-                        else
-                        {
-                            strRecParaFileName = $"VisionData\\Roi\\Cam{nCamID}_{strRecParaFileName}.tup";
-                            strModelFileName = $"VisionData\\Model\\Cam{nCamID}_{strModelFileName}.shm";
-                        }    
+                        string strRecParaFileName = $"VisionData\\Roi\\Cam{item.StrName}.tup";  //Model Roi
+                        string strModelFileName = $"VisionData\\Model\\Cam{item.StrName}.shm";    //Model
                         try
                         {
-                            bool bRet = HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.GET_ANGLE_TUNE1, nCamID, $"{strRecParaFileName}&{strModelFileName}", out object result);
-                            if (bRet)
-                                angle = double.Parse(result.ToString()) * 180;
+                            //查找模板并获取数据
+                            bool bRet = HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T1, nCamID, $"{strRecParaFileName}&{strModelFileName}", out object result);
                         }
                         catch (Exception ex)
                         {
@@ -545,7 +541,7 @@ namespace JPT_TosaTest.ViewModel
                         return;
                     try
                     {
-                        HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.GET_ANGLE_TUNE2, nCamID, null, out object result);
+                        HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T2, nCamID, null, out object result);
                     }
                     catch (Exception ex)
                     {

@@ -67,9 +67,9 @@ namespace JPT_TosaTest.Vision
         public List<object> _lockList = new List<object>();
         public enum IMAGEPROCESS_STEP
         {
-            GET_ANGLE_TUNE1,
-            GET_ANGLE_BLOB,
-            GET_ANGLE_TUNE2,
+            T1,
+            T2,
+            T3,
         }
         private List<HObject> HoImageList = new List<HObject>(10);    //Image
         private List<HTuple> AcqHandleList = new List<HTuple>(10);    //Aqu
@@ -301,22 +301,15 @@ namespace JPT_TosaTest.Vision
                     double Angle = 0.0f;
                     switch (nStep)
                     {
-                        case IMAGEPROCESS_STEP.GET_ANGLE_TUNE1:
-                            string[] strPara = para.ToString().Split('&');
-                            if (strPara.Length != 2)
-                                return false;
-                            string strRectRoiFileName = strPara[0];
-                            string strModelFileName = strPara[1];
-                            bRet = GetAngleTune1(HoImageList[nCamID], strModelFileName, strRectRoiFileName, out Angle);
+                        case IMAGEPROCESS_STEP.T1:  //第一步 找出模板并获取第二步与第三步的ROI数据
+                            bRet = FindModelAndGetData();
                             result = Angle;
                             return bRet;
-
-                        case IMAGEPROCESS_STEP.GET_ANGLE_TUNE2:
-                            bRet = GetAngleTune2(nCamID, out Angle);
-                            result = Angle;
-                            return bRet;
-                        case IMAGEPROCESS_STEP.GET_ANGLE_BLOB:
-
+                        case IMAGEPROCESS_STEP.T2:  //第二步，根据模板找出线（有好几个高度差需要切换）
+                            bRet = FindLineTop();   //只需要显示
+                            break;
+                        case IMAGEPROCESS_STEP.T3:  //第三步，备用
+                            bRet = FindLineBottom();    //只需要显示
                             break;
                         default:
                             break;
@@ -584,9 +577,6 @@ namespace JPT_TosaTest.Vision
                 {
                     if (it.Value != -1)
                     {
-                        //HOperatorSet.ClearWindow(it.Value);
-                        //if (HoImageList[nCamID] != null)
-                        //HOperatorSet.DispObj(HoImageList[nCamID], it.Value);
                         HOperatorSet.SetDraw(it.Value, "margin");
                         HOperatorSet.SetColor(it.Value, "green");
 
@@ -628,7 +618,7 @@ namespace JPT_TosaTest.Vision
             }
             catch (Exception ex)
             {
-                UC_MessageBox.ShowMsgBox($"{ex.Message}");
+                UC_MessageBox.ShowMsgBox($"{ex.Message}","错误", MsgType.Error);
                 return false;
             }
         }
@@ -655,7 +645,7 @@ namespace JPT_TosaTest.Vision
             }
             catch (Exception ex)
             {
-                UC_MessageBox.ShowMsgBox($"{ex.Message}");
+                UC_MessageBox.ShowMsgBox($"{ex.Message}","错误",MsgType.Error);
                 return false;
             }
         }
@@ -1284,6 +1274,21 @@ namespace JPT_TosaTest.Vision
                 ho_SelectedContours.Dispose();
                 throw new Exception($"执行获取镜头角度时发生错误:{ex.Message}");
             }
+        }
+
+        private bool FindModelAndGetData()
+        {
+            return true;
+        }
+
+        private bool FindLineTop()
+        {
+            return true;
+        }
+
+        private bool FindLineBottom()
+        {
+            return true;
         }
         #endregion
 

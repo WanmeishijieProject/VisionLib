@@ -77,7 +77,7 @@ namespace JPT_TosaTest.WorkFlow
             }
             catch(Exception ex)
             {
-                ShowInfo(ex.Message);
+                ShowError(ex.Message);
                 return false;
             }
         }
@@ -87,82 +87,90 @@ namespace JPT_TosaTest.WorkFlow
         }
         protected override int WorkFlow()
         {
-            ClearAllStep();
-            PushStep(STEP.Init);
-            int i = 0;
-            int Dir = 1;
-            while (!cts.IsCancellationRequested)
+            try
             {
-                Thread.Sleep(10);
-                if (bPause)
-                    continue;
-                nStep = PeekStep();
-                switch (nStep)
+                ClearAllStep();
+                PushStep(STEP.Init);
+                int i = 0;
+                int Dir = 1;
+                while (!cts.IsCancellationRequested)
                 {
-                    case STEP.Init:
-                        PopAndPushStep(STEP.HomeX);
-                        ShowInfo();
-                        break;
-                    case STEP.HomeX:
-                        if (motion.Home(2,0,0,0,0))
-                        {
-                            PopAndPushStep(STEP.HomeY);
-                        }
-                        ShowInfo();
-                        break;
-                    case STEP.HomeY:
-                        if(motion.Home(3, 0, 0, 0, 0))
-                            PopAndPushStep(STEP.WaitHomeOk);
-                        break;
-                    case STEP.WaitHomeOk:
-                        if (motion.IsHomeStop(2) && motion.IsHomeStop(3))
-                        {
-                            PopAndPushStep(STEP.MoveX_To_Aligment);
-                            //return 0;
-                        }
-                        break;
-                    case STEP.MoveX_To_Aligment:
-                        if (motion.MoveAbs(2,0,10000,10000))
-                        {
-                            PopAndPushStep(STEP.Wait_MoveX_To_Aligment);
-                        }
-                        break;
-               
-                    case STEP.Wait_MoveX_To_Aligment:
-                        if (motion.IsNormalStop(2))
-                        {
-                            PopAndPushStep(STEP.MoveY_To_Aligment);
-                        }
-                        ShowInfo();
-                        break;
-                    case STEP.MoveY_To_Aligment:
-                        if(motion.MoveAbs(3, 0, 10000, 10000))
-                            PopAndPushStep(STEP.Wait_MoveY_To_Aligment);
-                        ShowInfo();
-                        break;
-                    case STEP.Wait_MoveY_To_Aligment:
-                        if (motion.IsNormalStop(3))
-                        {
-                            //Thread.Sleep(1000);
-                            PopAndPushStep(STEP.StartAlignment);
-                        }
-                        break;
-                    case STEP.StartAlignment:
-                        if (motion.DoBlindSearch(2,3,1000,10,10000,5))
-                            PopAndPushStep(STEP.DO_NOTHING);
-                        break;
-                    case STEP.DO_NOTHING:
-                        Thread.Sleep(200);
-                        PopAndPushStep(STEP.EXIT);
-                        ShowInfo();
-                        break;
-                    case STEP.EXIT:
-                        return 0;
-                    default:
-                        break;
+                    Thread.Sleep(10);
+                    if (bPause)
+                        continue;
+                    nStep = PeekStep();
+                    switch (nStep)
+                    {
+                        case STEP.Init:
+                            PopAndPushStep(STEP.HomeX);
+                            ShowInfo();
+                            break;
+                        case STEP.HomeX:
+                            if (motion.Home(2, 0, 0, 0, 0))
+                            {
+                                PopAndPushStep(STEP.HomeY);
+                            }
+                            ShowInfo();
+                            break;
+                        case STEP.HomeY:
+                            if (motion.Home(3, 0, 0, 0, 0))
+                                PopAndPushStep(STEP.WaitHomeOk);
+                            break;
+                        case STEP.WaitHomeOk:
+                            if (motion.IsHomeStop(2) && motion.IsHomeStop(3))
+                            {
+                                PopAndPushStep(STEP.MoveX_To_Aligment);
+                                //return 0;
+                            }
+                            break;
+                        case STEP.MoveX_To_Aligment:
+                            if (motion.MoveAbs(2, 0, 10000, 10000))
+                            {
+                                PopAndPushStep(STEP.Wait_MoveX_To_Aligment);
+                            }
+                            break;
+
+                        case STEP.Wait_MoveX_To_Aligment:
+                            if (motion.IsNormalStop(2))
+                            {
+                                PopAndPushStep(STEP.MoveY_To_Aligment);
+                            }
+                            ShowInfo();
+                            break;
+                        case STEP.MoveY_To_Aligment:
+                            if (motion.MoveAbs(3, 0, 10000, 10000))
+                                PopAndPushStep(STEP.Wait_MoveY_To_Aligment);
+                            ShowInfo();
+                            break;
+                        case STEP.Wait_MoveY_To_Aligment:
+                            if (motion.IsNormalStop(3))
+                            {
+                                //Thread.Sleep(1000);
+                                PopAndPushStep(STEP.StartAlignment);
+                            }
+                            break;
+                        case STEP.StartAlignment:
+                            if (motion.DoBlindSearch(2, 3, 1000, 10, 10000, 5))
+                                PopAndPushStep(STEP.DO_NOTHING);
+                            break;
+                        case STEP.DO_NOTHING:
+                            Thread.Sleep(200);
+                            PopAndPushStep(STEP.EXIT);
+                            ShowInfo();
+                            break;
+                        case STEP.EXIT:
+                            return 0;
+                        default:
+                            break;
+                    }
                 }
+                return 0;
             }
-            return 0;
+            catch(Exception ex)
+            {
+                ShowError(ex.Message);
+                return -1;
+            }
         }
 
    
