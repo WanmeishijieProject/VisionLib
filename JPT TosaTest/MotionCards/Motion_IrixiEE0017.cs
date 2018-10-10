@@ -14,7 +14,7 @@ using AxisParaLib;
 
 namespace JPT_TosaTest.MotionCards
 {
-    public enum EnumMotionError
+    public enum EnumIrixiMotionError
     {
         ERR_NONE,
         ERR_PARA,
@@ -362,7 +362,7 @@ namespace JPT_TosaTest.MotionCards
         {
             if ((error >= 0x00 && error <= 0x0A) || (error >= 0x80 && error <= 0x82))
             {
-                return ((EnumMotionError)error).ToString();
+                return ((EnumIrixiMotionError)error).ToString();
             }
             return "";
         }

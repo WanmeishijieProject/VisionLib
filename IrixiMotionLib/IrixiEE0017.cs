@@ -807,19 +807,6 @@ namespace JPT_TosaTest.MotionCards
                 }
             }
         }
-
-        private byte CheckSum(byte[] buf, int offset, int count)
-        {
-            if (buf.Length < count)
-                return 0;
-            byte checksum = 0;
-            for (int i = offset; i < offset + count; i++)
-            {
-                checksum += buf[i];
-            }
-            return (byte)(checksum & 0xFF);
-        }
-
         private void ExcuteCmd(byte[] Cmd)
         {
 
@@ -965,12 +952,12 @@ namespace JPT_TosaTest.MotionCards
                         if (this.GetMcsuState(Index, out AxisArgs state))   //更新状态
                         {
                             OnAxisStateChanged?.Invoke(this, new Tuple<byte, AxisArgs>((byte)(Index), state));
-                            Console.WriteLine($"Pos：{state.CurAbsPos}, ErrorCode: {state.ErrorCode}");
+                            //Console.WriteLine($"Pos：{state.CurAbsPos}, ErrorCode: {state.ErrorCode}");
                             //if (AxisStateList[IndexBase0].ErrorCode == 0)
-                            {
-                                if (AxisStateList[IndexBase0].IsBusy)
-                                    AxisStateList[IndexBase0].ReqStartTime = DateTime.Now.Ticks;
-                            }
+                            //{
+                            if (AxisStateList[IndexBase0].IsBusy)
+                                AxisStateList[IndexBase0].ReqStartTime = DateTime.Now.Ticks;
+                            //}
                         }
                         Thread.Sleep(10);
                         if (TimeSpan.FromTicks(DateTime.Now.Ticks - AxisStateList[IndexBase0].ReqStartTime).TotalSeconds > 1)

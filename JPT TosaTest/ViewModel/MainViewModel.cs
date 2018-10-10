@@ -425,6 +425,39 @@ namespace JPT_TosaTest.ViewModel
                 return new RelayCommand(() => SavePrePointFile(PrePointSetExcel,DataForPreSetPosition));
             }
         }
+
+        public RelayCommand FindPLCCommand  //寻找模板
+        {
+            get
+            {
+                return new RelayCommand(() => {
+                    Console.WriteLine("FindPLC");
+                    ;
+                });
+            }
+        }
+
+        public RelayCommand FindLineTopCommand  //绘制顶部线
+        {
+            get
+            {
+                return new RelayCommand(() => {
+                    Console.WriteLine("FindLineTopCommand");
+                    ;
+                });
+            }
+        }
+
+        public RelayCommand FindLineBottomCommand 
+        {
+            get
+            {
+                return new RelayCommand(() => {
+                    Console.WriteLine("FindLineBottomCommand");
+                    ;
+                });
+            }
+        }
         #endregion
     }
 }
