@@ -35,10 +35,12 @@ namespace JPT_TosaTest.ViewModel
             #region CameraInit
             CameraCollection = new ObservableCollection<CameraItem>();
             int i = 0;
-            List<string> camList = new List<string>();
+            List<string> CamListSetting = new List<string>();
             foreach (var it in ConfigMgr.Instance.HardwareCfgMgr.Cameras)
-                camList.Add(it.NameForVision);
-            foreach (var it in HalconVision.Instance.FindCamera(EnumCamType.GigEVision, camList))
+                CamListSetting.Add(it.NameForVision);
+
+            var CamListFind = HalconVision.Instance.FindCamera(EnumCamType.GigEVision, CamListSetting, out List<string> ErrorList);
+            foreach (var it in CamListFind)
             {
                 bool bOpen = HalconVision.Instance.OpenCam(i++);
                 CameraCollection.Add(new CameraItem() { CameraName = it.Key, StrCameraState = bOpen ? "Connected" : "DisConnected" });

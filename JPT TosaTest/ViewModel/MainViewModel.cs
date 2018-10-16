@@ -15,6 +15,7 @@ using System.Windows.Controls;
 using JPT_TosaTest.Classes;
 using JPT_TosaTest.MotionCards;
 using AxisParaLib.UnitManager;
+using JPT_TosaTest.Vision;
 
 namespace JPT_TosaTest.ViewModel
 {
@@ -432,6 +433,7 @@ namespace JPT_TosaTest.ViewModel
             {
                 return new RelayCommand(() => {
                     Console.WriteLine("FindPLC");
+                    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T1, 0, null, out object result);
                     ;
                 });
             }
@@ -443,6 +445,7 @@ namespace JPT_TosaTest.ViewModel
             {
                 return new RelayCommand(() => {
                     Console.WriteLine("FindLineTopCommand");
+                    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T2, 0, null, out object result);
                     ;
                 });
             }
@@ -454,6 +457,7 @@ namespace JPT_TosaTest.ViewModel
             {
                 return new RelayCommand(() => {
                     Console.WriteLine("FindLineBottomCommand");
+                    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T3, 0, null, out object result);
                     ;
                 });
             }

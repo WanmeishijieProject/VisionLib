@@ -54,7 +54,7 @@ namespace JPT_TosaTest.Vision
                 _lockList.Add(new object());
             }
             HOperatorSet.GenEmptyObj(out Region);
-            CamCfgDic = FindCamera(EnumCamType.HuaRay,new List<string>() { "Cam1","Cam2"});
+            //CamCfgDic = FindCamera(EnumCamType.GigEVision,new List<string>() { "Cam_Up","Cam_Down"});
         }
         private static readonly Lazy<HalconVision> _instance = new Lazy<HalconVision>(() => new HalconVision());
         public static HalconVision Instance
@@ -654,14 +654,12 @@ namespace JPT_TosaTest.Vision
             HOperatorSet.CloseAllFramegrabbers();
             return true;       
         }
-        public Dictionary<string, Tuple<string, string>> FindCamera(EnumCamType camType, List<string> acturalNameList)
+        public Dictionary<string, Tuple<string, string>> FindCamera(EnumCamType camType, List<string> acturalNameList,out List<string> ErrorList)
         {
             Dictionary<string, Tuple<string, string>> dic = new Dictionary<string, Tuple<string, string>>();
-
+            ErrorList = new List<string>();
             try
             {
-                dic.Add("DirectShow", new Tuple<string, string>("Integrated Camera", "DirectShow"));
-                return dic;
                 HOperatorSet.InfoFramegrabber(camType.ToString(), "info_boards", out HTuple hv_Information, out HTuple hv_ValueList);
                 if (0 == hv_ValueList.Length)
                     return dic;
@@ -670,26 +668,28 @@ namespace JPT_TosaTest.Vision
                     bool bFind = false;
                     foreach (var dev in hv_ValueList.SArr)
                     {
-
-                        string Name = dev.Substring(0, dev.IndexOf("port")).Replace("device:", "").Trim();
-                        if (Name.Contains(acturalNameList[i]))
+                        var listAttr = dev.Split('|').Where(a=>a.Contains("device:"));
+                        if (listAttr != null && listAttr.Count() > 0)
                         {
-                            dic.Add(acturalNameList[i], new Tuple<string, string>(Name.Trim(), camType.ToString()));
-                            bFind = true;
-                            break;
+                            string Name = listAttr.First().Trim().Replace("device:","");
+                            if (Name.Contains(acturalNameList[i]))
+                            {
+                                dic.Add(acturalNameList[i], new Tuple<string, string>(Name.Trim(), camType.ToString()));
+                                bFind = true;
+                                break;
+                            }
                         }
                     }
                     if (!bFind)
-                        Messenger.Default.Send<String>(string.Format("相机:{0}未找到硬件，请检查硬件连接或者配置", acturalNameList[i]), "ShowError");
+                        ErrorList.Add($"相机:{ acturalNameList[i]}未找到硬件，请检查硬件连接或者配置");
                 }
-
+                CamCfgDic = dic;
                 return dic;
             }
             catch (Exception ex)
             {
-                Messenger.Default.Send<String>(string.Format("FIndCamera error:{0}", ex.Message));
+                ErrorList.Add($"FIndCamera error:{ex.Message}");
                 return dic;
-                //throw new Exception(string.Format("FIndCamera error:{0}", ex.Message));
             }
 
         }
