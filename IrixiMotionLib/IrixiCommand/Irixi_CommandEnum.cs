@@ -21,8 +21,10 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
         HOST_CMD_MOVE_T_ADC,
         HOST_CMD_STOP,
         HOST_CMD_SET_ACC,
+        HOST_CMD_SET_MODE,
         HOST_CMD_GET_SYS_INFO,
         HOST_CMD_GET_MCSU_STA,
+        HOST_CMD_GET_MCSU_SETTINGS,
         HOST_CMD_GET_SYS_STA,
         HOST_CMD_GET_ERR,
         HOST_CMD_GET_MEM_LEN,
@@ -34,7 +36,7 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
         HOST_CMD_READ_AD,
         HOST_CMD_SET_T_ADC,
         HOST_CMD_SET_T_OUT,
-        HOST_CMD_BLINDSEARCH
+        HOST_CMD_BLINDSEARCH,
     }
 
     public enum EnumTriggerType
@@ -53,7 +55,6 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
             IsBusy = false;
             IsReversed = false;
             AbsPosition = 0;
-            Acceleration = 0;
             Error = 0;
         }
         public byte AxisIndex { get; set; }
@@ -62,7 +63,7 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
         public bool IsBusy { get; set; }                   ///< Indicate whether the MCSU is busy, 0:Idle 1:Busy
         public bool IsReversed { get; set; }                ///< Indicate whether the direction of the MCSU is reversed, 0:Not Reversed 1:Reversed
         public Int32 AbsPosition { get; set; }             ///< The absolute position(steps) of the MCSU
-        public Int16 Acceleration { get; set; }           ///< The current acceleration
+        //public Int16 Acceleration { get; set; }           ///< The current acceleration
         public byte Error { get; set; }                     ///< The last error of the MCSU
     }
 

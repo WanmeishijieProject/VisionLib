@@ -46,6 +46,8 @@ namespace JPT_TosaTest.MotionCards
         private Irixi_HOST_CMD_GET_ERR CommandClearSysError = new Irixi_HOST_CMD_GET_ERR();
         private Irixi_HOST_CMD_SET_T_OUT CommandTriggerOut = new Irixi_HOST_CMD_SET_T_OUT();
         private Irixi_HOST_CMD_GET_ERR CommandGetErr = new Irixi_HOST_CMD_GET_ERR();
+        private Irixi_HOST_CMD_SET_MODE CommandSetMode = new Irixi_HOST_CMD_SET_MODE();
+        private Irixi_HOST_CMD_GET_MCSU_SETTINGS CommandGetSetting = new Irixi_HOST_CMD_GET_MCSU_SETTINGS();
 
         //解析包
         private AutoResetEvent ParsePackageEvent = new AutoResetEvent(false);
@@ -58,6 +60,7 @@ namespace JPT_TosaTest.MotionCards
         //查询轴状态线程
         private Task[] AxisStateCheckTaskList = new Task[12];
         double[] AccList = new double[12];
+        byte[] ModeList = new byte[12];
 
         private IrixiEE0017()
         {
@@ -173,7 +176,6 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public bool Home(int AxisNo, int Dir, double Acc, double Speed1, double Speed2)    //
         {
-
             try
             {
                 if (AxisNo > 12 || AxisNo < 1)
@@ -182,7 +184,6 @@ namespace JPT_TosaTest.MotionCards
                 }
                 SetMoveAcc(AxisNo, Acc);
                 CommandHome.AxisNo = (byte)AxisNo;
-                CommandHome.FrameLength = 0x09;
                 CommandHome.AccStep = (UInt16)(Acc * AxisStateList[AxisNo - 1].GainFactor);
                 CommandHome.LSpeed = (byte)(Speed1);
                 CommandHome.HSpeed = (byte)(Speed2);
@@ -384,7 +385,6 @@ namespace JPT_TosaTest.MotionCards
                     //var speedPuse = Speed * AxisStateList[AxisNo - 1].GainFactor;
                     //byte speedPer = Convert.ToByte(Math.Floor(speedPuse / 100));    //
                     int distancePuse = Convert.ToInt32(Distance * AxisStateList[AxisNo - 1].GainFactor);
-                    CommandMoveTrigger.FrameLength = 0x0E;
                     CommandMoveTrigger.TriggerType = TriggerType == EnumTriggerType.ADC ? Enumcmd.HOST_CMD_MOVE_T_ADC : Enumcmd.HOST_CMD_MOVE_T_OUT;
                     CommandMoveTrigger.AxisNo = (byte)AxisNo;
                     CommandMoveTrigger.Distance = distancePuse;
@@ -418,7 +418,6 @@ namespace JPT_TosaTest.MotionCards
                     {
                         return true;
                     }
-                    CommandSetMoveAcc.FrameLength = 0x07;
                     CommandSetMoveAcc.AxisNo = (byte)AxisNo;
                     CommandSetMoveAcc.Acc = (UInt16)(Acc);
                     byte[] cmd = CommandSetMoveAcc.ToBytes();
@@ -451,7 +450,6 @@ namespace JPT_TosaTest.MotionCards
                 value = 0;
                 try
                 {
-                    CommandReadDin.FrameLength = 0x04;
                     byte[] cmd = CommandReadDin.ToBytes();
                     this.ExcuteCmd(cmd);
                     bool bRet = CommandReadDin.WaitFinish(3000);
@@ -491,7 +489,6 @@ namespace JPT_TosaTest.MotionCards
                 value = 0;
                 try
                 {
-                    CommandReadDout.FrameLength = 0x04;
                     byte[] cmd = CommandReadDout.ToBytes();
                     lock (ComportLock)
                     {
@@ -517,7 +514,6 @@ namespace JPT_TosaTest.MotionCards
                 {
                     if (Index < 0 || Index > 8)
                         return false;
-                    CommandSetDout.FrameLength = 0x06;
                     CommandSetDout.GPIOChannel = (byte)Index;
                     CommandSetDout.GPIOState = value ? (byte)1 : (byte)0;
                     byte[] cmd = CommandSetDout.ToBytes();
@@ -570,7 +566,6 @@ namespace JPT_TosaTest.MotionCards
             {
                 try
                 {
-                    CommandSetTriggerADC.FrameLength = 0x05;
                     CommandSetTriggerADC.ADCChannelFlags = ChannelFlags;
                     byte[] cmd = CommandSetTriggerADC.ToBytes();
                     this.ExcuteCmd(cmd);
@@ -590,7 +585,7 @@ namespace JPT_TosaTest.MotionCards
                 Length = 0;
                 try
                 {
-                    CommandGetMemLen.FrameLength = 0x04;
+                   
                     byte[] cmd = CommandGetMemLen.ToBytes();
                     this.ExcuteCmd(cmd);
                     CommandGetMemLen.WaitFinish(1000);
@@ -613,7 +608,6 @@ namespace JPT_TosaTest.MotionCards
                 try
                 {
                     ADCRawDataList.Clear();
-                    CommandReadMem.FrameLength = 0x0C;
                     CommandReadMem.MemOffset = Offset;
                     CommandReadMem.MemLength = Length;
                     byte[] cmd = CommandReadMem.ToBytes();
@@ -636,7 +630,6 @@ namespace JPT_TosaTest.MotionCards
             {
                 try
                 {
-                    CommandClearMem.FrameLength = 0x04;
                     byte[] cmd = CommandClearMem.ToBytes();
                     Sp.Write(cmd, 0, cmd.Length);
                     return true;
@@ -654,7 +647,6 @@ namespace JPT_TosaTest.MotionCards
             {
                 try
                 {
-                    CommandReadAd.FrameLength = 0x05;
                     CommandReadAd.ADChannelFlags = ChannelFlags;
                     byte[] cmd = CommandReadAd.ToBytes();
                     this.ExcuteCmd(cmd);
@@ -668,6 +660,12 @@ namespace JPT_TosaTest.MotionCards
             }
         }
 
+        /// <summary>
+        /// 没有实现
+        /// </summary>
+        /// <param name="AxisNo"></param>
+        /// <param name="Pos"></param>
+        /// <returns></returns>
         public bool SetCurrentPos(int AxisNo, double Pos)
         {
             if (AxisNo > 12 || AxisNo < 1)
@@ -683,7 +681,6 @@ namespace JPT_TosaTest.MotionCards
             {
                 try
                 {
-                    CommandStop.FrameLength = 0x05;
                     CommandStop.AxisNo = (byte)0x00;
                     byte[] cmd = CommandStop.ToBytes();
                     this.ExcuteCmd(cmd);
@@ -702,7 +699,6 @@ namespace JPT_TosaTest.MotionCards
             {
                 try
                 {
-                    CommandRunBlindSearch.FrameLength = 0x11;
                     CommandRunBlindSearch.HAxisNo = (byte)HAxis;
                     CommandRunBlindSearch.VAxisNo = (byte)VAxis;
                     int AxisIndex = (int)HAxis;
@@ -750,7 +746,6 @@ namespace JPT_TosaTest.MotionCards
                         return false;
                     }
                     //Command
-                    CommandGetMcsuSta.FrameLength = 0x05;
                     CommandGetMcsuSta.AxisNo = (byte)AxisNo;
                     byte[] cmd = CommandGetMcsuSta.ToBytes();
                     this.ExcuteCmd(cmd);
@@ -971,7 +966,41 @@ namespace JPT_TosaTest.MotionCards
             }
         }
 
-        private bool GetLastError(out byte McsuID, out byte Error)
+        /// <summary>
+        /// 设置电机的控制方式，D+P， CW-CCW，回原点方向等
+        ///uint8   0: 1-Pulse Mode, 1: 2-Pulse Mode
+        ///uint8:1  0: CW=Pulse, CCW=DIR, 1: CW=DIR, CCW=PULSE
+        ///uint8:2	0: Default, 1: Reversed
+        ///uint8:3	0: Default, 1: Reversed
+        ///uint8:4	0: Ignore, 1: Detect
+        ///uint8:5	0: active high, 1: active low
+        /// </summary>
+        /// <returns></returns>
+        public bool SetMode(int AxisNo,byte mode)
+        {
+            lock (ComportLock)
+            {
+                try
+                {
+                    if (AxisNo > 12 || AxisNo < 1)
+                    {
+                        return false;
+                    }
+                    if (mode == ModeList[AxisNo - 1]) //如果模式没有改变就无需设置
+                        return true;
+                    CommandSetMode.AxisNo = (byte)AxisNo;
+                    CommandSetMode.Mode = mode;
+                    byte[] cmd = CommandSetMode.ToBytes();
+                    this.ExcuteCmd(cmd);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    return false;
+                }
+            }
+        }
+        public bool GetLastError(out byte McsuID, out byte Error)
         {
             McsuID = 0xFF;
             Error = 0;
@@ -979,7 +1008,6 @@ namespace JPT_TosaTest.MotionCards
             {
                 try
                 {
-                    CommandGetErr.FrameLength = 0x04;
                     byte[] cmd = CommandGetErr.ToBytes();
                     this.ExcuteCmd(cmd);
                     bool bRet = CommandGetErr.WaitFinish(1000);
@@ -1000,6 +1028,8 @@ namespace JPT_TosaTest.MotionCards
             }
 
         }
+
+
 
         private async void GetStateWhenFirstLoad()
         {

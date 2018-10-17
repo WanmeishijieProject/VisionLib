@@ -10,6 +10,10 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
 {
     public class Irixi_HOST_CMD_MOVE_TRIGGER : ZigBeePackage
     {
+        public Irixi_HOST_CMD_MOVE_TRIGGER()
+        {
+            FrameLength = 0x0E;
+        }
         protected override void WriteData()
         {
             writer.Write((byte)TriggerType);

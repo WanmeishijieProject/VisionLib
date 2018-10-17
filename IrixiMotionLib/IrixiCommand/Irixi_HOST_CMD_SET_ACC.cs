@@ -10,6 +10,10 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
 {
     public class Irixi_HOST_CMD_SET_ACC : ZigBeePackage
     {
+        public Irixi_HOST_CMD_SET_ACC()
+        {
+            FrameLength = 0x07;
+        }
         protected override void WriteData()
         {
             writer.Write((byte)Enumcmd.HOST_CMD_SET_ACC);
