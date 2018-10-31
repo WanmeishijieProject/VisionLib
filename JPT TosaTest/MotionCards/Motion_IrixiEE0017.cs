@@ -130,7 +130,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            int axisIndex = AxisNo + 1;
+            int axisIndex = AxisNo + MIN_AXIS;
             return _controller.Home(axisIndex, Dir, Acc, Speed1, Speed2);
 
         }
@@ -141,7 +141,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            int axisIndex = AxisNo + 1;
+            int axisIndex = AxisNo + MIN_AXIS;
             return _controller.IsHomeStop(axisIndex);
 
         }
@@ -152,7 +152,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            int axisIndex = AxisNo + 1;
+            int axisIndex = AxisNo + MIN_AXIS;
             return _controller.IsNormalStop(axisIndex);
 
         }
@@ -171,7 +171,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            int axisIndex = AxisNo + 1;
+            int axisIndex = AxisNo + MIN_AXIS;
             return _controller.MoveAbs(axisIndex, Acc, Speed, Pos);
 
         }
@@ -190,7 +190,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            int axisIndex = AxisNo + 1;
+            int axisIndex = AxisNo + MIN_AXIS;
             return _controller.MoveAbs(axisIndex, Acc, Speed, Pos, TriggerType, Interval);
 
         }
@@ -209,7 +209,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }  
-            int axisIndex = AxisNo + 1;
+            int axisIndex = AxisNo + MIN_AXIS;
             if (!IsPosValid(AxisNo, Distance))
                 throw new Exception($"Axis{AxisNo} can't reach the specified location");
             return _controller.MoveRel(axisIndex, Acc, Speed, Distance);
@@ -230,7 +230,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            int axisIndex = AxisNo + 1;
+            int axisIndex = AxisNo + MIN_AXIS;
             if (!IsPosValid(AxisNo, Distance))
                 throw new Exception($"Axis{AxisNo} can't reach the specified location");
             return _controller.MoveRel(axisIndex, Acc, Speed, Distance, TriggerType, Interval);
@@ -285,29 +285,12 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            int XaxisIndex = XAxisNo  + 1;
-            int YaxisIndex = YAxisNo  + 1;
+            int XaxisIndex = XAxisNo  + MIN_AXIS;
+            int YaxisIndex = YAxisNo  + MIN_AXIS;
             return _controller.DoBindSearch(XaxisIndex, YaxisIndex, Range, Gap, Speed, Interval);
         }
 
-        private void OnIrixiAxisStateChanged(object sender, Tuple<byte, AxisArgs> e)
-        {
-            int AxisNo = e.Item1 - 1;
-            AxisArgsList[AxisNo].CurAbsPos = e.Item2.CurAbsPos;
-            AxisArgsList[AxisNo].IsBusy = e.Item2.IsBusy;
-            AxisArgsList[AxisNo].IsHomed= e.Item2.IsHomed;
-            AxisArgsList[AxisNo].IsInRequest = e.Item2.IsInRequest;
-            OnAxisStateChanged?.Invoke(this,e.Item1 - 1, AxisArgsList[AxisNo]);
-            if (AxisArgsList[AxisNo].ErrorCode != e.Item2.ErrorCode)
-            {
-                AxisArgsList[AxisNo].ErrorCode = e.Item2.ErrorCode;
-                if (e.Item2.ErrorCode != 0)
-                {
-                    OnErrorOccured?.Invoke(this, e.Item2.ErrorCode, ParseErrorCode(e.Item2.ErrorCode));
-                }
-            }
-        }
-
+        
         public bool SetCurrentPos(int AxisNo, double Pos)
         {
             throw new NotImplementedException();
@@ -332,7 +315,6 @@ namespace JPT_TosaTest.MotionCards
             }
             if (Setting == null)
                 return;
-            int axisIndex = AxisNo + 1;
 
             AxisArgsList[AxisNo].AxisName = Setting.AxisName;
             AxisArgsList[AxisNo].AxisNo = Setting.AxisNo;
@@ -340,9 +322,18 @@ namespace JPT_TosaTest.MotionCards
             AxisArgsList[AxisNo].LimitP = Setting.LimitP;
             AxisArgsList[AxisNo].HomeOffset = Setting.HomeOffset;
             AxisArgsList[AxisNo].HomeMode = (int)Setting.HomeMode;
-            AxisArgsList[AxisNo].AxisType = Setting.AxisType;
-         
-            _controller.SetAxisPara(AxisNo + 1, Setting.GainFactor, Setting.LimitP, Setting.LimitN, Setting.HomeOffset, (int)Setting.HomeMode, Setting.AxisName);
+            AxisArgsList[AxisNo].AxisType = Setting.AxisType;        
+            _controller.SetAxisPara(AxisNo + MIN_AXIS, Setting.GainFactor, Setting.LimitP, Setting.LimitN, Setting.HomeOffset, (int)Setting.HomeMode, Setting.AxisName);
+        }
+
+
+        public bool SetMode(int AxisNo, int mode)
+        {
+            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
+            {
+                return false;
+            }
+            return _controller.SetMode(AxisNo + MIN_AXIS,(byte)mode);
         }
 
         private bool IsPosValid(int AxisNo, double TargetPosRelative)
@@ -366,6 +357,26 @@ namespace JPT_TosaTest.MotionCards
             }
             return "";
         }
+
+        private void OnIrixiAxisStateChanged(object sender, Tuple<byte, AxisArgs> e)
+        {
+            int AxisNo = e.Item1 - 1;
+            AxisArgsList[AxisNo].CurAbsPos = e.Item2.CurAbsPos;
+            AxisArgsList[AxisNo].IsBusy = e.Item2.IsBusy;
+            AxisArgsList[AxisNo].IsHomed = e.Item2.IsHomed;
+            AxisArgsList[AxisNo].IsInRequest = e.Item2.IsInRequest;
+            OnAxisStateChanged?.Invoke(this, e.Item1 - 1, AxisArgsList[AxisNo]);
+            if (AxisArgsList[AxisNo].ErrorCode != e.Item2.ErrorCode)
+            {
+                AxisArgsList[AxisNo].ErrorCode = e.Item2.ErrorCode;
+                if (e.Item2.ErrorCode != 0)
+                {
+                    OnErrorOccured?.Invoke(this, e.Item2.ErrorCode, ParseErrorCode(e.Item2.ErrorCode));
+                }
+            }
+        }
+
     }
+
 
 }

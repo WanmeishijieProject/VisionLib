@@ -714,6 +714,21 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
+
+        public RelayCommand DebugFindLineCommand
+        {
+            get { return new RelayCommand(()=> {
+                try
+                {
+                    //找直线
+                    HalconVision.Instance.Debug_FindLine(0,EnumEdgeType.DarkToLight,30,50);
+                }
+                catch (Exception ex)
+                {
+                    UC_MessageBox.ShowMsgBox("Error", ex.Message, MsgType.Error);
+                }
+            }); }
+        }
         
     }
     #endregion

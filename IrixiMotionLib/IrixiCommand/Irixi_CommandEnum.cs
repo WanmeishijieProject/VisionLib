@@ -34,9 +34,13 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
         HOST_CMD_READ_DOUT,
         HOST_CMD_READ_DIN,
         HOST_CMD_READ_AD,
+        HOST_CMD_SET_CSS,
+        HOST_CMD_READ_CSS,
         HOST_CMD_SET_T_ADC,
         HOST_CMD_SET_T_OUT,
         HOST_CMD_BLINDSEARCH,
+        HOST_CMD_SAV_MCSU_ENV,
+        HOST_CMD_SYS_RESET
     }
 
     public enum EnumTriggerType

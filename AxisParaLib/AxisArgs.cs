@@ -14,8 +14,9 @@ namespace AxisParaLib
     {
         LinearAxis,
         RotaryAxis,
+ 
     }
-
+    
     public class AxisArgs : INotifyPropertyChanged
     {
         private double _curAbsPos;

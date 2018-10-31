@@ -25,7 +25,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;CODE_ANALYSIS, _TEST_IO</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS, TEST</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>true</RunCodeAnalysis>
@@ -258,6 +258,12 @@
     <Compile Include="UserCtrl\UC_TeachBox.xaml.cs">
       <DependentUpon>UC_TeachBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserCtrl\VisionDebugTool\UC_CirclePanel.xaml.cs">
+      <DependentUpon>UC_CirclePanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserCtrl\VisionDebugTool\UC_LinePanel.xaml.cs">
+      <DependentUpon>UC_LinePanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserCtrl\Window_AddRoiModel.xaml.cs">
       <DependentUpon>Window_AddRoiModel.xaml</DependentUpon>
     </Compile>
@@ -273,6 +279,9 @@
     <Compile Include="Vision\Light\LightBase.cs" />
     <Compile Include="Vision\Light\Light_JK_PWD6024.cs" />
     <Compile Include="Vision\Light\LigtMgr.cs" />
+    <Compile Include="Vision\VisionToolModel\ITool.cs" />
+    <Compile Include="Vision\VisionToolModel\LineTool.cs" />
+    <Compile Include="Vision\VisionToolModel\ToolBase.cs" />
     <Compile Include="WorkFlow\WorkTemplate2.cs" />
     <Compile Include="WorkFlow\WorkTemplate1.cs" />
     <Compile Include="WorkFlow\WorkTemplate.cs" />
@@ -372,6 +381,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserCtrl\UC_TeachBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserCtrl\VisionDebugTool\UC_CirclePanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserCtrl\VisionDebugTool\UC_LinePanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -501,6 +518,10 @@
   <ItemGroup>
     <Resource Include="Images\goto.png" />
     <Resource Include="Images\save.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Circle.png" />
+    <Resource Include="Images\Line.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

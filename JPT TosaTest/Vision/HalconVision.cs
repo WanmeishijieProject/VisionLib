@@ -40,6 +40,12 @@ namespace JPT_TosaTest.Vision
     {
         ModelRegionReduce,
     }
+    public enum EnumEdgeType
+    {
+        DarkToLight,
+        LightToDark,
+        All,
+    }
     public class HalconVision
     {
         #region constructor
@@ -658,6 +664,11 @@ namespace JPT_TosaTest.Vision
         {
             Dictionary<string, Tuple<string, string>> dic = new Dictionary<string, Tuple<string, string>>();
             ErrorList = new List<string>();
+#if TEST
+            dic.Add("DirectShow", new Tuple<string, string>("Integrated Camera", "DirectShow"));
+            CamCfgDic = dic;
+            return dic;
+#endif
             try
             {
                 HOperatorSet.InfoFramegrabber(camType.ToString(), "info_boards", out HTuple hv_Information, out HTuple hv_ValueList);
@@ -696,7 +707,7 @@ namespace JPT_TosaTest.Vision
 
         HTuple s_hv_ModelID = null;
 
-        #region 专用
+#region 专用
         public bool GetAngleTune1(HObject imageIn, string ModelFileName, string RectParaFileName, out double fAngle, HTuple hwindow = null)
         {
             fAngle = 0;
@@ -849,8 +860,8 @@ namespace JPT_TosaTest.Vision
                 hv_Row2 = hv_QRow2.Clone();
                 hv_Column2 = hv_QColumn2.Clone();
 
-                FindLine(ho_ImageScaled, hv_nSegment, hv_EdgeGrayValue, hv_Row, hv_Column, hv_Phi, hv_Length1, hv_Length2, out hv_OutRowStart, out hv_OutColStart, out hv_OutRowEnd, out hv_OutColEnd);
-                FindLine(ho_ImageScaled, hv_nSegment, hv_EdgeGrayValue, hv_Row2, hv_Column2, hv_Phi2, hv_Length21, hv_Length22, out hv_OutRowStart1, out hv_OutColStart1, out hv_OutRowEnd1, out hv_OutColEnd1);
+                FindLine(ho_ImageScaled,EnumEdgeType.LightToDark, hv_nSegment, hv_EdgeGrayValue, hv_Row, hv_Column, hv_Phi, hv_Length1, hv_Length2, out hv_OutRowStart, out hv_OutColStart, out hv_OutRowEnd, out hv_OutColEnd);
+                FindLine(ho_ImageScaled,EnumEdgeType.LightToDark,  hv_nSegment, hv_EdgeGrayValue, hv_Row2, hv_Column2, hv_Phi2, hv_Length21, hv_Length22, out hv_OutRowStart1, out hv_OutColStart1, out hv_OutRowEnd1, out hv_OutColEnd1);
 
                 foreach (var it in HwindowDic[nCamID])
                 {
@@ -1069,8 +1080,8 @@ namespace JPT_TosaTest.Vision
                 hv_Row2 = hv_QRow2.Clone();
                 hv_Column2 = hv_QColumn2.Clone();
 
-                FindLine(ho_ImageScaled, hv_nSegment, hv_EdgeGrayValue, hv_Row, hv_Column, hv_Phi, hv_Length1, hv_Length2, out hv_OutRowStart, out hv_OutColStart, out hv_OutRowEnd, out hv_OutColEnd);
-                FindLine(ho_ImageScaled, hv_nSegment, hv_EdgeGrayValue, hv_Row2, hv_Column2, hv_Phi2, hv_Length21, hv_Length22, out hv_OutRowStart1, out hv_OutColStart1, out hv_OutRowEnd1, out hv_OutColEnd1);
+                FindLine(ho_ImageScaled, EnumEdgeType.LightToDark, hv_nSegment, hv_EdgeGrayValue, hv_Row, hv_Column, hv_Phi, hv_Length1, hv_Length2, out hv_OutRowStart, out hv_OutColStart, out hv_OutRowEnd, out hv_OutColEnd);
+                FindLine(ho_ImageScaled, EnumEdgeType.LightToDark, hv_nSegment, hv_EdgeGrayValue, hv_Row2, hv_Column2, hv_Phi2, hv_Length21, hv_Length22, out hv_OutRowStart1, out hv_OutColStart1, out hv_OutRowEnd1, out hv_OutColEnd1);
 
                 foreach (var it in HwindowDic[nCamID])
                 {
@@ -1290,7 +1301,7 @@ namespace JPT_TosaTest.Vision
         {
             return true;
         }
-        #endregion
+#endregion
 
         public bool PreCreateShapeModel(int nCamID, int MinThre, int MaxThre, EnumShapeModelType modelType, string regionFilePath, object regionIn = null)
         {
@@ -1353,8 +1364,8 @@ namespace JPT_TosaTest.Vision
             return null;
         }
 
-        #region Private method
-        private void FindLine(HObject ho_Image, HTuple hv_CaliperNum, HTuple hv_EdgeGrayValue, HTuple hv_RoiRow, HTuple hv_RoiCol, HTuple hv_RoiPhi, HTuple hv_RoiL1, HTuple hv_RoiL2, out HTuple hv_OutRowStart, out HTuple hv_OutColStart, out HTuple hv_OutRowEnd, out HTuple hv_OutColEnd)
+#region Private method
+        private void FindLine(HObject ho_Image, EnumEdgeType Polarity, HTuple hv_CaliperNum, HTuple hv_EdgeGrayValue, HTuple hv_RoiRow, HTuple hv_RoiCol, HTuple hv_RoiPhi, HTuple hv_RoiL1, HTuple hv_RoiL2, out HTuple hv_OutRowStart, out HTuple hv_OutColStart, out HTuple hv_OutRowEnd, out HTuple hv_OutColEnd)
         {
             // Local iconic variables 
             HObject ho_Rectangle, ho_Contour = null;
@@ -1367,13 +1378,13 @@ namespace JPT_TosaTest.Vision
             HTuple hv_Distance = new HTuple(), hv_RowBegin = new HTuple();
             HTuple hv_ColBegin = new HTuple(), hv_RowEnd = new HTuple();
             HTuple hv_ColEnd = new HTuple(), hv_Nr = new HTuple(), hv_Nc = new HTuple();
-            HTuple hv_Dist = new HTuple();
-
+            HTuple hv_Dist = new HTuple(),hv_Polarity=new HTuple();
             HTuple hv_CaliperNum_COPY_INP_TMP = hv_CaliperNum.Clone();
-
+           
             // Initialize local and output iconic variables 
             HOperatorSet.GenEmptyObj(out ho_Rectangle);
             HOperatorSet.GenEmptyObj(out ho_Contour);
+
 
             hv_OutRowStart = new HTuple();
             hv_OutColStart = new HTuple();
@@ -1401,11 +1412,25 @@ namespace JPT_TosaTest.Vision
             hv_ptRow = new HTuple();
             hv_ptCol = new HTuple();
             hv_nCount = 0;
+
+            switch (Polarity)
+            {
+                case EnumEdgeType.LightToDark:
+                    hv_Polarity = "negative"; 
+                    break;
+                case EnumEdgeType.DarkToLight:
+                    hv_Polarity = "positive";
+                    break;
+                case EnumEdgeType.All:
+                    hv_Polarity = "all";
+                    break;
+            }
             for (hv_Index = 1; hv_Index.Continue(hv_CaliperNum_COPY_INP_TMP, 1); hv_Index = hv_Index.TupleAdd(1))
             {
                 HOperatorSet.GenMeasureRectangle2(hv_newRow, hv_newCol, hv_RoiPhi, hv_newL1,
                     hv_newL2, hv_Width, hv_Height, "nearest_neighbor", out hv_MeasureHandle);
-                HOperatorSet.MeasurePos(ho_Image, hv_MeasureHandle, 1, hv_EdgeGrayValue, "negative",
+ 
+                HOperatorSet.MeasurePos(ho_Image, hv_MeasureHandle, 1, hv_EdgeGrayValue, hv_Polarity,
                     "first", out hv_RowEdge, out hv_ColumnEdge, out hv_Amplitude, out hv_Distance);
                 hv_newRow = hv_BaseRow - (((hv_newL2 * hv_Cos) * hv_Index) * 2);
                 hv_newCol = hv_BaseCol - (((hv_newL2 * hv_Sin) * hv_Index) * 2);
@@ -1792,7 +1817,27 @@ namespace JPT_TosaTest.Vision
                 return false;
             }
         }
-        #endregion
+
+        public void Debug_FindLine(int nCamID, EnumEdgeType Plority,int Contrast,int CaliperNum)
+        {
+            HTuple WindowHandle = HwindowDic[nCamID][DebugWindowName];
+            HOperatorSet.SetColor(HwindowDic[nCamID][DebugWindowName], "green");
+            HOperatorSet.SetLineWidth(HwindowDic[nCamID][DebugWindowName], 1);
+            Debug_DrawRectangle2(WindowHandle, out HTuple Row, out HTuple Col, out HTuple Phi, out HTuple L1, out HTuple L2);
+            FindLine(HoImageList[nCamID], Plority, Contrast, CaliperNum, Row, Col, Phi, L1, L2, out HTuple hv_OutRowStart, out HTuple hv_OutColStart, out HTuple hv_OutRowEnd, out HTuple hv_OutColEnd);
+            HOperatorSet.SetColor(HwindowDic[nCamID][DebugWindowName], "red");
+            HOperatorSet.SetLineWidth(HwindowDic[nCamID][DebugWindowName], 3);
+            HOperatorSet.DispLine(WindowHandle, hv_OutRowStart, hv_OutColStart, hv_OutRowEnd, hv_OutColEnd);
+            HOperatorSet.AngleLx(hv_OutRowStart, hv_OutColStart, hv_OutRowEnd, hv_OutColEnd, out HTuple angle);
+            angle = angle < 0 ?  (angle + 3.1415926) : angle;
+            disp_message(HwindowDic[nCamID][DebugWindowName],"角度："+ angle*180.0/3.1415926+"度", "image", hv_OutRowStart, hv_OutColStart, "red", "false");
+        }
+        public void Debug_DrawRectangle2(HTuple WindowHandle,out HTuple Row, out HTuple Col, out HTuple Phi, out HTuple L1, out HTuple L2)
+        {
+            Row = Col = Phi = L1 = L2 = 0;
+            HOperatorSet.DrawRectangle2Mod(WindowHandle, 100, 100, 100, 100, 100, out Row, out Col, out Phi, out L1, out L2);
+        }
+#endregion
 
     }
 
@@ -1818,6 +1863,7 @@ namespace JPT_TosaTest.Vision
             }
             return list;
         }
+
 
     }
 }

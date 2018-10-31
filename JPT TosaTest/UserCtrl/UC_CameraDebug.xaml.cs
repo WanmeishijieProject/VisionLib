@@ -106,5 +106,20 @@ namespace JPT_TosaTest.UserCtrl
         {
             (ListBoxRoiModel.DataContext as CamDebugViewModel).SelectUseRoiModelCommand.Execute(ListBoxRoiModel.SelectedItem);
         }
+
+        private void Debug_Click(object sender, RoutedEventArgs e)
+        {
+            (ListBoxRoiModel.DataContext as CamDebugViewModel).DebugFindLineCommand.Execute(null);
+        }
+
+        private void BtnRunLineTool_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            (ListBoxRoiModel.DataContext as CamDebugViewModel).DebugFindLineCommand.Execute(null);
+        }
+
+        private void BtnRunCircleTool_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+           
+        }
     }
 }

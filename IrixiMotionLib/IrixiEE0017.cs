@@ -47,7 +47,8 @@ namespace JPT_TosaTest.MotionCards
         private Irixi_HOST_CMD_SET_T_OUT CommandTriggerOut = new Irixi_HOST_CMD_SET_T_OUT();
         private Irixi_HOST_CMD_GET_ERR CommandGetErr = new Irixi_HOST_CMD_GET_ERR();
         private Irixi_HOST_CMD_SET_MODE CommandSetMode = new Irixi_HOST_CMD_SET_MODE();
-        private Irixi_HOST_CMD_GET_MCSU_SETTINGS CommandGetSetting = new Irixi_HOST_CMD_GET_MCSU_SETTINGS();
+        private Irixi_HOST_CMD_GET_MCSU_SETTINGS CommandGetMcsuSetting = new Irixi_HOST_CMD_GET_MCSU_SETTINGS();
+      
 
         //解析包
         private AutoResetEvent ParsePackageEvent = new AutoResetEvent(false);
@@ -749,8 +750,11 @@ namespace JPT_TosaTest.MotionCards
                     CommandGetMcsuSta.AxisNo = (byte)AxisNo;
                     byte[] cmd = CommandGetMcsuSta.ToBytes();
                     this.ExcuteCmd(cmd);
-                    CommandGetMcsuSta.WaitFinish(1000);
-                    axisargs = AxisStateList[AxisNo - 1];
+                    if (CommandGetMcsuSta.WaitFinish(1000))
+                        axisargs = AxisStateList[AxisNo - 1];
+
+                    else
+                        return false;
                     return axisargs != null;
                 }
                 catch (Exception ex)
@@ -792,6 +796,7 @@ namespace JPT_TosaTest.MotionCards
                         byte[] dataList = TempList.ToArray();
                         UInt32 Crc32 = (UInt32)(dataList[dataList.Length - 4] + (dataList[dataList.Length - 3] << 8) + (dataList[dataList.Length - 2] << 16) + (dataList[dataList.Length - 1] << 24));
                         UInt32 CalcCrc32 = Crc32Instance.Calculate(dataList, 0, dataList.Length - 4);
+                       
                         if (Crc32 == CalcCrc32) //校验成功
                         {
                             ProcessPackage(dataList);
@@ -923,6 +928,10 @@ namespace JPT_TosaTest.MotionCards
                     CommandGetErr.ByteArrToPackage(data);
                     CommandGetErr.SetSyncFlag();
                     break;
+                case (byte)Enumcmd.HOST_CMD_GET_MCSU_SETTINGS:
+                    CommandGetMcsuSetting.ByteArrToPackage(data);
+                    CommandGetErr.SetSyncFlag();
+                    break;
             }
 
         }
@@ -994,12 +1003,21 @@ namespace JPT_TosaTest.MotionCards
                     this.ExcuteCmd(cmd);
                     return true;
                 }
-                catch (Exception ex)
+                catch
                 {
                     return false;
                 }
             }
         }
+
+        public bool GetMcsuSetting(int AxisNo,out byte mode,out double Acc)
+        {
+            mode = 0;
+            Acc = 0;
+
+            return false;
+        }
+
         public bool GetLastError(out byte McsuID, out byte Error)
         {
             McsuID = 0xFF;

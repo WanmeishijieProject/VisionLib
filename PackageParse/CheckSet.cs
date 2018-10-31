@@ -127,7 +127,7 @@ namespace Package
                 for (int j = 0; j < 4; j++)
                 {
                     int index = 4 * i + j + offset;
-                    if (index < data.Length)
+                    if (index < length+offset)
                         ret += (UInt32)(data[index] << (j * 8));
                 }
                 result.Add(ret);
