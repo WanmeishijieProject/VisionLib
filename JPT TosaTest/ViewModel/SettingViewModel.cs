@@ -105,6 +105,8 @@ namespace JPT_TosaTest.ViewModel
                             ForWardHotKey.OnHotKey += ForWardHotKey_OnHotKey;
                             if (!HotKeyDic.ContainsKey(it.AxisName))
                                 HotKeyDic.Add(it.AxisName, new Tuple<HotKey, HotKey>(BackWardHotKey, ForWardHotKey));
+                            else
+                                HotKeyDic[it.AxisName] = new Tuple<HotKey, HotKey>(BackWardHotKey, ForWardHotKey);
                         }
                     }
                 }
@@ -115,6 +117,7 @@ namespace JPT_TosaTest.ViewModel
                 {
                     it.Value.Item1.UnRegisterHotKey();
                     it.Value.Item2.UnRegisterHotKey();
+                    //HotKeyDic.Remove(it.Key);
                 }
             }
         }

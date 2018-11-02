@@ -51,7 +51,14 @@ namespace JPT_TosaTest.ViewModel
             StationInfoCollection = new ObservableCollection<string>();
             foreach (var stationCfg in Config.ConfigMgr.Instance.SoftwareCfgMgr.WorkFlowConfigs)
             {
-                StationInfoCollection.Add(stationCfg.Name);
+                if (stationCfg.Enable)
+                {
+                    StationInfoCollection.Add(stationCfg.Name);
+                }
+                else
+                {
+                    //
+                }
             }
             foreach (var station in WorkFlow.WorkFlowMgr.Instance.stationDic)
             {
@@ -81,6 +88,7 @@ namespace JPT_TosaTest.ViewModel
             DataTable dtPoint = new DataTable();
             PrePointSetExcel.ExcelToDataTable(ref dtPoint, "");
             DataForPreSetPosition = dtPoint;
+            UpdateWorkFlowData(DataForPreSetPosition);
         }
 
         ~MainViewModel()
@@ -121,6 +129,24 @@ namespace JPT_TosaTest.ViewModel
             {
                 Messenger.Default.Send<string>(ex.Message, "Error");
             }
+        }
+
+        private void UpdateWorkFlowData(DataTable dt)
+        {
+            WorkFlow.WorkFlowMgr.Instance.ClearPt();
+            if (dt != null)
+            {
+                foreach (DataRow row in dt.Rows)
+                {
+                    List<double> list = new List<double>();
+                    for (int i=1;i<dt.Columns.Count; i++)
+                    {
+                        list.Add(double.Parse(row[i].ToString()));  
+                    }
+                    WorkFlow.WorkFlowMgr.Instance.AddPoint(row[0].ToString(), list);
+                }
+            }
+
         }
         #region Property
         public int ViewIndex
@@ -319,6 +345,7 @@ namespace JPT_TosaTest.ViewModel
 
                         }
                         DataForPreSetPosition.Rows.Add(dr);
+                        UpdateWorkFlowData(DataForPreSetPosition);
                     }
                 });
             }
@@ -336,7 +363,7 @@ namespace JPT_TosaTest.ViewModel
                     if (nIndex >= 0)
                     {
                         DataForPreSetPosition.Rows.RemoveAt(nIndex);
-                       
+                        UpdateWorkFlowData(DataForPreSetPosition);
                     }
                 });
             }
@@ -395,7 +422,10 @@ namespace JPT_TosaTest.ViewModel
         }
         public RelayCommand StopStationCommand
         {
-            get { return new RelayCommand(() => WorkFlow.WorkFlowMgr.Instance.StopAllStation());}
+            get { return new RelayCommand(() => {
+                WorkFlow.WorkFlowMgr.Instance.StopAllStation();
+                MotionMgr.Instance.StopAll();
+            });}
         }
         /// <summary>
         /// 主界面登陆按钮
@@ -423,23 +453,25 @@ namespace JPT_TosaTest.ViewModel
         {
             get
             {
-                return new RelayCommand(() => SavePrePointFile(PrePointSetExcel,DataForPreSetPosition));
+                return new RelayCommand(() => {
+                    SavePrePointFile(PrePointSetExcel, DataForPreSetPosition);
+                    UpdateWorkFlowData(DataForPreSetPosition);
+                });
             }
         }
 
-        public RelayCommand FindPLCCommand  //寻找模板
+        public RelayCommand CommandLoadProduct  //上料
         {
             get
             {
                 return new RelayCommand(() => {
-                    Console.WriteLine("FindPLC");
-                    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T1, 0, null, out object result);
+                    WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService").SetCmd(WorkFlow.STEP.CmdGetProduct);        
                     ;
                 });
             }
         }
 
-        public RelayCommand FindLineTopCommand  //绘制顶部线
+        public RelayCommand CommandFindLineTop  //绘制顶部线
         {
             get
             {
@@ -451,13 +483,23 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
-        public RelayCommand FindLineBottomCommand 
+        public RelayCommand CommandFindLineBottom
         {
             get
             {
                 return new RelayCommand(() => {
                     Console.WriteLine("FindLineBottomCommand");
                     HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T3, 0, null, out object result);
+                    ;
+                });
+            }
+        }
+        public RelayCommand CommandHome
+        {
+            get
+            {
+                return new RelayCommand(() => {
+                    WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService").SetCmd(WorkFlow.STEP.Init);
                     ;
                 });
             }

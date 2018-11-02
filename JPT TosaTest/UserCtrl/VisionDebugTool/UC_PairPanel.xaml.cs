@@ -2,7 +2,6 @@
 using JPT_TosaTest.Classes;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,38 +19,37 @@ using System.Windows.Shapes;
 namespace JPT_TosaTest.UserCtrl.VisionDebugTool
 {
     /// <summary>
-    /// UC_LinePanel.xaml 的交互逻辑
+    /// UC_PairPanel.xaml 的交互逻辑
     /// </summary>
-    public partial class UC_LinePanel : System.Windows.Controls.UserControl
+    public partial class UC_PairPanel : System.Windows.Controls.UserControl
     {
-        private string DefaultPath =FileHelper.GetCurFilePathString()+ @"VisionData\ToolData\LineToolData\";
-        public UC_LinePanel()
+        private string DefaultPath = FileHelper.GetCurFilePathString() + @"VisionData\ToolData\PairToolData\";
+        public UC_PairPanel()
         {
             InitializeComponent();
         }
-
-        private void BtnSaveLinePara_Click(object sender, RoutedEventArgs e)
+        private void BtnSavePairPara_Click(object sender, RoutedEventArgs e)
         {
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.Filter = "文本文件(*.para)|*.para|所有文件|*.*";//设置文件类型
-            sfd.FileName = "LinePara";//设置默认文件名
+            sfd.FileName = "PairPara";//设置默认文件名
             sfd.DefaultExt = "para";//设置默认格式（可以不设）
             sfd.AddExtension = true;//设置自动在文件名中添加扩展名
             sfd.RestoreDirectory = true;
             sfd.InitialDirectory = DefaultPath;
             if (sfd.ShowDialog() == DialogResult.OK)
             {
-                SaveParaCommand.Execute(new Tuple<string,string>(sfd.FileName, LinePara));
+                SaveParaCommand.Execute(new Tuple<string, string>(sfd.FileName, PairPara));
             }
         }
 
 
         public const string SaveParaCommandPropertyName = "SaveParaCommand";
-        public RelayCommand<Tuple<string,string>> SaveParaCommand
+        public RelayCommand<Tuple<string, string>> SaveParaCommand
         {
             get
             {
-                return (RelayCommand<Tuple<string,string>>)GetValue(SaveParaCommandProperty);
+                return (RelayCommand<Tuple<string, string>>)GetValue(SaveParaCommandProperty);
             }
             set
             {
@@ -60,8 +58,8 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         }
         public static readonly DependencyProperty SaveParaCommandProperty = DependencyProperty.Register(
             SaveParaCommandPropertyName,
-            typeof(RelayCommand<Tuple<string,string>>),
-            typeof(UC_LinePanel));
+            typeof(RelayCommand<Tuple<string, string>>),
+            typeof(UC_PairPanel));
 
 
 
@@ -80,12 +78,12 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         public static readonly DependencyProperty UpdateParaCommandProperty = DependencyProperty.Register(
             UpdateParaCommandPropertyName,
             typeof(RelayCommand<string>),
-            typeof(UC_LinePanel));
+            typeof(UC_PairPanel));
 
 
 
 
-        public string LinePara
+        public string PairPara
         {
             get { return $"{TbCaliberNum.Text}&{CbPolarity.Text}&{CbSelectType.Text}&{SliderContrast.Value}"; }
         }
@@ -93,20 +91,20 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
 
         private void SliderContrast_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if(UpdateParaCommand!=null)
-                UpdateParaCommand.Execute(LinePara);
+            if (UpdateParaCommand != null)
+                UpdateParaCommand.Execute(PairPara);
         }
 
         private void CbPolarity_Selected(object sender, RoutedEventArgs e)
         {
             if (UpdateParaCommand != null)
-                UpdateParaCommand.Execute(LinePara);
+                UpdateParaCommand.Execute(PairPara);
         }
 
         private void TbCaliberNum_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (UpdateParaCommand != null)
-                UpdateParaCommand.Execute(LinePara);
+                UpdateParaCommand.Execute(PairPara);
         }
     }
 }

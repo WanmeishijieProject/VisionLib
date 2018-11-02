@@ -517,8 +517,8 @@ namespace JPT_TosaTest.ViewModel
                       
                     if (nCamID >= 0)
                     {
-                        string strRecParaFileName = $"VisionData\\Roi\\Cam{item.StrName}.tup";  //Model Roi
-                        string strModelFileName = $"VisionData\\Model\\Cam{item.StrName}.shm";    //Model
+                        string strRecParaFileName = $"VisionData\\Roi\\Cam{nCamID}_{item.StrName}.tup";  //Model Roi
+                        string strModelFileName = $"VisionData\\Model\\Cam{nCamID}_{item.StrName}.shm";    //Model
                         try
                         {
                             //查找模板并获取数据
@@ -715,13 +715,27 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
-        public RelayCommand DebugFindLineCommand
+        public RelayCommand<string> DebugFindLineCommand
         {
-            get { return new RelayCommand(()=> {
+            get { return new RelayCommand<string>(para=> {
                 try
                 {
                     //找直线
-                    HalconVision.Instance.Debug_FindLine(0,EnumEdgeType.DarkToLight,30,50);
+                    string[] paraList = para.Split('&');
+                    if (paraList.Count() == 4)
+                    {
+
+                        bool bRet = int.TryParse(paraList[0],out int CaliberNum);
+                        bRet &= Enum.TryParse(paraList[1], out EnumEdgeType EdgeType);
+                        bRet &= Enum.TryParse(paraList[2], out EnumSelectType SelectType);
+                        bRet &= double.TryParse(paraList[3], out double fContrast);
+                        int Contrast = (int)Math.Round(fContrast);
+                        if (bRet)
+                        {
+                            HalconVision.Instance.ClearRectData(EnumToolType.LineTool);
+                            HalconVision.Instance.Debug_FindLine(0, EdgeType,SelectType, Contrast, CaliberNum);
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -729,7 +743,131 @@ namespace JPT_TosaTest.ViewModel
                 }
             }); }
         }
-        
+
+        public RelayCommand<Tuple<string,string>> SaveLineParaCommand
+        {
+            get
+            {
+                return new RelayCommand<Tuple<string,string>>(tuple => {
+                    try
+                    {
+                        string strPara= $"{tuple.Item2}&{HalconVision.Instance.LineRoiData}";  
+                        File.WriteAllText(tuple.Item1, strPara);
+                    }
+                    catch (Exception ex)
+                    {
+                        UC_MessageBox.ShowMsgBox("Error", ex.Message, MsgType.Error);
+                    }
+                });
+            }
+        }
+
+        public RelayCommand<string> UpdateLineResultCommand
+        {
+            get
+            {
+                return new RelayCommand<string>(para => {
+                    try
+                    {
+                        //找直线
+                        string[] paraList = para.Split('&');
+                        if (paraList.Count() == 4)
+                        {
+
+                            bool bRet = int.TryParse(paraList[0], out int CaliberNum);
+                            bRet &= Enum.TryParse(paraList[1], out EnumEdgeType EdgeType);
+                            bRet &= Enum.TryParse(paraList[2], out EnumSelectType SelectType);
+                            bRet &= double.TryParse(paraList[3], out double fContrast);
+                            int Contrast = (int)Math.Round(fContrast);
+                            if (bRet)
+                            {
+                                if(!string.IsNullOrEmpty(HalconVision.Instance.LineRoiData))
+                                    HalconVision.Instance.Debug_FindLine(0, EdgeType,SelectType, Contrast, CaliberNum);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UC_MessageBox.ShowMsgBox("Error", ex.Message, MsgType.Error);
+                    }
+                });
+            }
+        }
+
+        public RelayCommand<string> DebugFindPairCommand
+        {
+            get
+            {
+                return new RelayCommand<string>(para => {
+                    try
+                    {
+                        //找直线
+                        string[] paraList = para.Split('&');
+                        if (paraList.Count() == 4)
+                        {
+
+                            bool bRet = int.TryParse(paraList[0], out int CaliberNum);
+                            bRet &= Enum.TryParse(paraList[1], out EnumPairType PairType);
+                            bRet &= Enum.TryParse(paraList[2], out EnumSelectType SelectType);
+                            bRet &= double.TryParse(paraList[3], out double fContrast);
+                            int Contrast = (int)Math.Round(fContrast);
+                            if (bRet)
+                            {
+                                HalconVision.Instance.ClearRectData(EnumToolType.PairTool);
+                                HalconVision.Instance.Debug_FindPair(0, PairType, SelectType, 2, Contrast, CaliberNum);
+                               // HalconVision.Instance.Debug_FindLine(0, EdgeType, Contrast, CaliberNum);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UC_MessageBox.ShowMsgBox("Error", ex.Message, MsgType.Error);
+                    }
+                });
+            }
+        }
+
+        public RelayCommand<Tuple<string, string>> SavePairParaCommand
+        {
+            get
+            {
+                return new RelayCommand<Tuple<string, string>>(tuple => {
+                    try
+                    {
+                        string strPara = $"{tuple.Item2}&{HalconVision.Instance.LineRoiData}";
+                        File.WriteAllText(tuple.Item1, strPara);
+                    }
+                    catch (Exception ex)
+                    {
+                        UC_MessageBox.ShowMsgBox("Error", ex.Message, MsgType.Error);
+                    }
+                });
+            }
+        }
+
+        public RelayCommand<string> UpdatePairResultCommand
+        {
+            get
+            {
+                return new RelayCommand<string>(para => {
+                    try
+                    {
+                        //找边缘对
+                        string[] paraList = para.Split('&');
+                        if (paraList.Count() == 4)
+                        {
+
+                            
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UC_MessageBox.ShowMsgBox("Error", ex.Message, MsgType.Error);
+                    }
+                });
+            }
+        }
+
     }
     #endregion
 

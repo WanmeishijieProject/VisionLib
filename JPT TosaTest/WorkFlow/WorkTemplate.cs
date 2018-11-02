@@ -98,8 +98,8 @@ namespace JPT_TosaTest.WorkFlow
                     Thread.Sleep(10);
                     if (bPause)
                         continue;
-                    nStep = PeekStep();
-                    switch (nStep)
+                    Step = PeekStep();
+                    switch (Step)
                     {
                         case STEP.Init:
                             PopAndPushStep(STEP.HomeX);

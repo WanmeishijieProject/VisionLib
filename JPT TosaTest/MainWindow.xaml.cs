@@ -30,15 +30,18 @@ namespace JPT_TosaTest
             StationInfoGrid.ShowGridLines = true;
             foreach (var it in Config.ConfigMgr.Instance.SoftwareCfgMgr.WorkFlowConfigs)
             {
-                ColumnDefinition cd = new ColumnDefinition() { Width = new GridLength(1,GridUnitType.Star)};
-                StationInfoGrid.ColumnDefinitions.Add(cd);
-                TextBlock tb = new TextBlock();
-                Binding bind = new Binding($"StationInfoCollection[{i}]");
-                tb.SetBinding(TextBlock.TextProperty, bind);
-                StationInfoGrid.Children.Add(tb);
-                StationInfoGrid.Children[i].SetValue(Grid.VerticalAlignmentProperty, VerticalAlignment.Center);
-                StationInfoGrid.Children[i].SetValue(Grid.MarginProperty, new Thickness(10,0,0,0));
-                Grid.SetColumn(tb,i++);                
+                if (it.Enable)
+                {
+                    ColumnDefinition cd = new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) };
+                    StationInfoGrid.ColumnDefinitions.Add(cd);
+                    TextBlock tb = new TextBlock();
+                    Binding bind = new Binding($"StationInfoCollection[{i}]");
+                    tb.SetBinding(TextBlock.TextProperty, bind);
+                    StationInfoGrid.Children.Add(tb);
+                    StationInfoGrid.Children[i].SetValue(Grid.VerticalAlignmentProperty, VerticalAlignment.Center);
+                    StationInfoGrid.Children[i].SetValue(Grid.MarginProperty, new Thickness(10, 0, 0, 0));
+                    Grid.SetColumn(tb, i++);
+                }
             }
         }
     }

@@ -109,17 +109,17 @@ namespace JPT_TosaTest.UserCtrl
 
         private void Debug_Click(object sender, RoutedEventArgs e)
         {
-            (ListBoxRoiModel.DataContext as CamDebugViewModel).DebugFindLineCommand.Execute(null);
+            (ListBoxRoiModel.DataContext as CamDebugViewModel).DebugFindLineCommand.Execute(LineTool.LinePara);
         }
 
         private void BtnRunLineTool_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            (ListBoxRoiModel.DataContext as CamDebugViewModel).DebugFindLineCommand.Execute(null);
+            (ListBoxRoiModel.DataContext as CamDebugViewModel).DebugFindLineCommand.Execute(LineTool.LinePara);
         }
 
-        private void BtnRunCircleTool_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void BtnRunPairTool_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-           
+            (ListBoxRoiModel.DataContext as CamDebugViewModel).DebugFindPairCommand.Execute(PairTool.PairPara);
         }
     }
 }

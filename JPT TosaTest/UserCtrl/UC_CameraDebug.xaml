@@ -199,7 +199,7 @@
                                     </Grid>
                                 </Grid>
                                 <ListBox x:Name="ListBoxRoiModel" Grid.Row="1" Grid.ColumnSpan="2" Grid.RowSpan="3" Margin="5" SelectedIndex="0" ItemsSource="{Binding RoiModelList}" 
-                             IsEnabled="{Binding IsEnabled,ElementName=Cb_Cameras}">
+                             IsEnabled="{Binding IsEnabled,ElementName=Cb_Cameras}" ScrollViewer.VerticalScrollBarVisibility="Visible">
                                     <ListBox.ContextMenu>
                                         <ContextMenu>
                                             <MenuItem Name="MenueShow" Header="{DynamicResource CameraPage_MenuShow}" FontSize="15" Click="MenueShow_Click"/>
@@ -295,9 +295,9 @@
                                             <TextBlock Text="{DynamicResource CameraPage_MinScore}" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
                                             <TextBox Grid.Column="1" Margin="3" FontSize="15" VerticalContentAlignment="Center"/>
                                         </Grid>
-                                        <Button Name="BtnSaveModelPara"  Margin="5,2,5,7" Content="{DynamicResource CameraPage_SaveModel}" FontSize="15" Grid.Row="4" Grid.Column="0" 
+                                        <Button Name="BtnSaveModelPara"  Margin="5,2" Content="{DynamicResource CameraPage_SaveModel}" FontSize="15" Grid.Row="4" Grid.Column="0" 
                                     Command="{Binding SaveModelParaCommand}" CommandParameter="{Binding SelectedItem, ElementName=ListBoxRoiModel}" Style="{StaticResource RoundButtonStyle1}" Background="{StaticResource ThemColor}"/>
-                                        <Button Name="BtnTestModel" Margin="5,2,5,7" Content="{DynamicResource CameraPage_TestModel}" FontSize="15" Grid.Row="4" Grid.Column="1" 
+                                        <Button Name="BtnTestModel" Margin="5,2" Content="{DynamicResource CameraPage_TestModel}" FontSize="15" Grid.Row="4" Grid.Column="1" 
                                     Command="{Binding TestModelParaCommand}" CommandParameter="{Binding SelectedItem, ElementName=ListBoxRoiModel}" Style="{StaticResource RoundButtonStyle1}" Background="{StaticResource ThemColor}"/>
                                     </Grid>
                                 </Grid>
@@ -310,7 +310,7 @@
                                     <ColumnDefinition Width="5"/>
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
-                                <ListView Grid.Column="0">
+                                <ListView Name="lvToolSet" Grid.Column="0" SelectedIndex="0">
                                     <ListView.Items>
                                         <ListViewItem>
                                             <Grid>
@@ -324,6 +324,7 @@
                                                 <Image Name="BtnRunLineTool" Source="/JPT TosaTest;component/Images/start.png" Width="32" Grid.Column="2" Margin="5,0,5,0" Cursor="Hand" MouseLeftButtonDown="BtnRunLineTool_MouseLeftButtonDown"/>
                                             </Grid>
                                         </ListViewItem>
+                                        
                                         <ListViewItem>
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
@@ -331,17 +332,18 @@
                                                     <ColumnDefinition Width="80"/>
                                                     <ColumnDefinition Width="40"/>
                                                 </Grid.ColumnDefinitions>
-                                                <Image Source="/JPT TosaTest;component/Images/Circle.png" Height="32" HorizontalAlignment="Left"/>
-                                                <TextBlock Grid.Column="1" Text="CircleTool" VerticalAlignment="Center" FontSize="15"/>
-                                                <Image Name="BtnRunCircleTool" Source="/JPT TosaTest;component/Images/start.png" Width="32" Grid.Column="2" Margin="5,0,5,0" Cursor="Hand" MouseLeftButtonDown="BtnRunCircleTool_MouseLeftButtonDown"/>
+                                                <Image Source="/JPT TosaTest;component/Images/Pair.png" Height="32" HorizontalAlignment="Left"/>
+                                                <TextBlock Grid.Column="1" Text="PairTool" VerticalAlignment="Center" FontSize="15"/>
+                                                <Image Name="BtnRunPairTool" Source="/JPT TosaTest;component/Images/start.png" Width="32" Grid.Column="2" Margin="5,0,5,0" Cursor="Hand" MouseLeftButtonDown="BtnRunPairTool_MouseLeftButtonDown"/>
                                             </Grid>
                                         </ListViewItem>
+                          
                                     </ListView.Items>
                                 </ListView>
-                                <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Width="5" Background="{StaticResource ThemColor}"/>
+                                <Rectangle Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Width="2" Fill="{StaticResource ThemColor}"/>
                                 <Grid Grid.Column="2">
-                                    <VisionTool:UC_LinePanel/>
-                                    <VisionTool:UC_CirclePanel Visibility="Hidden"/>
+                                    <VisionTool:UC_LinePanel x:Name="LineTool" Visibility="{Binding SelectedIndex, ElementName=lvToolSet, Converter={StaticResource int2Visibility}, ConverterParameter=0}" SaveParaCommand="{Binding SaveLineParaCommand}" UpdateParaCommand="{Binding UpdateLineResultCommand}"/>
+                                    <VisionTool:UC_PairPanel x:Name="PairTool" Visibility="{Binding SelectedIndex, ElementName=lvToolSet, Converter={StaticResource int2Visibility}, ConverterParameter=1}" SaveParaCommand="{Binding SavePairParaCommand}" UpdateParaCommand="{Binding UpdatePairResultCommand}"/>
                                 </Grid>
                             </Grid>
                         </TabItem>

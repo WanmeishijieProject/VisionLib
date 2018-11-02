@@ -113,7 +113,7 @@ namespace JPT_TosaTest.Vision.Light
                 string strCheck = ExclusiveOR(System.Text.Encoding.ASCII.GetBytes(strCmd));
                 strCmd += strCheck;
                 Comport.Write(strCmd);
-                Thread.Sleep(30);
+                Thread.Sleep(50);
                 int count = Comport.Read(recvBuffer, 0, 20);
                 if (count == 8)
                 {

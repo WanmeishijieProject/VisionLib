@@ -22,24 +22,69 @@ namespace JPT_TosaTest.WorkFlow
         protected CancellationTokenSource cts =new CancellationTokenSource();
         protected Stack<object> nStepStack=new Stack<object>();
         protected Task t = null; 
-        protected object nStep;
-        protected object PeekStep() { return nStepStack.Peek(); }
-        protected void PushStep(object nStep) { nStepStack.Push(nStep); }
-        protected void PopAndPushStep(object nStep) { nStepStack.Pop(); nStepStack.Push(nStep); }
+        protected object Step { get; set; }
+        private object _lock = new object();
+        protected object PeekStep()
+        {
+            try
+            {
+                lock (_lock)
+                {
+                    return nStepStack.Peek();
+                }
+            }
+            catch
+            {
+                return null;
+            }
+
+        }
+        protected void PushStep(object Step) {
+            lock (_lock)
+            {
+                nStepStack.Push(Step);
+            }
+        }
+        protected void PopAndPushStep(object Step)
+        {
+            lock (_lock)
+            {
+                nStepStack.Pop();
+                nStepStack.Push(Step);
+            }
+        }
         protected void PushBatchStep(object[] nSteps)
         {
             foreach (var step in nSteps)
                 nStepStack.Push(step);
         }
-        protected void PopStep() { nStepStack.Pop(); }
-        protected void ClearAllStep() { nStepStack.Clear(); }
-        protected int GetCurStepCount() { return nStepStack.Count; }
+        protected void PopStep()
+        {
+            lock (_lock)
+            {
+                nStepStack.Pop();
+            }
+        }
+        protected void ClearAllStep()
+        {
+            lock (_lock)
+            {
+                nStepStack.Clear();
+            }
+        }
+        protected int GetCurStepCount()
+        {
+            lock (_lock)
+            {
+                return nStepStack.Count;
+            }
+        }
         protected virtual bool UserInit() { return true; }
         public WorkFlowBase(WorkFlowConfig cfg) { this.cfg = cfg; }
         public void ShowInfo(string strInfo=null)    //int msg, int iPara, object lParam
         {
             if (strInfo == null || strInfo.Trim().ToString() == "")
-                strInfo = nStep.ToString();
+                strInfo = Step.ToString();
             DateTime dt = DateTime.Now;
             OnStationInfoChanged?.Invoke(StationIndex, cfg.Name, string.Format("{0:D2}:{1:D2}:{2:D2}  {3:D2}", dt.Hour, dt.Minute, dt.Second, strInfo));
         }
@@ -79,6 +124,10 @@ namespace JPT_TosaTest.WorkFlow
         protected void ShowError(string ErrorMsg)
         {
             Messenger.Default.Send<string>(ErrorMsg, "Error");
+        }
+        public void SetCmd(STEP step)
+        {
+            PushStep(step);
         }
     }
 }
