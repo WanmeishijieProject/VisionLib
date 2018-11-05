@@ -160,6 +160,7 @@
     <Compile Include="Config\HardwareManager\CameraCfg.cs" />
     <Compile Include="Config\HardwareManager\MotionCardCfg.cs" />
     <Compile Include="Config\HardwareManager\HardwareCfgManager.cs" />
+    <Compile Include="Config\ProcessParaManager\ProcessPara.cs" />
     <Compile Include="Config\SoftwareManager\HotKeyCfg.cs" />
     <Compile Include="Config\SoftwareManager\IoNameCfg.cs" />
     <Compile Include="Config\SoftwareManager\WorkFlowConfig.cs" />
@@ -285,9 +286,10 @@
     <Compile Include="Vision\Light\Light_JK_PWD6024.cs" />
     <Compile Include="Vision\Light\LigtMgr.cs" />
     <Compile Include="Vision\VisionDataOperateSet.cs" />
-    <Compile Include="Vision\VisionToolModel\ITool.cs" />
-    <Compile Include="Vision\VisionToolModel\LineTool.cs" />
-    <Compile Include="Vision\VisionToolModel\ToolBase.cs" />
+    <Compile Include="Vision\VisionTool\CircleTool.cs" />
+    <Compile Include="Vision\VisionTool\LineTool.cs" />
+    <Compile Include="Vision\VisionTool\PairTool.cs" />
+    <Compile Include="Vision\VisionTool\ToolBase.cs" />
     <Compile Include="WorkFlow\WorkFlowData.cs" />
     <Compile Include="WorkFlow\WorkTemplate2.cs" />
     <Compile Include="WorkFlow\WorkTemplate1.cs" />
@@ -537,6 +539,7 @@
   <ItemGroup>
     <Resource Include="Images\Pair.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

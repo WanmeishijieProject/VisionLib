@@ -27,6 +27,7 @@ namespace JPT_TosaTest.Config
         SoftwareCfg,
         SystemParaCfg,
         UserCfg,
+        ProcessPara,
     }
     public class ConfigMgr
     {
@@ -43,14 +44,14 @@ namespace JPT_TosaTest.Config
         private readonly string File_SoftwareCfg = FileHelper.GetCurFilePathString() + "Config\\SoftwareCfg.json";
         private readonly string File_SystemParaCfg = FileHelper.GetCurFilePathString() + "Config\\SystemParaCfg.json";
         private readonly string File_UserCfg = FileHelper.GetCurFilePathString() + "User.json";
-
+        private readonly string File_ProcessPara = FileHelper.GetCurFilePathString() + "Config\\ProcessPara.para";
 
 
         public  HardwareCfgManager HardwareCfgMgr = null;
         public  SoftwareCfgManager SoftwareCfgMgr = null;
         public  SystemParaCfgManager SystemParaCfgMgr =null;
         public UserCfgManager UserCfgMgr = null;
-       
+        public ProcessParaManager.ProcessPara ProcessData = new ProcessParaManager.ProcessPara();
 
 
         //public static 
@@ -347,6 +348,20 @@ namespace JPT_TosaTest.Config
                 errList.Add(String.Format("Unable to load config file {0}, {1}", File_UserCfg, ex.Message));
             }
             #endregion
+
+            #region >>>>ProcessPara
+            //从文件中读取参数
+            string strPara = File.ReadAllText(File_ProcessPara);
+            if (strPara.Contains("|"))
+            {
+                string[] paraList = strPara.Split('|')[1].Split('&');
+                if (paraList.Count() == 2)
+                {
+                    ProcessData.CenterLineOffset = int.Parse(paraList[0]);
+                    ProcessData.PadOffset = int.Parse(paraList[1]);
+                }
+            }
+            #endregion
         }
         public void SaveConfig(EnumConfigType cfgType, object[] listObj)
         {
@@ -375,6 +390,9 @@ namespace JPT_TosaTest.Config
                     objSaved = new UserCfgManager();
                     (objSaved as UserCfgManager).Users= listObj as UserModel[];
                     break;
+                case EnumConfigType.ProcessPara:
+                    File.WriteAllText(File_ProcessPara, $"ProcessPara|{ProcessData.CenterLineOffset}&{ProcessData.PadOffset}");
+                    return;
                 default:
                     break;
             }

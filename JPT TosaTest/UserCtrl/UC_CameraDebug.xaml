@@ -21,7 +21,7 @@
                 <DoubleAnimation Storyboard.TargetName="SelectTrans"  Storyboard.TargetProperty="X" From="88" To="0" BeginTime="00:00:00" Duration="00:00:0.2"/>
             </Storyboard>
             <Storyboard x:Key="RoiSb">
-                <DoubleAnimation Storyboard.TargetName="SelectTrans"  Storyboard.TargetProperty="X" From="0" To="88" BeginTime="00:00:00" Duration="00:00:0.2"/>
+                <DoubleAnimation Storyboard.TargetName="SelectTrans"  Storyboard.TargetProperty="X" From="0" To="120" BeginTime="00:00:00" Duration="00:00:0.2"/>
             </Storyboard>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -158,7 +158,7 @@
                                     </Grid.ColumnDefinitions>
                                     <Grid Grid.Column="0">
                                         <Rectangle  RadiusX="20" RadiusY="20" Margin="0,13,0,13"  StrokeThickness="1"  Stroke="{StaticResource ThemColor}"/>
-                                        <Button  VerticalAlignment="Center" Content="{DynamicResource CameraPage_AddRoi}" FontSize="20" Margin="12,18,94,18" Style="{StaticResource RoundButtonStyle1}" Background="Transparent" BorderThickness="0" Width="70" Command="{Binding NewRoiCommand}" CommandParameter="{Binding SelectedIndex,ElementName=Cb_Cameras}"/>
+                                        <Button  VerticalAlignment="Center" Content="{DynamicResource CameraPage_AddRoi}" FontSize="20" Margin="5,18,110,18" Style="{StaticResource RoundButtonStyle1}" Background="Transparent" BorderThickness="0" Width="70" Command="{Binding NewRoiCommand}" CommandParameter="{Binding SelectedIndex,ElementName=Cb_Cameras}"/>
                                         <Button  Grid.Column="0" VerticalAlignment="Center" Content="{DynamicResource CameraPage_AddModel}" FontSize="20" Margin="90,0,0,0" Style="{StaticResource RoundButtonStyle1}" Background="Transparent" BorderThickness="0" Command="{Binding PreCreateModelCommand}" CommandParameter="{Binding SelectedIndex,ElementName=Cb_Cameras}"/>
                                         <Rectangle  RadiusX="20" RadiusY="20" Margin="0,13,120,13" Fill="{StaticResource ThemColor}">
                                             <i:Interaction.Triggers>
@@ -342,8 +342,8 @@
                                 </ListView>
                                 <Rectangle Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Width="2" Fill="{StaticResource ThemColor}"/>
                                 <Grid Grid.Column="2">
-                                    <VisionTool:UC_LinePanel x:Name="LineTool" Visibility="{Binding SelectedIndex, ElementName=lvToolSet, Converter={StaticResource int2Visibility}, ConverterParameter=0}" SaveParaCommand="{Binding SaveLineParaCommand}" UpdateParaCommand="{Binding UpdateLineResultCommand}"/>
-                                    <VisionTool:UC_PairPanel x:Name="PairTool" Visibility="{Binding SelectedIndex, ElementName=lvToolSet, Converter={StaticResource int2Visibility}, ConverterParameter=1}" SaveParaCommand="{Binding SavePairParaCommand}" UpdateParaCommand="{Binding UpdatePairResultCommand}"/>
+                                    <VisionTool:UC_LinePanel x:Name="LineTool" Visibility="{Binding SelectedIndex, ElementName=lvToolSet, Converter={StaticResource int2Visibility}, ConverterParameter=0}" />
+                                    <VisionTool:UC_PairPanel x:Name="PairTool" Visibility="{Binding SelectedIndex, ElementName=lvToolSet, Converter={StaticResource int2Visibility}, ConverterParameter=1}" />
                                 </Grid>
                             </Grid>
                         </TabItem>

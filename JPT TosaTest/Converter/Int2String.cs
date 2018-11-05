@@ -17,7 +17,11 @@ namespace JPT_TosaTest.Converter
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            if (int.TryParse(value.ToString(), out int n))
+            {
+                return n;
+            }
+            return 0;
         }
     }
 }

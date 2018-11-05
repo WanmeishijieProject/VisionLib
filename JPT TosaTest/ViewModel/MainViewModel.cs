@@ -16,6 +16,7 @@ using JPT_TosaTest.Classes;
 using JPT_TosaTest.MotionCards;
 using AxisParaLib.UnitManager;
 using JPT_TosaTest.Vision;
+using System.IO;
 
 namespace JPT_TosaTest.ViewModel
 {
@@ -31,7 +32,7 @@ namespace JPT_TosaTest.ViewModel
         private string _snakeLastError = "";
         private LogExcel PrePointSetExcel;
         private string POINT_FILE = "Config/Point.xls";
-
+        private object Hom_2D=null, ModelPos=null;
         public MainViewModel(IDataService dataService)
         {
             //注册错误显示消息
@@ -460,6 +461,13 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
+        public RelayCommand CommandFindLine
+        {
+            get { return new RelayCommand(()=> {
+                WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService").SetCmd(WorkFlow.STEP.CmdFindLine);
+            }); }
+        }
+
         public RelayCommand CommandLoadProduct  //上料
         {
             get
@@ -471,29 +479,89 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
-        public RelayCommand CommandFindLineTop  //绘制顶部线
+        public RelayCommand CommandWorkTop  //在顶部工作
         {
             get
             {
                 return new RelayCommand(() => {
-                    Console.WriteLine("FindLineTopCommand");
-                    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T2, 0, null, out object result);
-                    ;
+                    //Console.WriteLine("FindLineTopCommand");
+                    //List<string> listParas = new List<string>();
+                    //string LineToolParaPath = $"{FileHelper.GetCurFilePathString()}VisionData\\ToolData\\LineToolData\\";
+                    //var fileList = FileHelper.GetProfileList(LineToolParaPath);
+                    //foreach (var file in fileList)
+                    //{
+                    //    if (file.Contains("Top"))
+                    //    {
+                    //        listParas.Add(File.ReadAllText($"{LineToolParaPath}{file}.para"));
+                    //    }
+                    //}
+                    //if(Hom_2D == null || ModelPos == null)
+                    //{
+                    //    string strModelFileName = $"VisionData\\Model\\Cam0_Model.shm";    //Model
+                    //    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T1, 0, strModelFileName, out object Hom2DAndModelPos);
+                    //    if (Hom2DAndModelPos != null)
+                    //    {
+                    //        List<object> list = Hom2DAndModelPos as List<object>;
+                    //        if (list.Count == 2)
+                    //        {
+                    //            Hom_2D = list[0];
+                    //            ModelPos = list[1];
+                    //        }
+                    //    }
+                    //}
+                    //if (Hom_2D != null && ModelPos != null)
+                    //    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T2, 0, new List<object> { Hom_2D, ModelPos, listParas }, out object result);
+                    //else
+                    //{
+                    //    //TO DO
+                    //}
+                    WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService").SetCmd(WorkFlow.STEP.CmdWorkTop);
                 });
             }
         }
 
-        public RelayCommand CommandFindLineBottom
+        public RelayCommand CommandWorkBottom   //在底部工作
         {
             get
             {
                 return new RelayCommand(() => {
-                    Console.WriteLine("FindLineBottomCommand");
-                    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T3, 0, null, out object result);
-                    ;
+                    //Console.WriteLine("FindLineBottomCommand");
+                    //List<string> listParas = new List<string>();
+                    //string LineToolParaPath = $"{FileHelper.GetCurFilePathString()}VisionData\\ToolData\\PairToolData\\";
+                    //var fileList = FileHelper.GetProfileList(LineToolParaPath);
+                    //foreach (var file in fileList)
+                    //{
+                    //    if (file.Contains("Bottom"))
+                    //    {
+                    //        listParas.Add(File.ReadAllText($"{LineToolParaPath}{file}.para"));
+                    //    }
+                    //}
+                    ////if (Hom_2D == null || ModelPos == null)
+                    //{
+                    //    string strModelFileName = $"VisionData\\Model\\Cam0_Model.shm";    //Model
+                    //    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T1, 0, strModelFileName, out object Hom2DAndModelPos);
+                    //    if (Hom2DAndModelPos != null)
+                    //    {
+                    //        List<object> list = Hom2DAndModelPos as List<object>;
+                    //        if (list.Count == 2)
+                    //        {
+                    //            Hom_2D = list[0];
+                    //            ModelPos = list[1];
+                    //        }
+                    //    }
+                    //}
+                    //if (Hom_2D != null && ModelPos != null)
+                    //    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T3, 0, new List<object> { Hom_2D, ModelPos, listParas }, out object result);
+                    //else
+                    //{
+                    //    //TO DO
+
+                    WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService").SetCmd(WorkFlow.STEP.CmdWorkBottom);
+
                 });
             }
         }
+
         public RelayCommand CommandHome
         {
             get

@@ -30,7 +30,9 @@ namespace JPT_TosaTest.WorkFlow
             {
                 lock (_lock)
                 {
-                    return nStepStack.Peek();
+                    if(nStepStack.Count>0)
+                        return nStepStack.Peek();
+                    return null;
                 }
             }
             catch

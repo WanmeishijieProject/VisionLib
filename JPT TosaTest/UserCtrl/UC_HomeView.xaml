@@ -43,6 +43,7 @@
                     <ColumnDefinition Width="120"/>
                     <ColumnDefinition Width="120"/>
                     <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="120"/>
                 </Grid.ColumnDefinitions>
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
@@ -62,10 +63,11 @@
                     <Border Grid.Row="1" Grid.Column="2" CornerRadius="5" Margin="5,2" Background="{StaticResource ThemColor}"/>
                 </Grid>
                 <Button Grid.Column="2" Height="50" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="吸取物料" Command="{Binding CommandLoadProduct}"/>
-                <Button Grid.Column="3" Height="50" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="上工作面" Command="{Binding CommandFindLineTop}"/>
-                <Button Grid.Column="4" Height="50" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="下工作面" Command="{Binding CommandFindLineBottom}"/>
+                <Button Grid.Column="3" Height="50" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="上工作面" Command="{Binding CommandWorkTop}"/>
+                <Button Grid.Column="4" Height="50" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="下工作面" Command="{Binding CommandWorkBottom}"/>
                 <Button Grid.Column="5" Height="50" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="回机械原点" Command="{Binding CommandHome}"/>
-                <Grid Grid.ColumnSpan="6" VerticalAlignment="Bottom" Margin="5">
+                <Button Grid.Column="6" Height="50" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="找线" Command="{Binding CommandFindLine}"/>
+                <Grid Grid.ColumnSpan="7" VerticalAlignment="Bottom" Margin="5">
                     <Line X1="3" Y1="1" X2="1500" Y2="1" Stroke="{StaticResource ThemColor}" StrokeThickness="2"/>
                 </Grid>
             </Grid>

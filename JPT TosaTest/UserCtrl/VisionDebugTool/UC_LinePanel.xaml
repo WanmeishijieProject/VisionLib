@@ -21,7 +21,7 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <TextBlock  Text="卡尺数量" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
-            <TextBox Name="TbCaliberNum" Grid.Column="1" Margin="5" Text="30" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Width="150" TextChanged="TbCaliberNum_TextChanged"/>
+            <TextBox Name="TbCaliberNum" Grid.Column="1" Margin="5" Text="{Binding CaliperNumber, Mode=TwoWay, Converter={StaticResource Int2String}}" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Width="150" TextChanged="TbCaliberNum_TextChanged"/>
         </Grid>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -29,7 +29,7 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="Line极性" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
-            <ComboBox Name="CbPolarity" Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" FontSize="20" Margin="5">
+            <ComboBox Name="CbPolarity" Grid.Column="1" SelectedIndex="{Binding Polarity}" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" FontSize="20" Margin="5" SelectionChanged="CbPolarity_SelectionChanged">
                 <ComboBoxItem>
                     <TextBlock Text="DarkToLight"/>
                 </ComboBoxItem>
@@ -47,7 +47,7 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="选择类型" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
-            <ComboBox Name="CbSelectType" Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" FontSize="20" Margin="5">
+            <ComboBox Name="CbSelectType" Grid.Column="1" SelectedIndex="{Binding SelectType}" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" FontSize="20" Margin="5" SelectionChanged="CbSelectType_SelectionChanged">
                 <ComboBoxItem>
                     <TextBlock Text="First"/>
                 </ComboBoxItem>
@@ -65,7 +65,7 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="{Binding Value, ElementName=SliderContrast, Converter={StaticResource ContrastValue2Text}}" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
-            <Slider Name="SliderContrast" Maximum="255" Minimum="0" Value="50" Grid.Column="1" VerticalAlignment="Center" Margin="10,0" HorizontalAlignment="Left" MinWidth="150" ValueChanged="SliderContrast_ValueChanged"/>
+            <Slider Name="SliderContrast" Maximum="255" Minimum="0" Value="{Binding Contrast}" Grid.Column="1" VerticalAlignment="Center" Margin="10,0" HorizontalAlignment="Left" MinWidth="150" ValueChanged="SliderContrast_ValueChanged"/>
         </Grid>
         <DataGrid Grid.Row="4" CanUserAddRows="False" Margin="2">
             <DataGrid.Columns>
@@ -76,6 +76,6 @@
             </DataGrid.Columns>
 
         </DataGrid>
-        <Button Name="BtnSaveLinePara" Grid.Row="5" Content="保存参数" Margin="10,0" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Click="BtnSaveLinePara_Click"/>
+        <Button Name="BtnSaveLinePara" Grid.Row="5" Content="保存参数" Margin="10,0" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Command="{Binding SaveLineParaCommand}"/>
     </Grid>
 </UserControl>

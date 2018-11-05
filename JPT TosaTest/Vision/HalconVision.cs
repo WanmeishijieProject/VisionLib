@@ -7,6 +7,7 @@ using GalaSoft.MvvmLight.Messaging;
 using HalconDotNet;
 using JPT_TosaTest.Classes;
 using JPT_TosaTest.UserCtrl;
+using JPT_TosaTest.UserCtrl.VisionDebugTool;
 
 namespace JPT_TosaTest.Vision
 {
@@ -86,9 +87,11 @@ namespace JPT_TosaTest.Vision
         public List<object> _lockList = new List<object>();
         public enum IMAGEPROCESS_STEP
         {
-            T1,
-            T2,
-            T3,
+            T1, //Get model data 
+            T2, //Get line bottom
+            T3,  //Get line top
+            T4, //Display raw line
+            T5,//Display line offset
         }
         private List<HObject> HoImageList = new List<HObject>(10);    //Image
         private List<HTuple> AcqHandleList = new List<HTuple>(10);    //Aqu
@@ -321,33 +324,87 @@ namespace JPT_TosaTest.Vision
                     {
                         case IMAGEPROCESS_STEP.T1:  //第一步 找出模板并获取第二步与第三步的ROI数据
                             {
-                                string[] strPara = para.ToString().Split('&');
-                                if (strPara.Length != 2)
-                                    return false;
-                                string strRectRoiFileName = strPara[0];
-                                string strModelFileName = strPara[1];
-                                bRet = FindModelAndGetData(HoImageList[nCamID], strModelFileName, out HTuple hm_2D,out HTuple ModelPos);
+                                string strModelFileName = para.ToString();
+                                bRet = FindModelAndGetData(HoImageList[nCamID], strModelFileName,out HTuple hom_2D,out HTuple ModelPos);
+                                if (hom_2D.Length != 0 && ModelPos.Length != 0)
+                                    result = new List<object>() { hom_2D, ModelPos };
+                                else
+                                {
+                                    //TO DO
+                                }
                             }
                             break;
-                        case IMAGEPROCESS_STEP.T2:  //第二步，根据模板找出线（有好几个高度差需要切换）
-                            {            
-                                List<string> listParas = new List<string>();
-                                string LineToolParaPath = $"{FileHelper.GetCurFilePathString()}VisionData\\ToolData\\LineToolData\\";
-                                string strModelFileName = $"{FileHelper.GetCurFilePathString()}VisionData\\Model\\Cam0_Model.shm";
-                                var fileList=FileHelper.GetProfileList(LineToolParaPath);
-                                foreach (var file in fileList)
+                        case IMAGEPROCESS_STEP.T2:  //第二步，找出顶部与底部的线线
+                            {    
+                                var originPara = para as List<object>;
+                                HTuple hom_2D = originPara[0] as HTuple;
+                                HTuple ModelPos = originPara[1] as HTuple;
+                                List<string> listParas = originPara[2] as List<string>;  
+                                bRet = FindLineBottomAndTop(HoImageList[nCamID], listParas, hom_2D, ModelPos, out List<object> lineList);   //只需要显示
+                                result = lineList;
+                            }
+                            break;
+                        case IMAGEPROCESS_STEP.T3:  //Top后期处理
+                            {
+                                int CenterOffset = Config.ConfigMgr.Instance.ProcessData.CenterLineOffset;
+                                List<object> list = para as List<object>;
+                                List<Tuple<HTuple, HTuple, HTuple, HTuple>> TupleList = new List<Tuple<HTuple, HTuple, HTuple, HTuple>>();
+                                foreach (var it in list)
                                 {
-                                    if (file.Contains("Top"))
+                                    object obj = it;
+                                    TupleList.Add(obj as Tuple<HTuple, HTuple, HTuple, HTuple>);
+                                }
+                                if (list != null)
+                                {
+                                    DisplayLines(nCamID, TupleList);
+                                    if (TupleList.Count >= 2)
                                     {
-                                        listParas.Add(File.ReadAllText($"{LineToolParaPath}{file}.para"));
+                                        HalconVision.Instance.GetParallelLineFromDistance(TupleList[0].Item1, TupleList[0].Item2, TupleList[0].Item3, TupleList[0].Item4,
+                                            CenterOffset, "row", 1, out HTuple hv_LineOutRow, out HTuple hv_LineOutCol, out HTuple hv_LineOutRow1, out HTuple hv_LineOutCol1,
+                                            out HTuple hv_k, out HTuple hv_b);
+                                        if (hv_LineOutRow != null && hv_LineOutRow1 != null)
+                                        {
+                                            DisplayLines(nCamID, new List<Tuple<HTuple, HTuple, HTuple, HTuple>>() { new Tuple<HTuple, HTuple, HTuple, HTuple>(hv_LineOutRow, hv_LineOutCol, hv_LineOutRow1, hv_LineOutCol1) });
+                                        }
                                     }
                                 }
-                                bRet = FindLineTop(HoImageList[nCamID], strModelFileName, listParas);   //只需要显示
                             }
                             break;
-                        case IMAGEPROCESS_STEP.T3:  //第三步，备用
-                            bRet = FindLineBottom();    //只需要显示
+                        case IMAGEPROCESS_STEP.T4: //Bottom后期处理
+                            {
+                                int PadOffset = Config.ConfigMgr.Instance.ProcessData.PadOffset;
+                                List<object> list = para as List<object>;
+                                List<Tuple<HTuple, HTuple, HTuple, HTuple>> TupleList = new List<Tuple<HTuple, HTuple, HTuple, HTuple>>();
+                                foreach (var it in list)
+                                {
+                                    object obj = it;
+                                    TupleList.Add(obj as Tuple<HTuple, HTuple, HTuple, HTuple>);
+                                }
+                                if (list != null)
+                                {
+                                    DisplayLines(nCamID, TupleList);
+                                    if (TupleList.Count >= 5)   
+                                    {
+                                        List<Tuple<HTuple, HTuple, HTuple, HTuple>> listFinal = new List<Tuple<HTuple, HTuple, HTuple, HTuple>>();
+                                        for (int i = 0; i < 5; i++)
+                                        {
+                                            HOperatorSet.IntersectionLl(TupleList[i].Item1, TupleList[i].Item2, TupleList[i].Item3, TupleList[i].Item4,
+                                                                    TupleList[4].Item1, TupleList[4].Item2, TupleList[4].Item3, TupleList[4].Item4, out HTuple row1, out HTuple col1, out HTuple isParallel1);
+                                            GetVerticalFromDistance(row1, col1, TupleList[4].Item1, TupleList[4].Item2, TupleList[4].Item3, TupleList[4].Item4, PadOffset, "col", -1,
+                                                               out HTuple TargetRow1, out HTuple TargetCol1, out HTuple k, out HTuple b, out HTuple kIn, out HTuple bIn);
+                                            listFinal.Add(new Tuple<HTuple, HTuple, HTuple, HTuple>(row1, col1, TargetRow1, TargetCol1));
+                                        }    
+                                       
+                                        DisplayLines(0, listFinal);
+                                    }
+                                }
+                            }
                             break;
+
+                        case IMAGEPROCESS_STEP.T5:
+
+                            break;
+
                         default:
                             break;
                     }
@@ -736,8 +793,6 @@ namespace JPT_TosaTest.Vision
 
         }
 
-        HTuple s_hv_ModelID = null;
-
 #region 专用
         private bool FindModelAndGetData(HObject image, string ModelFileName, out HTuple hm_2D, out HTuple ModelPos)
         {
@@ -775,7 +830,7 @@ namespace JPT_TosaTest.Vision
                     {
                         HOperatorSet.SetPart(it.Value, 0, 0, ImageHeight, ImageWidth);
                         HOperatorSet.SetColor(it.Value, "red");
-                        disp_message(it.Value, $"模板位置:({ hv_Column1},{ hv_Row1})", "window", 10, 10, "red", "true");
+                        disp_message(it.Value, $"模板位置:({ hv_Row1},{ hv_Column1})", "window", 10, 10, "red", "true");
                         disp_message(it.Value, $"分数: { hv_Score}", "window", 50, 10, "red", "true");
                         HOperatorSet.DispCross(it.Value, hv_Row1, hv_Column1, 80, hv_Angle);
                         ModelPos[0] = hv_Row1;
@@ -799,57 +854,94 @@ namespace JPT_TosaTest.Vision
 
         }
 
-        private bool FindLineTop(HObject image, string ModelFileName, List<string> LineParaList)
+        private bool FindLineBottomAndTop(HObject image, List<string> LineParaList, HTuple hom_2D,HTuple ModelPos, out List<object> lineList)
         {
+            List<object> lineListRawData = new List<object>();
+            lineList = new List<object>();
+
             //ReadRectangle
             try
-            {
-                if (FindModelAndGetData(image, ModelFileName, out HTuple hm_2D, out HTuple ModelPos))
+            {  
+                foreach (var it in HwindowDic[0])
                 {
-                    foreach (var it in HwindowDic[0])
+                    HOperatorSet.SetSystem("flush_graphic", "false");
+                    HOperatorSet.ClearWindow(it.Value);
+                    HOperatorSet.DispObj(image, it.Value);
+                    HOperatorSet.SetDraw(it.Value, "margin");
+                    HOperatorSet.SetSystem("flush_graphic", "true");
+                }
+                foreach (var para in LineParaList)
+                {
+                    string[] paralist = para.Split('|');
+                    if (paralist.Count() != 3)
+                        continue;
+                    string strToolDataType = paralist[0].ToUpper();
+                    string[] strRtPara = paralist[1].Split('&');
+                    string[] RectPara = paralist[2].Split('&');
+
+                    if (RectPara.Count() == 5)
                     {
-                        HOperatorSet.SetSystem("flush_graphic", "false");
-                        HOperatorSet.ClearWindow(it.Value);
-                        HOperatorSet.DispObj(image, it.Value);
-                        HOperatorSet.SetDraw(it.Value, "margin");
-                    }
-                    foreach (var para in LineParaList)
-                    {
-                        var p = para.Split('&');
-                        if (p.Count() == 9)
+                        int i = 0;
+                        //Read Rect Roi
+                        HTuple Row = double.Parse(RectPara[i++]);
+                        HTuple Col = double.Parse(RectPara[i++]);
+                        HTuple Phi = double.Parse(RectPara[i++]);
+                        HTuple L1 = double.Parse(RectPara[i++]);
+                        HTuple L2 = double.Parse(RectPara[i++]);
+
+                        HOperatorSet.AffineTransPoint2d(hom_2D, Row, Col, out HTuple outRoiRow, out HTuple outRoiCol);
+                        HOperatorSet.GenRectangle2(out HObject rect, outRoiRow, outRoiCol, Phi + ModelPos[2], L1, L2);
+                        switch (strToolDataType)
                         {
-                            HTuple CaliberNum = int.Parse(p[0]);
-                            Enum.TryParse(p[1], out EnumEdgeType EdgeType);
-                            Enum.TryParse(p[2], out EnumSelectType SelectType);
-                            double.TryParse(p[3], out double fContrast);
-                            HTuple Contrast = Math.Round(fContrast);
-                            HTuple Row = double.Parse(p[4]);
-                            HTuple Col = double.Parse(p[5]);
-                            HTuple Phi = double.Parse(p[6]);
-                            HTuple L1 = double.Parse(p[7]);
-                            HTuple L2 = double.Parse(p[8]);
+                            case "LINETOOL":
+                                {
+                                    HTuple CaliperNum = int.Parse(strRtPara[0]);
+                                    Enum.TryParse(strRtPara[1], out EnumEdgeType EdgeType);
+                                    Enum.TryParse(strRtPara[2], out EnumSelectType SelectType);
+                                    double.TryParse(strRtPara[3], out double fContrast);
+                                    HTuple Contrast = Math.Round(fContrast);
+                                    FindLine(image, EdgeType, SelectType, CaliperNum, Contrast, outRoiRow, outRoiCol, Phi + ModelPos[2], L1, L2, out HTuple StartRow, out HTuple StartCol, out HTuple EndRow, out HTuple EndCol);
+                                    lineList.Add(new Tuple<HTuple, HTuple, HTuple, HTuple>(StartRow, StartCol, EndRow, EndCol));
+                                }
+                                break;
+                            case "PAIRTOOL":
+                                {
+                                    HTuple CaliperNum = int.Parse(strRtPara[0]);
+                                    HTuple ExpectedPairNum = int.Parse(strRtPara[1]);
+                                    Enum.TryParse(strRtPara[2], out EnumPairType PairType);
+                                    Enum.TryParse(strRtPara[3], out EnumSelectType SelectType);
+                                    double.TryParse(strRtPara[4], out double fContrast);
+                                    HTuple Contrast = Math.Round(fContrast);
+                                    FindPair(image, ExpectedPairNum, PairType, SelectType, CaliperNum, Contrast, Row, Col, Phi, L1, L2,
+                                       out HTuple OutFirstRowStart, out HTuple FirstColStart, out HTuple OutFirstRowEnd, out HTuple OutFirstColEnd,
+                                       out HTuple OutSecondRowStart, out HTuple SecondColStart, out HTuple OutSecondRowEnd, out HTuple OutSecondColEnd);
+                                    lineList.Add(new Tuple<HTuple, HTuple, HTuple, HTuple>(OutFirstRowStart, FirstColStart, OutFirstRowEnd, OutFirstColEnd));
+                                    lineList.Add(new Tuple<HTuple, HTuple, HTuple, HTuple>(OutSecondRowStart, SecondColStart, OutSecondRowEnd, OutSecondColEnd));
+                                }
+                                break;
+                            default:
+                                throw new Exception("invalid TOOL");
+                        }
 
-                            HOperatorSet.AffineTransPoint2d(hm_2D, Row, Col, out HTuple outRoiRow, out HTuple outRoiCol);          
-                            HOperatorSet.GenRectangle2(out HObject rect, outRoiRow, outRoiCol, Phi+ ModelPos[2], L1, L2);
-                         
-                            foreach (var it in HwindowDic[0])
+                        //Display绿色是原始直线
+                        foreach (var it in HwindowDic[0])
+                        {
+                            HOperatorSet.SetColor(it.Value, "green");
+                            HOperatorSet.DispObj(rect, it.Value);
+                            HOperatorSet.SetLineWidth(it.Value, 1);
+                            foreach (var obj in lineList)
                             {
-                                HOperatorSet.SetSystem("flush_graphic", "true");
-                                HOperatorSet.SetColor(it.Value,"green");
-                                HOperatorSet.DispObj(rect, it.Value);
-                                FindLine(image, EdgeType, SelectType, CaliberNum, Contrast, outRoiRow, outRoiCol, Phi + ModelPos[2], L1, L2, out HTuple StartRow, out HTuple StartCol, out HTuple EndRow, out HTuple EndCol);
-                                HOperatorSet.SetColor(it.Value,"red");
-                                HOperatorSet.DispLine(it.Value, StartRow, StartCol, EndRow, EndCol);
+                                Tuple<HTuple,HTuple, HTuple,HTuple> line = obj as Tuple<HTuple, HTuple, HTuple, HTuple>;
+                                if(line!=null)
+                                    HOperatorSet.DispLine(it.Value,line.Item1 , line.Item2, line.Item3, line.Item4);
                             }
-
-                            //FindLine(image,)
+                          
                         }
                     }
-                    return true;
                 }
-                else
-                    return false;
-                
+                return true;
+            
+
             }
             catch (Exception ex)
             {
@@ -857,10 +949,26 @@ namespace JPT_TosaTest.Vision
             }
         }
 
-        private bool FindLineBottom()
+        private bool DisplayLines(int nCamID, List<Tuple<HTuple, HTuple, HTuple, HTuple>> lineList, string Color="red")
         {
-
-            return true;
+            try
+            {
+                if (lineList == null)
+                    return false;
+                foreach (var it in HwindowDic[nCamID])
+                {
+                    foreach (var line in lineList)
+                    {
+                        HOperatorSet.SetColor(it.Value,Color);
+                        HOperatorSet.DispLine(it.Value, line.Item1, line.Item2, line.Item3, line.Item4);
+                    }
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 #endregion
 
@@ -978,14 +1086,14 @@ namespace JPT_TosaTest.Vision
                 HTuple WindowHandle = HwindowDic[nCamID][DebugWindowName];
                 HOperatorSet.SetColor(WindowHandle, "green");
                 HOperatorSet.SetLineWidth(WindowHandle, 1);
-                if (string.IsNullOrEmpty(LineRoiData)) //如果是首次就画一个矩形
+                if (string.IsNullOrEmpty(PairRoiData)) //如果是首次就画一个矩形
                 {
                     Debug_DrawRectangle2(WindowHandle, out Row, out Col, out Phi, out L1, out L2);
-                    GetRectData(EnumToolType.LineTool, Row, Col, Phi, L1, L2);
+                    GetRectData(EnumToolType.PairTool, Row, Col, Phi, L1, L2);
                 }
                 else
                 {
-                    string[] paraList = LineRoiData.Split('&');
+                    string[] paraList = PairRoiData.Split('&');
                     Row = double.Parse(paraList[0]);
                     Col = double.Parse(paraList[1]);
                     Phi = double.Parse(paraList[2]);
@@ -1581,6 +1689,7 @@ namespace JPT_TosaTest.Vision
             {
                 HOperatorSet.GenMeasureRectangle2(hv_newRow, hv_newCol, hv_RoiPhi, hv_newL1,
                     hv_newL2, hv_Width, hv_Height, "nearest_neighbor", out hv_MeasureHandle);
+                HOperatorSet.GenRectangle2(out HObject rectDebug, hv_newRow, hv_newCol, hv_RoiPhi, hv_newL1, hv_newL2);
                 HOperatorSet.MeasurePairs(ho_Image, hv_MeasureHandle, 1, hv_EdgeGrayValue, hv_Polarity, hv_SelectType, out HTuple rowEdgeFirst, out HTuple columnEdgeFirst,
                                         out HTuple amplitudeFirst, out HTuple rowEdgeSecond, out HTuple columnEdgeSecond, out HTuple amplitudeSecond, out HTuple intraDistance, out HTuple interDistance);
                
@@ -1639,6 +1748,238 @@ namespace JPT_TosaTest.Vision
 
             return;
         }
+
+        /// <summary>
+        ///  找指定距离的垂线
+        /// </summary>
+        /// <param name="hv_FootRow"></param>
+        /// <param name="hv_FootCol"></param>
+        /// <param name="hv_LineRowStart"></param>
+        /// <param name="hv_LineColStart"></param>
+        /// <param name="hv_LineRowEnd"></param>
+        /// <param name="hv_LineColEnd"></param>
+        /// <param name="hv_Distance"></param>
+        /// <param name="hv_Direction"></param>
+        /// <param name="hv_Polarity"></param>
+        /// <param name="hv_TargetRow"></param>
+        /// <param name="hv_TargetCol"></param>
+        /// <param name="hv_k"></param>
+        /// <param name="hv_b"></param>
+        /// <param name="hv_kIn"></param>
+        /// <param name="hv_bIn"></param>
+        public void GetVerticalFromDistance(HTuple hv_FootRow, HTuple hv_FootCol, HTuple hv_LineRowStart,
+            HTuple hv_LineColStart, HTuple hv_LineRowEnd, HTuple hv_LineColEnd, HTuple hv_Distance,
+            HTuple hv_Direction, HTuple hv_Polarity, out HTuple hv_TargetRow, out HTuple hv_TargetCol,
+            out HTuple hv_k, out HTuple hv_b, out HTuple hv_kIn, out HTuple hv_bIn)
+        {
+
+
+            // Local control variables 
+
+            HTuple hv_RealDeltaCol, hv_RealDeltaRow, hv_Sqrt;
+            HTuple hv_row1, hv_col1, hv_row2, hv_col2, hv_TargetCo1 = new HTuple();
+
+            // Initialize local and output iconic variables 
+
+            hv_TargetRow = new HTuple();
+            hv_TargetCol = new HTuple();
+            HOperatorSet.TupleReal(hv_LineColEnd - hv_LineColStart, out hv_RealDeltaCol);
+            HOperatorSet.TupleReal(hv_LineRowStart - hv_LineRowEnd, out hv_RealDeltaRow);
+
+            hv_kIn = hv_RealDeltaCol / hv_RealDeltaRow;
+            hv_bIn = hv_FootCol - (hv_kIn * hv_FootRow);
+
+            hv_k = -1 / hv_kIn;
+            hv_b = ((hv_FootRow * hv_kIn) + hv_bIn) - (hv_k * hv_FootRow);
+
+            //找出目标点
+            HOperatorSet.TupleSqrt((hv_Distance * hv_Distance) / ((hv_k * hv_k) + 1), out hv_Sqrt);
+            hv_row1 = hv_Sqrt + hv_FootRow;
+            hv_col1 = (hv_k * hv_row1) + hv_b;
+
+            hv_row2 = (-hv_Sqrt) + hv_FootRow;
+            hv_col2 = (hv_k * hv_row2) + hv_b;
+
+            if ((int)(new HTuple(hv_Direction.TupleEqual("row"))) != 0)
+            {
+                if ((int)(new HTuple(hv_Polarity.TupleGreaterEqual(0))) != 0)
+                {
+                    hv_TargetRow = hv_row1.Clone();
+                    hv_TargetCol = hv_col1.Clone();
+                }
+                else
+                {
+                    hv_TargetRow = hv_row2.Clone();
+                    hv_TargetCol = hv_col2.Clone();
+                }
+            }
+
+            if ((int)(new HTuple(hv_Direction.TupleEqual("col"))) != 0)
+            {
+                if ((int)(new HTuple(hv_Polarity.TupleGreaterEqual(0))) != 0)
+                {
+                    if ((int)(new HTuple(hv_col1.TupleGreaterEqual(hv_FootCol))) != 0)
+                    {
+                        hv_TargetCo1 = hv_col1.Clone();
+                        hv_TargetRow = hv_row1.Clone();
+                    }
+                    else
+                    {
+                        hv_TargetCo1 = hv_col2.Clone();
+                        hv_TargetRow = hv_row1.Clone();
+                    }
+                }
+                else
+                {
+                    if ((int)(new HTuple(hv_col1.TupleGreaterEqual(hv_FootCol))) != 0)
+                    {
+                        hv_TargetCo1 = hv_col2.Clone();
+                        hv_TargetRow = hv_row2.Clone();
+                    }
+                    else
+                    {
+                        hv_TargetCo1 = hv_col1.Clone();
+                        hv_TargetRow = hv_row1.Clone();
+                    }
+                }
+            }
+
+
+            return;
+        }
+        /// <summary>
+        /// 求平行线
+        /// </summary>
+        /// <param name="hv_LineInRow">直线起点Row</param>
+        /// <param name="hv_LineInCol">直线起点Col</param>
+        /// <param name="hv_LineInRow1">直线终点Row</param>
+        /// <param name="hv_LineInCol1">直线终点Col</param>
+        /// <param name="hv_Distance">平行线距离</param>
+        /// <param name="hv_Direction">方向"row"或者"col"</param>
+        /// <param name="hv_Polarity">极性，-1代表减小方向，1代表增大方向</param>
+        /// <param name="hv_LineOutRow">平行线起点Row</param>
+        /// <param name="hv_LineOutCol">平行线起点Col</param>
+        /// <param name="hv_LineOutRow1">平行线终点Row</param>
+        /// <param name="hv_LineOutCol1">平行线终点Col</param>
+        /// <param name="hv_k">平行线斜率</param>
+        /// <param name="hv_b">平行线截距</param>
+        public void GetParallelLineFromDistance(HTuple hv_LineInRow, HTuple hv_LineInCol,
+          HTuple hv_LineInRow1, HTuple hv_LineInCol1, HTuple hv_Distance, HTuple hv_Direction,
+          HTuple hv_Polarity, out HTuple hv_LineOutRow, out HTuple hv_LineOutCol, out HTuple hv_LineOutRow1,
+          out HTuple hv_LineOutCol1, out HTuple hv_k, out HTuple hv_b)
+            {
+
+
+                // Local control variables 
+
+                HTuple hv_RealDeltaCol, hv_RealDeltaRow, hv_kIn;
+                HTuple hv_bIn, hv_k1, hv_b1, hv_k2, hv_b2, hv_Sqrt1, hv_Sqrt2;
+                HTuple hv_row1, hv_col1, hv_rowTemp1, hv_colTemp1, hv_row2;
+                HTuple hv_col2, hv_rowTemp2, hv_colTemp2;
+
+                // Initialize local and output iconic variables 
+
+                hv_LineOutRow = new HTuple();
+                hv_LineOutCol = new HTuple();
+                hv_LineOutRow1 = new HTuple();
+                hv_LineOutCol1 = new HTuple();
+                HOperatorSet.TupleReal(hv_LineInCol1 - hv_LineInCol, out hv_RealDeltaCol);
+                HOperatorSet.TupleReal(hv_LineInRow1 - hv_LineInRow, out hv_RealDeltaRow);
+
+                hv_kIn = hv_RealDeltaCol / hv_RealDeltaRow;
+                hv_bIn = hv_LineInCol - (hv_kIn * hv_LineInRow);
+                hv_k = hv_kIn.Clone();
+                hv_b = hv_bIn.Clone();
+
+
+                hv_k1 = -1 / hv_kIn;
+                hv_b1 = ((hv_LineInRow * hv_kIn) + hv_bIn) - (hv_k1 * hv_LineInRow);
+
+                hv_k2 = hv_k1.Clone();
+                hv_b2 = ((hv_LineInRow1 * hv_kIn) + hv_bIn) - (hv_k2 * hv_LineInRow1);
+
+                //找出目标点
+                HOperatorSet.TupleSqrt((hv_Distance * hv_Distance) / ((hv_k1 * hv_k1) + 1), out hv_Sqrt1);
+                HOperatorSet.TupleSqrt((hv_Distance * hv_Distance) / ((hv_k2 * hv_k2) + 1), out hv_Sqrt2);
+
+
+                hv_row1 = hv_Sqrt1 + hv_LineInRow;
+                hv_col1 = (hv_k1 * hv_row1) + hv_b1;
+                hv_rowTemp1 = hv_Sqrt2 + hv_LineInRow1;
+                hv_colTemp1 = (hv_k2 * hv_rowTemp1) + hv_b2;
+
+
+                //另一条平行线
+                hv_row2 = (-hv_Sqrt1) + hv_LineInRow;
+                hv_col2 = (hv_k1 * hv_row2) + hv_b1;
+                hv_rowTemp2 = (-hv_Sqrt2) + hv_LineInRow1;
+                hv_colTemp2 = (hv_k2 * hv_rowTemp2) + hv_b2;
+
+
+
+                if ((int)(new HTuple(hv_Direction.TupleEqual("row"))) != 0)
+                {
+                    if ((int)(new HTuple(hv_Polarity.TupleGreaterEqual(0))) != 0)
+                    {
+                        hv_LineOutRow = hv_row1.Clone();
+                        hv_LineOutCol = hv_col1.Clone();
+                        hv_LineOutRow1 = hv_rowTemp1.Clone();
+                        hv_LineOutCol1 = hv_colTemp1.Clone();
+
+                    }
+                    else
+                    {
+                        hv_LineOutRow = hv_row2.Clone();
+                        hv_LineOutCol = hv_col2.Clone();
+                        hv_LineOutRow1 = hv_rowTemp2.Clone();
+                        hv_LineOutCol1 = hv_colTemp2.Clone();
+                    }
+                }
+
+                if ((int)(new HTuple(hv_Direction.TupleEqual("col"))) != 0)
+                {
+                    if ((int)(new HTuple(hv_Polarity.TupleGreaterEqual(0))) != 0)
+                    {
+                        if ((int)(new HTuple(hv_col1.TupleGreaterEqual(hv_LineInCol))) != 0)
+                        {
+                            hv_LineOutCol = hv_col1.Clone();
+                            hv_LineOutRow = hv_row1.Clone();
+                            hv_LineOutRow1 = hv_rowTemp1.Clone();
+                            hv_LineOutCol1 = hv_colTemp1.Clone();
+                        }
+                        else
+                        {
+                            hv_LineOutCol = hv_col2.Clone();
+                            hv_LineOutRow = hv_row2.Clone();
+                            hv_LineOutRow1 = hv_rowTemp2.Clone();
+                            hv_LineOutCol1 = hv_colTemp2.Clone();
+                        }
+                    }
+                    else
+                    {
+                        if ((int)(new HTuple(hv_col1.TupleGreaterEqual(hv_LineInCol))) != 0)
+                        {
+                            hv_LineOutCol = hv_col2.Clone();
+                            hv_LineOutRow = hv_row2.Clone();
+                            hv_LineOutRow1 = hv_rowTemp2.Clone();
+                            hv_LineOutCol1 = hv_colTemp2.Clone();
+                        }
+                        else
+                        {
+                            hv_LineOutCol = hv_col1.Clone();
+                            hv_LineOutRow = hv_row1.Clone();
+                            hv_LineOutRow1 = hv_rowTemp1.Clone();
+                            hv_LineOutCol1 = hv_colTemp1.Clone();
+                        }
+                    }
+                }
+
+
+
+
+                return;
+            }
+
         #endregion
 
     }

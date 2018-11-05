@@ -32,7 +32,17 @@ namespace JPT_TosaTest.Vision
         }
         public void ClearRectData(EnumToolType ToolType)
         {
-            _lineRectData = "";
+            switch (ToolType)
+            {
+                case EnumToolType.LineTool:
+                    _lineRectData = "";
+                    break;
+                case EnumToolType.PairTool:
+                    _pairRectData = "";
+                    break;
+                default:
+                    break;
+            }
         }
         public string LineRoiData
         {

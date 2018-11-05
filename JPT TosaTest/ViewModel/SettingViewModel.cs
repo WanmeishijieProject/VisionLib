@@ -5,11 +5,13 @@ using JPT_TosaTest.Classes;
 using JPT_TosaTest.Config;
 using JPT_TosaTest.Model;
 using JPT_TosaTest.MotionCards;
+using JPT_TosaTest.UserCtrl;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,7 +22,9 @@ namespace JPT_TosaTest.ViewModel
 {
     public class SettingViewModel : ViewModelBase
     {
+
         private Dictionary<string, Tuple<HotKey, HotKey>> HotKeyDic = new Dictionary<string, Tuple<HotKey, HotKey>>();
+        private string ProcessDataFilePath = FileHelper.GetCurFilePathString() + "Config\\";
 
         public SettingViewModel()
         {
@@ -42,14 +46,37 @@ namespace JPT_TosaTest.ViewModel
             Swatches= new SwatchesProvider().Swatches;
             PaletteHelper paletteHelper =new PaletteHelper();
             paletteHelper.ReplacePrimaryColor(Swatches.Where(a=>a.Name== "blue").First());
+
         }
         
         #region Property
         public ObservableCollection<HotKeyModel> HotKeyCollect { get; set; }
         public IEnumerable<Swatch> Swatches { get; }
+        public int CenterLineOffset
+        {
+            get { return ConfigMgr.Instance.ProcessData.CenterLineOffset; }
+            set
+            {
+                if (value != ConfigMgr.Instance.ProcessData.CenterLineOffset)
+                {
+                    ConfigMgr.Instance.ProcessData.CenterLineOffset = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+        public int PadOffset
+        {
+            get { return ConfigMgr.Instance.ProcessData.PadOffset; }
+            set
+            {
+                if (value != ConfigMgr.Instance.ProcessData.PadOffset)
+                {
+                    ConfigMgr.Instance.ProcessData.PadOffset = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
         #endregion
-
-
 
 
         #region Commmand
@@ -58,16 +85,14 @@ namespace JPT_TosaTest.ViewModel
             get
             {
                 return new RelayCommand(() => {
-                    Console.WriteLine("Save");
-                });
-            }
-        }
-        public RelayCommand ApplyCommand
-        {
-            get
-            {
-                return new RelayCommand(() => {
-                    Console.WriteLine("Apply");
+                    try
+                    {
+                        ConfigMgr.Instance.SaveConfig(EnumConfigType.ProcessPara, new object[] { new object()});
+                    }
+                    catch (Exception ex)
+                    {
+                        UC_MessageBox.ShowMsgBox(ex.Message, "Error", MsgType.Error);
+                    }
                 });
             }
         }

@@ -5,6 +5,7 @@ using JPT_TosaTest.Classes;
 using JPT_TosaTest.Config;
 using JPT_TosaTest.Models;
 using JPT_TosaTest.UserCtrl;
+using JPT_TosaTest.UserCtrl.VisionDebugTool;
 using JPT_TosaTest.Vision;
 using JPT_TosaTest.Vision.Light;
 using System;
@@ -78,6 +79,8 @@ namespace JPT_TosaTest.ViewModel
         private string DefaultImagePath = @"C:\";
         private int _lightBrightness = 0;
         private bool _openLightSource = false;
+        private ModelItem _curUsedModel;
+
 
         #region Private method
         private void UpdateRoiCollect(int nCamID)
@@ -299,6 +302,19 @@ namespace JPT_TosaTest.ViewModel
             }
             get { return _openLightSource; }
         }
+
+        //当前选择的是哪个Model
+        public ModelItem CurrentUsedModel
+        {
+            set {
+                if (_curUsedModel != value)
+                {
+                    _curUsedModel = value;
+                    RaisePropertyChanged();
+                }
+            }
+            get { return _curUsedModel; }
+        }
         #endregion
 
         #region Command
@@ -459,9 +475,9 @@ namespace JPT_TosaTest.ViewModel
             {
                 return new RelayCommand<RoiModelBase>(item =>
                 {
-                    if (item != null)
+                    if (item != null && item.GetType().Equals(typeof(ModelItem)))
                     {
-                        
+                        CurrentUsedModel = item as ModelItem;
                     }
                 });
             }
@@ -517,12 +533,11 @@ namespace JPT_TosaTest.ViewModel
                       
                     if (nCamID >= 0)
                     {
-                        string strRecParaFileName = $"VisionData\\Roi\\Cam{nCamID}_{item.StrName}.tup";  //Model Roi
                         string strModelFileName = $"VisionData\\Model\\Cam{nCamID}_{item.StrName}.shm";    //Model
                         try
                         {
                             //查找模板并获取数据
-                            bool bRet = HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T1, nCamID, $"{strRecParaFileName}&{strModelFileName}", out object result);
+                            bool bRet = HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T1, nCamID, strModelFileName, out object result);
                         }
                         catch (Exception ex)
                         {
@@ -541,14 +556,7 @@ namespace JPT_TosaTest.ViewModel
                     int nCamID = Convert.ToInt16(str);
                     if (nCamID < 0)
                         return;
-                    try
-                    {
-                        HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T2, nCamID, null, out object result);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception($"测试Roi发生错误{ex.Message}");
-                    }
+                   
                 });
             }
         }
@@ -721,11 +729,12 @@ namespace JPT_TosaTest.ViewModel
                 try
                 {
                     //找直线
-                    string[] paraList = para.Split('&');
+                  
+                    string[] paraList = para.Split('|')[1].Split('&');
                     if (paraList.Count() == 4)
                     {
 
-                        bool bRet = int.TryParse(paraList[0],out int CaliberNum);
+                        bool bRet = int.TryParse(paraList[0],out int CaliperNum);
                         bRet &= Enum.TryParse(paraList[1], out EnumEdgeType EdgeType);
                         bRet &= Enum.TryParse(paraList[2], out EnumSelectType SelectType);
                         bRet &= double.TryParse(paraList[3], out double fContrast);
@@ -733,7 +742,7 @@ namespace JPT_TosaTest.ViewModel
                         if (bRet)
                         {
                             HalconVision.Instance.ClearRectData(EnumToolType.LineTool);
-                            HalconVision.Instance.Debug_FindLine(0, EdgeType,SelectType, Contrast, CaliberNum);
+                            HalconVision.Instance.Debug_FindLine(0, EdgeType,SelectType, Contrast, CaliperNum);
                         }
                     }
                 }
@@ -744,56 +753,6 @@ namespace JPT_TosaTest.ViewModel
             }); }
         }
 
-        public RelayCommand<Tuple<string,string>> SaveLineParaCommand
-        {
-            get
-            {
-                return new RelayCommand<Tuple<string,string>>(tuple => {
-                    try
-                    {
-                        string strPara= $"{tuple.Item2}&{HalconVision.Instance.LineRoiData}";  
-                        File.WriteAllText(tuple.Item1, strPara);
-                    }
-                    catch (Exception ex)
-                    {
-                        UC_MessageBox.ShowMsgBox("Error", ex.Message, MsgType.Error);
-                    }
-                });
-            }
-        }
-
-        public RelayCommand<string> UpdateLineResultCommand
-        {
-            get
-            {
-                return new RelayCommand<string>(para => {
-                    try
-                    {
-                        //找直线
-                        string[] paraList = para.Split('&');
-                        if (paraList.Count() == 4)
-                        {
-
-                            bool bRet = int.TryParse(paraList[0], out int CaliberNum);
-                            bRet &= Enum.TryParse(paraList[1], out EnumEdgeType EdgeType);
-                            bRet &= Enum.TryParse(paraList[2], out EnumSelectType SelectType);
-                            bRet &= double.TryParse(paraList[3], out double fContrast);
-                            int Contrast = (int)Math.Round(fContrast);
-                            if (bRet)
-                            {
-                                if(!string.IsNullOrEmpty(HalconVision.Instance.LineRoiData))
-                                    HalconVision.Instance.Debug_FindLine(0, EdgeType,SelectType, Contrast, CaliberNum);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        UC_MessageBox.ShowMsgBox("Error", ex.Message, MsgType.Error);
-                    }
-                });
-            }
-        }
-
         public RelayCommand<string> DebugFindPairCommand
         {
             get
@@ -802,20 +761,20 @@ namespace JPT_TosaTest.ViewModel
                     try
                     {
                         //找直线
-                        string[] paraList = para.Split('&');
-                        if (paraList.Count() == 4)
+                        string[] paraList = para.Split('|')[1].Split('&');
+                        if (paraList.Count() == 5)
                         {
 
-                            bool bRet = int.TryParse(paraList[0], out int CaliberNum);
-                            bRet &= Enum.TryParse(paraList[1], out EnumPairType PairType);
-                            bRet &= Enum.TryParse(paraList[2], out EnumSelectType SelectType);
-                            bRet &= double.TryParse(paraList[3], out double fContrast);
+                            bool bRet = int.TryParse(paraList[0], out int CaliperNum);
+                            bRet= int.TryParse(paraList[1], out int ExpectedPairNum);
+                            bRet &= Enum.TryParse(paraList[2], out EnumPairType PairType);
+                            bRet &= Enum.TryParse(paraList[3], out EnumSelectType SelectType);
+                            bRet &= double.TryParse(paraList[4], out double fContrast);
                             int Contrast = (int)Math.Round(fContrast);
                             if (bRet)
                             {
                                 HalconVision.Instance.ClearRectData(EnumToolType.PairTool);
-                                HalconVision.Instance.Debug_FindPair(0, PairType, SelectType, 2, Contrast, CaliberNum);
-                               // HalconVision.Instance.Debug_FindLine(0, EdgeType, Contrast, CaliberNum);
+                                HalconVision.Instance.Debug_FindPair(0, PairType, SelectType, ExpectedPairNum, Contrast, CaliperNum);
                             }
                         }
                     }
@@ -827,24 +786,7 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
-        public RelayCommand<Tuple<string, string>> SavePairParaCommand
-        {
-            get
-            {
-                return new RelayCommand<Tuple<string, string>>(tuple => {
-                    try
-                    {
-                        string strPara = $"{tuple.Item2}&{HalconVision.Instance.LineRoiData}";
-                        File.WriteAllText(tuple.Item1, strPara);
-                    }
-                    catch (Exception ex)
-                    {
-                        UC_MessageBox.ShowMsgBox("Error", ex.Message, MsgType.Error);
-                    }
-                });
-            }
-        }
-
+       
         public RelayCommand<string> UpdatePairResultCommand
         {
             get
@@ -854,10 +796,19 @@ namespace JPT_TosaTest.ViewModel
                     {
                         //找边缘对
                         string[] paraList = para.Split('&');
-                        if (paraList.Count() == 4)
+                        if (paraList.Count() == 5)
                         {
-
-                            
+                            bool bRet = int.TryParse(paraList[0], out int CaliperNum);
+                            bRet = int.TryParse(paraList[1], out int ExpectedPairNum);
+                            bRet &= Enum.TryParse(paraList[2], out EnumPairType PairType);
+                            bRet &= Enum.TryParse(paraList[3], out EnumSelectType SelectType);
+                            bRet &= double.TryParse(paraList[4], out double fContrast);
+                            int Contrast = (int)Math.Round(fContrast);
+                            if (bRet)
+                            {
+                                if(!string.IsNullOrEmpty(HalconVision.Instance.PairRoiData))
+                                    HalconVision.Instance.Debug_FindPair(0, PairType, SelectType, ExpectedPairNum, Contrast, CaliperNum);
+                            }
                         }
                     }
                     catch (Exception ex)
