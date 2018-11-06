@@ -115,7 +115,7 @@
                             </Grid>
                         </Button.Content>
                     </Button>
-                    <ComboBox Name="Cb_Cameras" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="5,12,5,12" ItemsSource="{Binding CameraCollection}" SelectedIndex="{Binding CurrentSelectedCamera, Mode=OneWayToSource}" 
+                    <ComboBox Name="Cb_Cameras" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="1" Margin="5,12,5,12" ItemsSource="{Binding CameraCollection}" SelectedIndex="{Binding CurrentSelectedCamera, Mode=OneWayToSource}" 
                           IsEnabled="{Binding CamSnapState,ConverterParameter=ComboBoxCameras,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}" SelectionChanged="Cb_Cameras_SelectionChanged">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="SelectionChanged">
@@ -135,8 +135,15 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-
-                    
+                    <Button Name="BtnCalibImage" Grid.Row="3" Grid.Column="1" Style="{StaticResource RoundButtonStyle1}"  Background="{StaticResource ThemColor}" ToolTip="距离标定" Margin="5" Height="50"
+                        IsEnabled="{Binding CamSnapState,ConverterParameter=SnapOnce,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}"
+                        Command="{Binding DistanceCalibCommand}">
+                        <Button.Content>
+                            <Grid>
+                                <TextBlock Grid.Column="1" Text="DistanceCalib" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
+                            </Grid>
+                        </Button.Content>
+                    </Button>
                     <TabControl Grid.Row="4" Grid.ColumnSpan="2">
                         <TabItem Header="ModelTool" FontSize="15" Height="30">
                             <Grid>

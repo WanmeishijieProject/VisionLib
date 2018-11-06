@@ -338,7 +338,7 @@ namespace JPT_TosaTest.WorkFlow
                         break;
                     case 3:
                         HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T3, 0, TopLines, out object r);
-                        Thread.Sleep(100);
+                        //Thread.Sleep(100);
                         nStep = 4;
                         break;
                     case 4: // 完毕,等待工作完毕

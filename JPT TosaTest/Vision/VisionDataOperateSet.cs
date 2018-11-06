@@ -17,6 +17,7 @@ namespace JPT_TosaTest.Vision
 
         private string _lineRectData = "";
         private string _pairRectData = "";
+        //private HTuple 
         protected string GetRectData(EnumToolType ToolType, HTuple Row, HTuple Col, HTuple Pi, HTuple L1, HTuple L2)
         {
             switch (ToolType)

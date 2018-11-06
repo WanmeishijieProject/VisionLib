@@ -644,6 +644,13 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
+
+        public RelayCommand DistanceCalibCommand
+        {
+            get { return new RelayCommand(()=> {
+                HalconVision.Instance.SetCamKValue(CurrentSelectedCamera, 66045);
+            }); }
+        }
         /// <summary>
         /// 调整相应相机的光源亮度
         /// 参数为传出的光源亮度设定值

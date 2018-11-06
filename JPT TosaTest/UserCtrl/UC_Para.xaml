@@ -39,7 +39,6 @@
                                      Text="{Binding CenterLineOffset, Converter={StaticResource Int2String}}"/>
                             <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="{DynamicResource SettingPage_Pad_Perpendicular}" Style="{StaticResource MaterialDesignFloatingHintTextBox}" FontSize="20" materialDesign:HintAssist.FloatingOffset="2,-20"
                                      Text="{Binding PadOffset, Converter={StaticResource Int2String}}"/>
-
                         </Grid>
                     </ScrollViewer>
                 </GroupBox>
