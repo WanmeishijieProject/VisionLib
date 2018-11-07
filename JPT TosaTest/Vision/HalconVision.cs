@@ -186,7 +186,7 @@ namespace JPT_TosaTest.Vision
                     {
                         //HOperatorSet.OpenFramegrabber("DirectShow", 1, 1, 0, 0, 0, 0, "default", 8, "rgb",
                         //                        -1, "false", "default", "Integrated Camera", 0, -1, out hv_AcqHandle);
-                        HOperatorSet.OpenFramegrabber(CamCfgDic.ElementAt(nCamID).Value.Item2, 1, 1, 0, 0, 0, 0, "default", 8, "rgb",
+                        HOperatorSet.OpenFramegrabber(CamCfgDic.ElementAt(nCamID).Value.Item2, 1, 1, 0, 0, 0, 0, "default", 8, "gray",
                                                    -1, "false", "default", CamCfgDic.ElementAt(nCamID).Value.Item1, 0, -1, out hv_AcqHandle);
                         HOperatorSet.GrabImage(out image, hv_AcqHandle);
                         HOperatorSet.GetImageSize(image, out width, out height);
@@ -249,7 +249,13 @@ namespace JPT_TosaTest.Vision
                 return ActiveCamDic.Keys.Contains(nCamID);
             }
         }
-        public void GrabImage(int nCamID, bool bDispose = true)
+        /// <summary>
+        /// 采集图像
+        /// </summary>
+        /// <param name="nCamID"></param>
+        /// <param name="bDispose"></param>
+        /// <param name="bContinus"></param>
+        public void GrabImage(int nCamID, bool bDispose = true,bool bContinus=false)
         {
             if (nCamID < 0)
                 return;
@@ -267,8 +273,11 @@ namespace JPT_TosaTest.Vision
                         OpenCam(nCamID);
                     if (!IsCamOpen(nCamID))
                         return;
+                    if(!bContinus)
+                        HOperatorSet.GrabImage(out image, AcqHandleList[nCamID]);
+                    else                       
+                        HOperatorSet.GrabImageAsync(out image, AcqHandleList[nCamID], -1);
 
-                    HOperatorSet.GrabImage(out image, AcqHandleList[nCamID]);
                     HOperatorSet.GetImageSize(image, out HTuple width, out HTuple height);
                   
                     HOperatorSet.GenEmptyObj(out Region);
@@ -349,6 +358,7 @@ namespace JPT_TosaTest.Vision
                         case IMAGEPROCESS_STEP.T3:  //Top后期处理
                             {
                                 //转换像素与实际关系
+                                HTuple SelectLineIndex = 0;
                                 double CenterOffset = (Config.ConfigMgr.Instance.ProcessData.CenterLineOffset/KList[nCamID]);
                                 List<object> list = para as List<object>;
                                 List<Tuple<HTuple, HTuple, HTuple, HTuple>> TupleList = new List<Tuple<HTuple, HTuple, HTuple, HTuple>>();
@@ -362,7 +372,11 @@ namespace JPT_TosaTest.Vision
                                     DisplayLines(nCamID, TupleList);
                                     if (TupleList.Count >= 2)
                                     {
-                                        HalconVision.Instance.GetParallelLineFromDistance(TupleList[0].Item1, TupleList[0].Item2, TupleList[0].Item3, TupleList[0].Item4,
+                                        if (TupleList[0].Item1 > 1000)
+                                            SelectLineIndex = 0;
+                                        else
+                                            SelectLineIndex = 1;
+                                        HalconVision.Instance.GetParallelLineFromDistance(TupleList[SelectLineIndex].Item1, TupleList[SelectLineIndex].Item2, TupleList[SelectLineIndex].Item3, TupleList[SelectLineIndex].Item4,
                                             CenterOffset, "row", -1, out HTuple hv_LineOutRow, out HTuple hv_LineOutCol, out HTuple hv_LineOutRow1, out HTuple hv_LineOutCol1,
                                             out HTuple hv_k, out HTuple hv_b);
                                         if (hv_LineOutRow != null && hv_LineOutRow1 != null)
@@ -387,19 +401,20 @@ namespace JPT_TosaTest.Vision
                                 if (list != null)
                                 {
                                     DisplayLines(nCamID, TupleList);
-                                    if (TupleList.Count >= 9)   
+                                    int LineNum = TupleList.Count;
+                                    if (LineNum >= 3)   
                                     {
                                         List<Tuple<HTuple, HTuple, HTuple, HTuple>> listFinal = new List<Tuple<HTuple, HTuple, HTuple, HTuple>>();
-                                        for (int i = 0; i < 8; i++)
+                                        for (int i = 0; i < LineNum-1; i++)
                                         {
                                             HOperatorSet.IntersectionLl(TupleList[i].Item1, TupleList[i].Item2, TupleList[i].Item3, TupleList[i].Item4,
-                                                                    TupleList[8].Item1, TupleList[8].Item2, TupleList[8].Item3, TupleList[8].Item4, out HTuple row1, out HTuple col1, out HTuple isParallel1);
-                                            GetVerticalFromDistance(row1, col1, TupleList[8].Item1, TupleList[8].Item2, TupleList[8].Item3, TupleList[8].Item4, PadOffset, "col", -1,
+                                                                    TupleList[LineNum-1].Item1, TupleList[LineNum-1].Item2, TupleList[LineNum-1].Item3, TupleList[LineNum-1].Item4, out HTuple row1, out HTuple col1, out HTuple isParallel1);
+                                            GetVerticalFromDistance(row1, col1, TupleList[LineNum-1].Item1, TupleList[LineNum-1].Item2, TupleList[LineNum-1].Item3, TupleList[LineNum-1].Item4, PadOffset, "col", -1,
                                                                out HTuple TargetRow1, out HTuple TargetCol1, out HTuple k, out HTuple b, out HTuple kIn, out HTuple bIn);
                                             listFinal.Add(new Tuple<HTuple, HTuple, HTuple, HTuple>(row1, col1, TargetRow1, TargetCol1));
                                         }    
                                        
-                                        for (int i = 0; i < 4; i++)
+                                        for (int i = 0; i < LineNum/2; i++)
                                         {
                                             HTuple rows = new HTuple();
                                             HTuple cols = new HTuple();
@@ -417,7 +432,7 @@ namespace JPT_TosaTest.Vision
                                         }
 
                                         //画最后一条平行线
-                                        GetParallelLineFromDistance(TupleList[8].Item1, TupleList[8].Item2, TupleList[8].Item3, TupleList[8].Item4, PadOffset, "col", -1, out HTuple hv_PLineRow,out HTuple hv_PLineCol,
+                                        GetParallelLineFromDistance(TupleList[LineNum-1].Item1, TupleList[LineNum-1].Item2, TupleList[LineNum-1].Item3, TupleList[LineNum-1].Item4, PadOffset, "col", -1, out HTuple hv_PLineRow,out HTuple hv_PLineCol,
                                                                     out HTuple hv_PLineRow1, out HTuple hv_PLineCol1, out HTuple k1, out HTuple b1);
 
                                         DisplayLines(0, new List<Tuple<HTuple, HTuple, HTuple, HTuple>>() { new Tuple<HTuple, HTuple, HTuple, HTuple>(hv_PLineRow, hv_PLineCol, hv_PLineRow1, hv_PLineCol1) });

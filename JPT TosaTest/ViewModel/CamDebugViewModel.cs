@@ -100,7 +100,7 @@ namespace JPT_TosaTest.ViewModel
             CamSnapState = EnumCamSnapState.BUSY;
             while (!cts.Token.IsCancellationRequested)
             {
-                HalconVision.Instance.GrabImage(nCamID);
+                HalconVision.Instance.GrabImage(nCamID,true,true);
                 Thread.Sleep(30);
             }
             CamSnapState = EnumCamSnapState.IDLE;

@@ -265,8 +265,8 @@ namespace JPT_TosaTest.WorkFlow
                     case 2: //开始寻找模板
                         if (MotionCard.IsNormalStop(AXIS_CZ))
                         {
+                            Thread.Sleep(200);
                             HalconVision.Instance.GrabImage(0);
-                            Thread.Sleep(2000);
                             Vision.HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T1, 0, File_ModelFileName, out object Hom2DAndModelPos);
                             if (Hom2DAndModelPos != null)
                             {
@@ -283,20 +283,17 @@ namespace JPT_TosaTest.WorkFlow
                     case 3: //模板找到以后开始找上表面线
                         {
                             FindLineBottom(out BottomLines);
-                            
-                            MotionCard.MoveAbs(AXIS_CZ, 1000, 10, CamTopPos[PT_CZ]);
-                              
-                            nStep = 4;
-                            
+                            MotionCard.MoveAbs(AXIS_CZ, 1000, 10, CamTopPos[PT_CZ]);       
+                            nStep = 4;   
                         }
                         break;
                     case 4: //升到上表面寻找上表面的线
                         if (MotionCard.IsNormalStop(AXIS_CZ))
                         {
-         
                             {
+                                Thread.Sleep(200);
                                 HalconVision.Instance.GrabImage(0);
-                                Thread.Sleep(2000);
+                               
                                 FindLineTop(out TopLines);
                                 nStep = 5;
                             }
@@ -332,13 +329,15 @@ namespace JPT_TosaTest.WorkFlow
                         }
                         break;
                     case 2: //开始拍照
-                        HalconVision.Instance.GrabImage(0);
-                        Thread.Sleep(20);
-                        nStep = 3;
+                        if (MotionCard.IsNormalStop(AXIS_CZ))
+                        {
+                            Thread.Sleep(200);
+                            nStep = 3;
+                        }
                         break;
                     case 3:
+                        HalconVision.Instance.GrabImage(0,true,true);
                         HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T3, 0, TopLines, out object r);
-                        //Thread.Sleep(100);
                         nStep = 4;
                         break;
                     case 4: // 完毕,等待工作完毕
@@ -366,17 +365,20 @@ namespace JPT_TosaTest.WorkFlow
                         if (MotionCard.IsNormalStop(AXIS_CY))
                         {
                             MotionCard.MoveAbs(AXIS_CZ, 1000, 10, CamBottomPos[PT_CZ]);
+                            
                             nStep = 2;
                         }
                         break;
                     case 2: //开始拍照
-                        HalconVision.Instance.GrabImage(0);
-                        Thread.Sleep(20);
-                        nStep = 3;
+                        if (MotionCard.IsNormalStop(AXIS_CZ))
+                        {
+                            Thread.Sleep(200);//等待稳定
+                            nStep = 3;
+                        }
                         break;
                     case 3:
+                        HalconVision.Instance.GrabImage(0, true, true);
                         HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T4, 0, BottomLines, out object r);
-
                         nStep = 4;
                         break;
                     case 4: // 完毕,等待工作完毕
