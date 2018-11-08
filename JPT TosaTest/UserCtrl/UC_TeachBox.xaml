@@ -71,7 +71,6 @@
                 <ItemsControl Grid.Column="1" ItemsSource="{Binding MonitorVM.AxisStateCollection, Source={StaticResource Locator}}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -93,20 +92,20 @@
                                 </ComboBox>
 
                                 <Button Grid.Column="3" Margin="4" Name="BtnBackward" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Height="33" Width="50" VerticalAlignment="Center" BorderThickness="0" Command="{Binding TeachBoxVM.BackWardCommand,Source={StaticResource Locator}}"
-                                        CommandParameter="{Binding}" IsEnabled="{Binding IsHomed}">
-                                    <Image Source="/JPT TosaTest;component/Images/Left.png"/>
+                                        CommandParameter="{Binding}" IsEnabled="{Binding IsHomed}" Content="{Binding BackwardCaption}">
+                                    <!--<Image Source="/JPT TosaTest;component/Images/Left.png"/>-->
                                 </Button>
                                 <Button Grid.Column="4" Margin="4" Name="BtnForward" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Height="33" Width="50" VerticalAlignment="Center" BorderThickness="0" Command="{Binding TeachBoxVM.ForwardCommand,Source={StaticResource Locator}}"
-                                         CommandParameter="{Binding}" IsEnabled="{Binding IsHomed}">
-                                    <Image Source="/JPT TosaTest;component/Images/Right.png"/>
+                                         CommandParameter="{Binding}" IsEnabled="{Binding IsHomed}" Content="{Binding ForwardCaption}">
+                                    <!--<Image Source="/JPT TosaTest;component/Images/Right.png"/>-->
                                 </Button>
                                 <Button Grid.Column="5" Margin="4" Name="BtnHome" Background="{StaticResource ThemColor}"  Style="{StaticResource RoundButtonStyle1}" Height="33" Width="50" VerticalAlignment="Center" BorderThickness="0" Command="{Binding TeachBoxVM.HomeCommand,Source={StaticResource Locator}}"
-                                         CommandParameter="{Binding}" Content="Home"/>
+                                         CommandParameter="{Binding}" Content="原点"/>
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <Button Name="BtnStop" Grid.Column="2" Style="{StaticResource RoundButtonStyle1}" Content="Stop" Margin="2,2" Background="{StaticResource ThemColor}" BorderThickness="0" Command="{Binding TeachBoxVM.StopAllAxisCommand,Source={StaticResource Locator}}"/>
+                <Button Name="BtnStop" Grid.Column="2" Style="{StaticResource RoundButtonStyle1}" Content="停止" Margin="2,2" Background="{StaticResource ThemColor}" BorderThickness="0" Command="{Binding TeachBoxVM.StopAllAxisCommand,Source={StaticResource Locator}}"/>
             </Grid>
         </Grid>
     </Grid>

@@ -322,7 +322,9 @@ namespace JPT_TosaTest.MotionCards
             AxisArgsList[AxisNo].LimitP = Setting.LimitP;
             AxisArgsList[AxisNo].HomeOffset = Setting.HomeOffset;
             AxisArgsList[AxisNo].HomeMode = (int)Setting.HomeMode;
-            AxisArgsList[AxisNo].AxisType = Setting.AxisType;        
+            AxisArgsList[AxisNo].AxisType = Setting.AxisType;
+            AxisArgsList[AxisNo].BackwardCaption = Setting.BackwardCaption;
+            AxisArgsList[AxisNo].ForwardCaption = Setting.ForwardCaption;
             _controller.SetAxisPara(AxisNo + MIN_AXIS, Setting.GainFactor, Setting.LimitP, Setting.LimitN, Setting.HomeOffset, (int)Setting.HomeMode, Setting.AxisName);
         }
 

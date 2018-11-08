@@ -127,7 +127,7 @@ namespace JPT_TosaTest.Vision
                     HwindowDic.Add(nCamID, new Dictionary<string, HTuple>() { { Name, hWindow } });
                 if (ActiveCamDic.Keys.Contains(nCamID))
                 {
-                    if(HwindowDic[nCamID][Name]!=-1)
+                    if (HwindowDic[nCamID][Name] != -1)
                         HOperatorSet.SetPart(HwindowDic[nCamID][Name], 0, 0, ActiveCamDic[nCamID].Item2, ActiveCamDic[nCamID].Item1);
                 }
 
@@ -255,7 +255,7 @@ namespace JPT_TosaTest.Vision
         /// <param name="nCamID"></param>
         /// <param name="bDispose"></param>
         /// <param name="bContinus"></param>
-        public void GrabImage(int nCamID, bool bDispose = true,bool bContinus=false)
+        public void GrabImage(int nCamID, bool bDispose = true, bool bContinus = false)
         {
             if (nCamID < 0)
                 return;
@@ -273,13 +273,13 @@ namespace JPT_TosaTest.Vision
                         OpenCam(nCamID);
                     if (!IsCamOpen(nCamID))
                         return;
-                    if(!bContinus)
+                    if (!bContinus)
                         HOperatorSet.GrabImage(out image, AcqHandleList[nCamID]);
-                    else                       
+                    else
                         HOperatorSet.GrabImageAsync(out image, AcqHandleList[nCamID], -1);
 
                     HOperatorSet.GetImageSize(image, out HTuple width, out HTuple height);
-                  
+
                     HOperatorSet.GenEmptyObj(out Region);
 
                     if (HoImageList[nCamID] != null)
@@ -312,14 +312,14 @@ namespace JPT_TosaTest.Vision
             }
         }
 
-         /// <summary>
-         /// 最终的供客户端使用的接口，处理不同的任务
-         /// </summary>
-         /// <param name="nStep"></param>
-         /// <param name="nCamID"></param>
-         /// <param name="para"></param> 形式是 ROIName & ModelName
-         /// <param name="result"></param>
-         /// <returns></returns>
+        /// <summary>
+        /// 最终的供客户端使用的接口，处理不同的任务
+        /// </summary>
+        /// <param name="nStep"></param>
+        /// <param name="nCamID"></param>
+        /// <param name="para"></param> 形式是 ROIName & ModelName
+        /// <param name="result"></param>
+        /// <returns></returns>
         public bool ProcessImage(IMAGEPROCESS_STEP nStep, int nCamID, object para, out object result)
         {
             bool bRet = false;
@@ -336,7 +336,7 @@ namespace JPT_TosaTest.Vision
                         case IMAGEPROCESS_STEP.T1:  //第一步 找出模板并获取第二步与第三步的ROI数据
                             {
                                 string strModelFileName = para.ToString();
-                                bRet = FindModelAndGetData(HoImageList[nCamID], strModelFileName,out HTuple hom_2D,out HTuple ModelPos);
+                                bRet = FindModelAndGetData(HoImageList[nCamID], strModelFileName, out HTuple hom_2D, out HTuple ModelPos);
                                 if (hom_2D.Length != 0 && ModelPos.Length != 0)
                                     result = new List<object>() { hom_2D, ModelPos };
                                 else
@@ -346,11 +346,11 @@ namespace JPT_TosaTest.Vision
                             }
                             break;
                         case IMAGEPROCESS_STEP.T2:  //第二步，找出顶部与底部的线线
-                            {    
+                            {
                                 var originPara = para as List<object>;
                                 HTuple hom_2D = originPara[0] as HTuple;
                                 HTuple ModelPos = originPara[1] as HTuple;
-                                List<string> listParas = originPara[2] as List<string>;  
+                                List<string> listParas = originPara[2] as List<string>;
                                 bRet = FindLineBottomAndTop(HoImageList[nCamID], listParas, hom_2D, ModelPos, out List<object> lineList);   //只需要显示
                                 result = lineList;
                             }
@@ -359,7 +359,7 @@ namespace JPT_TosaTest.Vision
                             {
                                 //转换像素与实际关系
                                 HTuple SelectLineIndex = 0;
-                                double CenterOffset = (Config.ConfigMgr.Instance.ProcessData.CenterLineOffset/KList[nCamID]);
+                                double CenterOffset = (Config.ConfigMgr.Instance.ProcessData.CenterLineOffset / KList[nCamID]);
                                 List<object> list = para as List<object>;
                                 List<Tuple<HTuple, HTuple, HTuple, HTuple>> TupleList = new List<Tuple<HTuple, HTuple, HTuple, HTuple>>();
                                 foreach (var it in list)
@@ -390,7 +390,7 @@ namespace JPT_TosaTest.Vision
                         case IMAGEPROCESS_STEP.T4: //Bottom后期处理
                             {
                                 //转换像素与实际关系
-                                double PadOffset = Config.ConfigMgr.Instance.ProcessData.PadOffset/KList[nCamID];
+                                double PadOffset = Config.ConfigMgr.Instance.ProcessData.PadOffset / KList[nCamID];
                                 List<object> list = para as List<object>;
                                 List<Tuple<HTuple, HTuple, HTuple, HTuple>> TupleList = new List<Tuple<HTuple, HTuple, HTuple, HTuple>>();
                                 foreach (var it in list)
@@ -402,26 +402,26 @@ namespace JPT_TosaTest.Vision
                                 {
                                     DisplayLines(nCamID, TupleList);
                                     int LineNum = TupleList.Count;
-                                    if (LineNum >= 3)   
+                                    if (LineNum >= 3)
                                     {
                                         List<Tuple<HTuple, HTuple, HTuple, HTuple>> listFinal = new List<Tuple<HTuple, HTuple, HTuple, HTuple>>();
-                                        for (int i = 0; i < LineNum-1; i++)
+                                        for (int i = 0; i < LineNum - 1; i++)
                                         {
                                             HOperatorSet.IntersectionLl(TupleList[i].Item1, TupleList[i].Item2, TupleList[i].Item3, TupleList[i].Item4,
-                                                                    TupleList[LineNum-1].Item1, TupleList[LineNum-1].Item2, TupleList[LineNum-1].Item3, TupleList[LineNum-1].Item4, out HTuple row1, out HTuple col1, out HTuple isParallel1);
-                                            GetVerticalFromDistance(row1, col1, TupleList[LineNum-1].Item1, TupleList[LineNum-1].Item2, TupleList[LineNum-1].Item3, TupleList[LineNum-1].Item4, PadOffset, "col", -1,
+                                                                    TupleList[LineNum - 1].Item1, TupleList[LineNum - 1].Item2, TupleList[LineNum - 1].Item3, TupleList[LineNum - 1].Item4, out HTuple row1, out HTuple col1, out HTuple isParallel1);
+                                            GetVerticalFromDistance(row1, col1, TupleList[LineNum - 1].Item1, TupleList[LineNum - 1].Item2, TupleList[LineNum - 1].Item3, TupleList[LineNum - 1].Item4, PadOffset, "row", -1,
                                                                out HTuple TargetRow1, out HTuple TargetCol1, out HTuple k, out HTuple b, out HTuple kIn, out HTuple bIn);
                                             listFinal.Add(new Tuple<HTuple, HTuple, HTuple, HTuple>(row1, col1, TargetRow1, TargetCol1));
-                                        }    
-                                       
-                                        for (int i = 0; i < LineNum/2; i++)
+                                        }
+
+                                        for (int i = 0; i < LineNum / 2; i++)
                                         {
                                             HTuple rows = new HTuple();
                                             HTuple cols = new HTuple();
                                             rows[0] = listFinal[2 * i].Item1;
                                             rows[1] = listFinal[2 * i].Item3;
-                                            rows[2] = listFinal[2 * i+1].Item3;
-                                            rows[3] = listFinal[2 * i+1].Item1;
+                                            rows[2] = listFinal[2 * i + 1].Item3;
+                                            rows[3] = listFinal[2 * i + 1].Item1;
                                             cols[0] = listFinal[2 * i].Item2;
                                             cols[1] = listFinal[2 * i].Item4;
                                             cols[2] = listFinal[2 * i + 1].Item4;
@@ -432,7 +432,7 @@ namespace JPT_TosaTest.Vision
                                         }
 
                                         //画最后一条平行线
-                                        GetParallelLineFromDistance(TupleList[LineNum-1].Item1, TupleList[LineNum-1].Item2, TupleList[LineNum-1].Item3, TupleList[LineNum-1].Item4, PadOffset, "col", -1, out HTuple hv_PLineRow,out HTuple hv_PLineCol,
+                                        GetParallelLineFromDistance(TupleList[LineNum - 1].Item1, TupleList[LineNum - 1].Item2, TupleList[LineNum - 1].Item3, TupleList[LineNum - 1].Item4, PadOffset, "row", -1, out HTuple hv_PLineRow, out HTuple hv_PLineCol,
                                                                     out HTuple hv_PLineRow1, out HTuple hv_PLineCol1, out HTuple k1, out HTuple b1);
 
                                         DisplayLines(0, new List<Tuple<HTuple, HTuple, HTuple, HTuple>>() { new Tuple<HTuple, HTuple, HTuple, HTuple>(hv_PLineRow, hv_PLineCol, hv_PLineRow1, hv_PLineCol1) });
@@ -441,7 +441,10 @@ namespace JPT_TosaTest.Vision
                             }
                             break;
 
-                        case IMAGEPROCESS_STEP.T5:
+                        case IMAGEPROCESS_STEP.T5:  //标定图像
+                            {
+                                result= SetKValueOfCam(nCamID, 6600, para as List<Object>);
+                            }
 
                             break;
 
@@ -451,7 +454,7 @@ namespace JPT_TosaTest.Vision
                     return true;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 result = null;
                 if (image != null)
@@ -751,7 +754,7 @@ namespace JPT_TosaTest.Vision
             }
             catch (Exception ex)
             {
-                UC_MessageBox.ShowMsgBox($"{ex.Message}","错误", MsgType.Error);
+                UC_MessageBox.ShowMsgBox($"{ex.Message}", "错误", MsgType.Error);
                 return false;
             }
         }
@@ -778,16 +781,16 @@ namespace JPT_TosaTest.Vision
             }
             catch (Exception ex)
             {
-                UC_MessageBox.ShowMsgBox($"{ex.Message}","错误",MsgType.Error);
+                UC_MessageBox.ShowMsgBox($"{ex.Message}", "错误", MsgType.Error);
                 return false;
             }
         }
         public bool CloseCamera()
         {
             HOperatorSet.CloseAllFramegrabbers();
-            return true;       
+            return true;
         }
-        public Dictionary<string, Tuple<string, string>> FindCamera(EnumCamType camType, List<string> acturalNameList,out List<string> ErrorList)
+        public Dictionary<string, Tuple<string, string>> FindCamera(EnumCamType camType, List<string> acturalNameList, out List<string> ErrorList)
         {
             Dictionary<string, Tuple<string, string>> dic = new Dictionary<string, Tuple<string, string>>();
             ErrorList = new List<string>();
@@ -806,10 +809,10 @@ namespace JPT_TosaTest.Vision
                     bool bFind = false;
                     foreach (var dev in hv_ValueList.SArr)
                     {
-                        var listAttr = dev.Split('|').Where(a=>a.Contains("device:"));
+                        var listAttr = dev.Split('|').Where(a => a.Contains("device:"));
                         if (listAttr != null && listAttr.Count() > 0)
                         {
-                            string Name = listAttr.First().Trim().Replace("device:","");
+                            string Name = listAttr.First().Trim().Replace("device:", "");
                             if (Name.Contains(acturalNameList[i]))
                             {
                                 dic.Add(acturalNameList[i], new Tuple<string, string>(Name.Trim(), camType.ToString()));
@@ -832,13 +835,13 @@ namespace JPT_TosaTest.Vision
 
         }
 
-#region 专用
+        #region 专用
         private bool FindModelAndGetData(HObject image, string ModelFileName, out HTuple hm_2D, out HTuple ModelPos)
         {
             HOperatorSet.HomMat2dIdentity(out hm_2D);
             ModelPos = new HTuple();
             try
-            { 
+            {
                 int nCamID = 0;
                 string[] strModelListDot = ModelFileName.Split('.');
                 if (strModelListDot.Length < 2)
@@ -881,7 +884,7 @@ namespace JPT_TosaTest.Vision
                     HTuple originRow = hv_ModelPos[0];
                     HTuple originCol = hv_ModelPos[1];
                     HTuple originPhi = hv_ModelPos[2];
-                    HOperatorSet.VectorAngleToRigid(originRow, originCol, 0, hv_Row1, hv_Column1, hv_Angle,out hm_2D);
+                    HOperatorSet.VectorAngleToRigid(originRow, originCol, 0, hv_Row1, hv_Column1, hv_Angle, out hm_2D);
                 }
                 return true;
             }
@@ -889,18 +892,18 @@ namespace JPT_TosaTest.Vision
             {
                 return false;
             }
- 
+
 
         }
 
-        private bool FindLineBottomAndTop(HObject image, List<string> LineParaList, HTuple hom_2D,HTuple ModelPos, out List<object> lineList)
+        private bool FindLineBottomAndTop(HObject image, List<string> LineParaList, HTuple hom_2D, HTuple ModelPos, out List<object> lineList)
         {
             List<object> lineListRawData = new List<object>();
             lineList = new List<object>();
 
             //ReadRectangle
             try
-            {  
+            {
                 foreach (var it in HwindowDic[0])
                 {
                     HOperatorSet.SetSystem("flush_graphic", "false");
@@ -951,7 +954,7 @@ namespace JPT_TosaTest.Vision
                                     Enum.TryParse(strRtPara[3], out EnumSelectType SelectType);
                                     double.TryParse(strRtPara[4], out double fContrast);
                                     HTuple Contrast = Math.Round(fContrast);
-                                    FindPair(image, ExpectedPairNum, PairType, SelectType, CaliperNum, Contrast, Row, Col, Phi, L1, L2,
+                                    FindPair(image, ExpectedPairNum, PairType, SelectType, CaliperNum, Contrast, outRoiRow, outRoiCol, Phi + ModelPos[2], L1, L2,
                                        out HTuple OutFirstRowStart, out HTuple FirstColStart, out HTuple OutFirstRowEnd, out HTuple OutFirstColEnd,
                                        out HTuple OutSecondRowStart, out HTuple SecondColStart, out HTuple OutSecondRowEnd, out HTuple OutSecondColEnd);
                                     for (HTuple index = 0; index < ExpectedPairNum; index++)
@@ -973,16 +976,16 @@ namespace JPT_TosaTest.Vision
                             HOperatorSet.SetLineWidth(it.Value, 1);
                             foreach (var obj in lineList)
                             {
-                                Tuple<HTuple,HTuple, HTuple,HTuple> line = obj as Tuple<HTuple, HTuple, HTuple, HTuple>;
-                                if(line!=null)
-                                    HOperatorSet.DispLine(it.Value,line.Item1 , line.Item2, line.Item3, line.Item4);
+                                Tuple<HTuple, HTuple, HTuple, HTuple> line = obj as Tuple<HTuple, HTuple, HTuple, HTuple>;
+                                if (line != null)
+                                    HOperatorSet.DispLine(it.Value, line.Item1, line.Item2, line.Item3, line.Item4);
                             }
-                          
+
                         }
                     }
                 }
                 return true;
-            
+
 
             }
             catch (Exception ex)
@@ -991,41 +994,67 @@ namespace JPT_TosaTest.Vision
             }
         }
 
-        private bool DisplayLines(int nCamID, List<Tuple<HTuple, HTuple, HTuple, HTuple>> lineList, string Color="red")
+        private bool DisplayLines(int nCamID, List<Tuple<HTuple, HTuple, HTuple, HTuple>> lineList, string Color = "red")
         {
             try
             {
-                if (lineList == null)
-                    return false;
-                foreach (var it in HwindowDic[nCamID])
+                lock (_lockList[nCamID])
                 {
-                    HOperatorSet.SetColor(it.Value, Color);
-                    foreach (var line in lineList)
+                    if (lineList == null)
+                        return false;
+                    foreach (var it in HwindowDic[nCamID])
                     {
-                        HOperatorSet.DispLine(it.Value, line.Item1, line.Item2, line.Item3, line.Item4);
+                        HOperatorSet.SetColor(it.Value, Color);
+                        foreach (var line in lineList)
+                        {
+                            HOperatorSet.DispLine(it.Value, line.Item1, line.Item2, line.Item3, line.Item4);
+                        }
                     }
+                    return true;
                 }
-                return true;
             }
             catch
             {
                 return false;
             }
         }
-        private bool DisplayPolygonRegion(int nCamID, HTuple Row, HTuple Col, string Color="red")
+        private bool DisplayPolygonRegion(int nCamID, HTuple Row, HTuple Col, string Color = "red")
         {
-            HOperatorSet.GenRegionPolygonFilled(out HObject region, Row, Col);
-
-            foreach (var it in HwindowDic[nCamID])
+            lock (_lockList[nCamID])
             {
-                HOperatorSet.SetColor(it.Value, Color);
-                HOperatorSet.SetDraw(it.Value, "fill");
-                HOperatorSet.DispObj(region, it.Value);
+                HOperatorSet.GenRegionPolygonFilled(out HObject region, Row, Col);
+
+                foreach (var it in HwindowDic[nCamID])
+                {
+                    HOperatorSet.SetColor(it.Value, Color);
+                    HOperatorSet.SetDraw(it.Value, "fill");
+                    HOperatorSet.DispObj(region, it.Value);
+                }
+                region.Dispose();
+                return true;
             }
-            region.Dispose();
-            return true;
         }
 
+        /// <summary>
+        /// 设定相机的像素对应的实际尺寸
+        /// </summary>
+        /// <param name="nCamID">相机ID</param>
+        /// <param name="RealDistance">实际距离um</param>
+        /// <param name="PLineList">应该包含至少两条平行线用来计算像素距离</param>
+        /// <returns></returns>
+        private bool SetKValueOfCam(int nCamID, double RealDistance, List<object> PLineList)
+        {
+            if (PLineList == null || PLineList.Count < 2 || RealDistance==0.0f)
+                return false;
+            Tuple<HTuple, HTuple, HTuple, HTuple> line1 = PLineList[0] as Tuple<HTuple, HTuple, HTuple, HTuple>;
+            Tuple<HTuple, HTuple, HTuple, HTuple> line2 = PLineList[1] as Tuple<HTuple, HTuple, HTuple, HTuple>;
+            if (line1 == null || line2 == null)
+                return false;
+            HOperatorSet.DistancePl(line1.Item1, line1.Item2, line2.Item1, line2.Item2, line2.Item3, line2.Item4, out HTuple D1);
+            HOperatorSet.DistancePl(line1.Item3, line1.Item4, line2.Item1, line2.Item2, line2.Item3, line2.Item4, out HTuple D2);
+            KList[nCamID] = (2 * RealDistance) / (D1 + D2);
+            return true;
+        }
 #endregion
 
         public bool PreCreateShapeModel(int nCamID, int MinThre, int MaxThre, EnumShapeModelType modelType, string regionFilePath, object regionIn = null)
@@ -2029,20 +2058,9 @@ namespace JPT_TosaTest.Vision
                         }
                     }
                 }
-
-
-
-
                 return;
             }
-        public void SetCamKValue(int nCamID, HTuple RealDistanceInMicron)
-        {
-            HTuple hWindow = HwindowDic[nCamID][DebugWindowName];
-            HOperatorSet.SetColor(hWindow, "red");
-            HOperatorSet.DrawRectangle2Mod(hWindow, 100, 100, 100, 100, 100, out HTuple row, out HTuple col, out HTuple phi, out HTuple L1, out HTuple L2);
-            HOperatorSet.TupleReal(L1, out HTuple real);
-            KList[nCamID] = RealDistanceInMicron / real;
-        }
+  
         #endregion
 
     }

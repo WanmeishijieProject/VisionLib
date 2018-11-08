@@ -20,6 +20,7 @@ namespace JPT_TosaTest.WorkFlow
         CmdWorkTop,
         CmdWorkBottom,
         DO_NOTHING,
+       
         EXIT,
     }
     public class WorkService : WorkFlowBase
@@ -28,6 +29,7 @@ namespace JPT_TosaTest.WorkFlow
         //start from 0
         private const int AXIS_X = 3, AXIS_Y1 = 1, AXIS_Y2 = 2, AXIS_Z = 0, AXIS_CY = 5, AXIS_CZ = 4, AXIS_R = 6;
         private const int PT_X = 0, PT_Y1 = 1, PT_Y2 = 2, PT_Z = 3, PT_R = 4, PT_CY = 5, PT_CZ = 6;
+        private const int VAC_PLC = 0,VAC_HSG=2;
         private MotionCards.IMotion  MotionCard=null;
         private IOCards.IIO IOCard = null;
         private int ProductIndex = 0;
@@ -37,13 +39,22 @@ namespace JPT_TosaTest.WorkFlow
         private string File_PairToolParaPath = $"{FileHelper.GetCurFilePathString()}VisionData\\ToolData\\PairToolData\\";
         private string File_ModelFileName = $"VisionData\\Model\\Cam0_Model.shm";    //Model
         private string File_LineToolParaPath = $"{FileHelper.GetCurFilePathString()}VisionData\\ToolData\\LineToolData\\";
+
+        private List<double> PadCamTopPos = null;
+        List<double> PadCamBottomPos = null;
+        List<double> LensCamTopPos = null;
+        List<double> LensCamBottomPos = null;
+        List<double> PtLeftTop = null;
+        List<double> PtRightDown = null;
+        List<double> PtDropDown = null;
         #endregion
 
         protected override bool UserInit()
         {
             MotionCard = MotionCards.MotionMgr.Instance.FindMotionCardByCardName("Motion_IrixiEE0017[0]");
             IOCard = IOCards.IOCardMgr.Instance.FindIOCardByCardName("IO_IrixiEE0017[0]");
-            return MotionCard!=null  && IOCard!=null;
+           
+            return GetAllPoint() && MotionCard !=null  &&  IOCard!=null;
         }
         public WorkService(WorkFlowConfig cfg) : base(cfg)
         {
@@ -79,7 +90,7 @@ namespace JPT_TosaTest.WorkFlow
                         break;
                     case STEP.CmdWorkTop:   //找上表面的线
                         WorkTop();
-                        ClearAllStep();
+                        ClearAllStep(); 
                         break;
                     case STEP.CmdWorkBottom:  //找下表面的线
                         WorkBottom();
@@ -97,7 +108,7 @@ namespace JPT_TosaTest.WorkFlow
         private void HomeAll()
         {
             int nStep = 0;
-            while (true)
+            while (!cts.IsCancellationRequested)
             {
                 switch (nStep)
                 {
@@ -136,11 +147,11 @@ namespace JPT_TosaTest.WorkFlow
         }
         private void GetProduct(int Index)
         {
-         
-            var PtLeftTop=WorkFlowMgr.Instance.GetPoint("左上吸取点");
-            var PtRightDown = WorkFlowMgr.Instance.GetPoint("右下吸取点");
-            var PtDropDown = WorkFlowMgr.Instance.GetPoint("放置点");
-
+            if (!GetAllPoint())
+            {
+                ShowError("获取点位出现错误");
+                return;
+            }
             if (Index < 1 || Index > 6)
                 return;
 
@@ -149,7 +160,6 @@ namespace JPT_TosaTest.WorkFlow
 
             double TargetX = 0;
             double TargetY1 = 0;
-            double TargetZ = PtLeftTop[PT_Z];
             if (Index >= 1 && Index <= 3)
             {
                 TargetX= PtLeftTop[PT_X] + DeltaX * (Index - 1);
@@ -162,73 +172,84 @@ namespace JPT_TosaTest.WorkFlow
             }
             
             int nStep = 0;
-            while (true)
+            while (!cts.IsCancellationRequested)
             {
                 switch (nStep)
                 {
-                    case 0: //移动PT_X，PT_Y1到取料点
-                        MotionCard.MoveAbs(AXIS_X, 500, 100, TargetX);
-                       
+                    case 0: //先将Z升起防止干涉
+                        MotionCard.MoveAbs(AXIS_Z, 500, 100, 0);
                         nStep = 1;
                         break;
-                    case 1:
-                        if (MotionCard.IsNormalStop(AXIS_X))
+                    case 1: //移动PT_X到取料点
+                        if (MotionCard.IsNormalStop(AXIS_Z))
                         {
-                            MotionCard.MoveAbs(AXIS_Y1, 500, 100, TargetY1);
+                            MotionCard.MoveAbs(AXIS_X, 500, 100, TargetX);
                             nStep = 2;
                         }
                         break;
-                    case 2:
-                        if (MotionCard.IsNormalStop(AXIS_Y1))
+                    case 2: // PT_Y1到取料点
+                        if (MotionCard.IsNormalStop(AXIS_X))
                         {
+                            MotionCard.MoveAbs(AXIS_Y1, 500, 100, TargetY1);
                             nStep = 3;
                         }
                         break;
-                    case 3: //下降PT_Z轴
-                        MotionCard.MoveAbs(AXIS_Z, 500, 100, TargetZ);
-                        nStep = 4;
-                        break;
-                    case 4:
-                        if (MotionCard.IsNormalStop(AXIS_Z))
+                    case 3:
+                        if (MotionCard.IsNormalStop(AXIS_Y1))
                         {
-                            nStep = 5;
+                            nStep = 4;
                         }
                         break;
-                    case 5: //吸真空
-                        nStep = 6;
-                        break;    
-                     case 6:
-                        MotionCard.MoveAbs(AXIS_Z,500,100,0);
-                        nStep = 7;
+                    case 4: //下降PT_Z轴
+                        MotionCard.MoveAbs(AXIS_Z, 500, 100, PtLeftTop[PT_Z]);
+                        nStep = 5;
                         break;
-                    case 7: //PT_Z轴抬起
+                    case 5:
+                        if (MotionCard.IsNormalStop(AXIS_Z))
+                        {
+
+                            nStep = 6;
+                        }
+                        break;
+                    case 6: //吸真空
+                        IOCard.WriteIoOutBit(VAC_PLC, true);
+                        nStep = 7;
+                        break;    
+                     case 7: //PT_Z轴抬起
+                        Thread.Sleep(500);
+                        MotionCard.MoveAbs(AXIS_Z,500,100,0);
+                        nStep = 8;
+                        break;
+                    case 8:
                         if (MotionCard.IsNormalStop(AXIS_Z))
                         {
                             MotionCard.MoveAbs(AXIS_X,500,100, PtDropDown[PT_X]);
-                            nStep = 8;
-                        }
-                        break;
-                    case 8: //移动到放置点的PT_X位置并下降PT_Z
-                        if (MotionCard.IsNormalStop(AXIS_X))
-                        {
-                            MotionCard.MoveAbs(AXIS_Z, 500, 100, PtDropDown[PT_Z]);
                             nStep = 9;
                         }
                         break;
+
                     case 9: //移动PT_Y2过去
-                        if (MotionCard.IsNormalStop(AXIS_Z))
+                        if (MotionCard.IsNormalStop(AXIS_X))
                         {
                             MotionCard.MoveAbs(AXIS_Y2, 500, 100, PtDropDown[PT_Y2]);
                             nStep = 10;
                         }
                         break;
-                    case 10: //
+
+                    case 10: //移动到放置点的PT_X位置并下降PT_Z到HSG表面，不要下去
                         if (MotionCard.IsNormalStop(AXIS_Y2))
                         {
+                            MotionCard.MoveAbs(AXIS_Z, 500, 100, PtDropDown[PT_Z]);
                             nStep = 11;
                         }
                         break;
-                    case 11:    //等待调整位置
+                    case 11: //
+                        if (MotionCard.IsNormalStop(AXIS_Z))
+                        {
+                            nStep = 12;
+                        }
+                        break;
+                    case 12:    //等待调整位置
                         ShowInfo("取料完毕");
                         return;
                     default:
@@ -243,21 +264,20 @@ namespace JPT_TosaTest.WorkFlow
         /// </summary>
         private void FindAndGetModelData()
         {
-            List<double> CamTopPos = WorkFlowMgr.Instance.GetPoint("相机顶部位置");
-            List<double> CamBottomPos = WorkFlowMgr.Instance.GetPoint("相机底部位置");
             int nStep = 0;
-            while (true)
+            ShowInfo("正在标记......");
+            while (!cts.IsCancellationRequested)
             {
                 switch (nStep)
                 {
                     case 0: //移动CY
-                        MotionCard.MoveAbs(AXIS_CY, 1000, 10, CamBottomPos[PT_CY]);
+                        MotionCard.MoveAbs(AXIS_CY, 1000, 10, PadCamBottomPos[PT_CY]);
                         nStep = 1;
                         break;
                     case 1: //CZ到下表面
                         if (MotionCard.IsNormalStop(AXIS_CY))
                         {
-                            MotionCard.MoveAbs(AXIS_CZ, 1000, 10, CamBottomPos[PT_CZ]);                            nStep = 2;
+                            MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PadCamBottomPos[PT_CZ]);                            nStep = 2;
                            
                         }
                         break;
@@ -280,91 +300,107 @@ namespace JPT_TosaTest.WorkFlow
                             nStep = 3;
                         }
                         break;
-                    case 3: //模板找到以后开始找上表面线
+                    case 3: //模板找到以后开始找下表面线
                         {
                             FindLineBottom(out BottomLines);
-                            MotionCard.MoveAbs(AXIS_CZ, 1000, 10, CamTopPos[PT_CZ]);       
+                            MotionCard.MoveAbs(AXIS_CZ, 1000, 10, LensCamTopPos[PT_CZ]);       
                             nStep = 4;   
                         }
                         break;
-                    case 4: //升到上表面寻找上表面的线
+                    case 4:
                         if (MotionCard.IsNormalStop(AXIS_CZ))
+                        {
+                            {
+                                MotionCard.MoveAbs(AXIS_CY, 1000, 10, LensCamTopPos[PT_CY]);
+                                nStep = 5;
+                            }
+                        }
+                        break;
+             
+                    case 5: //升到上表面寻找上表面的线
+                        if (MotionCard.IsNormalStop(AXIS_CY))
                         {
                             {
                                 Thread.Sleep(200);
                                 HalconVision.Instance.GrabImage(0);
                                
                                 FindLineTop(out TopLines);
-                                nStep = 5;
+                                //顺便将图像尺寸标定了
+                                HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T5, 0, TopLines, out object result);
+                                nStep = 6;
                             }
                         }
                         break;
-                    case 5: // 完毕,等待工作
+                    case 6: // 完毕,等待工作
                         ShowInfo("标记完毕");
                         return;
                     default:
                         return;
                 }
             }
+            ShowInfo("标记被终止");
         }
 
         //顶部监视
         private void WorkTop()
         {
-            List<double> CamTopPos= WorkFlowMgr.Instance.GetPoint("相机顶部位置");
+            ShowInfo("Lens......");
             int nStep = 0;
-            while (true)
+            while (!cts.IsCancellationRequested)
             {
                 switch (nStep)
-                {
-                    case 0: //移动CY
-                        MotionCard.MoveAbs(AXIS_CY, 1000, 10, CamTopPos[PT_CY]);
+                {        
+                    case 0: //CZ到上表面    
+                        MotionCard.MoveAbs(AXIS_CZ, 1000, 10, LensCamTopPos[PT_CZ]);
                         nStep = 1;
                         break;
-                    case 1: //CZ到上表面
-                        if (MotionCard.IsNormalStop(AXIS_CY))
+                    case 1: //移动CY
+                    if (MotionCard.IsNormalStop(AXIS_CZ))
                         {
-                            MotionCard.MoveAbs(AXIS_CZ, 1000, 10, CamTopPos[PT_CZ]);
+                            MotionCard.MoveAbs(AXIS_CY, 1000, 10, LensCamTopPos[PT_CY]);
                             nStep = 2;
                         }
                         break;
-                    case 2: //开始拍照
-                        if (MotionCard.IsNormalStop(AXIS_CZ))
+                    case 2: 
+                        if (MotionCard.IsNormalStop(AXIS_CY))
                         {
                             Thread.Sleep(200);
                             nStep = 3;
                         }
                         break;
-                    case 3:
+                    case 3: //开始拍照并显示
                         HalconVision.Instance.GrabImage(0,true,true);
                         HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T3, 0, TopLines, out object r);
-                        nStep = 4;
+                        if(GetCurStepCount()==0)
+                            nStep = 4;
                         break;
                     case 4: // 完毕,等待工作完毕
+                        ShowInfo("Lens完毕");
                         return;
                     default:
                         return;
                 }
             }
+            ShowInfo("Lens被终止");
         }
 
         //底部
         private void WorkBottom()
         {
-            List<double> CamBottomPos = WorkFlowMgr.Instance.GetPoint("相机底部位置");
             int nStep = 0;
-            while (true)
+            ShowInfo("Pad......");
+            while (!cts.IsCancellationRequested)
             {
                 switch (nStep)
                 {
                     case 0: //移动CY
-                        MotionCard.MoveAbs(AXIS_CY, 1000, 10, CamBottomPos[PT_CY]);
+                        MotionCard.MoveAbs(AXIS_CY, 1000, 10, PadCamBottomPos[PT_CY]);
                         nStep = 1;
                         break;
                     case 1: //CZ到下表面
                         if (MotionCard.IsNormalStop(AXIS_CY))
                         {
-                            MotionCard.MoveAbs(AXIS_CZ, 1000, 10, CamBottomPos[PT_CZ]);
+                            MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PadCamBottomPos[PT_CZ]);
                             
                             nStep = 2;
                         }
@@ -379,15 +415,17 @@ namespace JPT_TosaTest.WorkFlow
                     case 3:
                         HalconVision.Instance.GrabImage(0, true, true);
                         HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T4, 0, BottomLines, out object r);
-                        nStep = 4;
+                        if (GetCurStepCount() == 0)
+                            nStep = 4;
                         break;
                     case 4: // 完毕,等待工作完毕
-
+                        ShowInfo("Pad完毕");
                         return;
                     default:
                         return;
                 }
             }
+            ShowInfo("Pad被终止");
         }
         #endregion
 
@@ -454,6 +492,24 @@ namespace JPT_TosaTest.WorkFlow
             {
                 return false;
             }
+        }
+        private bool GetAllPoint()
+        {
+            PadCamTopPos = WorkFlowMgr.Instance.GetPoint("Pad相机顶部位置");
+            PadCamBottomPos = WorkFlowMgr.Instance.GetPoint("Pad相机底部位置");
+            LensCamTopPos = WorkFlowMgr.Instance.GetPoint("Lens相机顶部位置");
+            LensCamBottomPos = WorkFlowMgr.Instance.GetPoint("Lens相机底部位置");
+            PtLeftTop = WorkFlowMgr.Instance.GetPoint("左上吸取点");
+            PtRightDown = WorkFlowMgr.Instance.GetPoint("右下吸取点");
+            PtDropDown = WorkFlowMgr.Instance.GetPoint("放置点");
+
+            return  PadCamTopPos != null &&
+                    PadCamBottomPos != null &&
+                    LensCamTopPos != null &&
+                    LensCamBottomPos != null &&
+                    PtLeftTop != null &&
+                    PtRightDown != null &&
+                    PtDropDown != null;
         }
 
     }

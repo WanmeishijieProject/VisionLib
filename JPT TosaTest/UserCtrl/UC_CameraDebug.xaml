@@ -39,17 +39,17 @@
             <Grid Grid.Column="1">
                 <Grid Grid.Row="0" Grid.Column="4" Grid.RowSpan="2">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="70"/>
-                        <RowDefinition Height="70"/>
-                        <RowDefinition Height="70"/>
-                        <RowDefinition Height="70"/>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="50"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Button Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Height="50" ToolTip="单帧采集" Margin="5"  Command="{Binding GrabOnceCommand}" 
+                    <Button Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Height="40" ToolTip="单帧采集" Margin="5"  Command="{Binding GrabOnceCommand}" 
                         IsEnabled="{Binding CamSnapState,ConverterParameter=SnapOnce,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}">
                         <Button.Content>
                             <Grid>
@@ -62,7 +62,7 @@
                             </Grid>
                         </Button.Content>
                     </Button>
-                    <Button Grid.Column="1" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Height="50" ToolTip="连续采集" Margin="5" Command="{Binding GrabContinusCommand}" 
+                    <Button Grid.Column="1" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Height="40" ToolTip="连续采集" Margin="5" Command="{Binding GrabContinusCommand}" 
                         IsEnabled="{Binding CamSnapState,ConverterParameter=SnapContinuous,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}">
                         <Button.Content>
                             <Grid>
@@ -75,7 +75,7 @@
                             </Grid>
                         </Button.Content>
                     </Button>
-                    <Button Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource RoundButtonStyle1}"  Background="{StaticResource ThemColor}" ToolTip="停止采集" Margin="5" Height="50" Command="{Binding StopGrabCommand}"
+                    <Button Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource RoundButtonStyle1}"  Background="{StaticResource ThemColor}" ToolTip="停止采集" Margin="5" Height="40" Command="{Binding StopGrabCommand}"
                         IsEnabled="{Binding CamSnapState,ConverterParameter=StopSnap,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}">
                         <Button.Content>
                             <Grid>
@@ -89,7 +89,7 @@
                             </Grid>
                         </Button.Content>
                     </Button>
-                    <Button Name="BtnSaveImage" Grid.Row="2" Grid.Column="1" Style="{StaticResource RoundButtonStyle1}"  Background="{StaticResource ThemColor}" ToolTip="保存图像" Margin="5" Height="50"
+                    <Button Name="BtnSaveImage" Grid.Row="2" Grid.Column="1" Style="{StaticResource RoundButtonStyle1}"  Background="{StaticResource ThemColor}" ToolTip="保存图像" Margin="5" Height="40"
                         IsEnabled="{Binding CamSnapState,ConverterParameter=SnapOnce,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}" 
                         Command="{Binding SaveImagerCommand}" CommandParameter="{Binding HalconWindowHandle, RelativeSource={RelativeSource AncestorType=UserControl}}">
                         <Button.Content>
@@ -106,7 +106,7 @@
                             </Grid>
                         </Button.Content>
                     </Button>
-                    <Button Name="BtnOpenImage" Grid.Row="2" Style="{StaticResource RoundButtonStyle1}"  Background="{StaticResource ThemColor}" ToolTip="打开图片" Margin="5" Height="50"
+                    <Button Name="BtnOpenImage" Grid.Row="2" Style="{StaticResource RoundButtonStyle1}"  Background="{StaticResource ThemColor}" ToolTip="打开图片" Margin="5" Height="40"
                         IsEnabled="{Binding CamSnapState,ConverterParameter=SnapOnce,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}"
                         Command="{Binding OpenImageCommand}" CommandParameter="{Binding HalconWindowHandle, RelativeSource={RelativeSource AncestorType=UserControl}}">
                         <Button.Content>
@@ -130,12 +130,12 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <Image Source="{Binding StrCameraState,Converter={StaticResource Text2CameStateImage}}" Margin="5"/>
-                                    <TextBlock Text="{Binding CameraName}" Grid.Column="1" FontSize="20" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding CameraName}" Grid.Column="1" FontSize="15" VerticalAlignment="Center"/>
                                 </Grid>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <Button Name="BtnCalibImage" Grid.Row="3" Grid.Column="1" Style="{StaticResource RoundButtonStyle1}"  Background="{StaticResource ThemColor}" ToolTip="距离标定" Margin="5" Height="50"
+                    <Button Name="BtnCalibImage" Grid.Row="3" Grid.Column="1" Style="{StaticResource RoundButtonStyle1}"  Background="{StaticResource ThemColor}" ToolTip="距离标定" Margin="5" Height="40"
                         IsEnabled="{Binding CamSnapState,ConverterParameter=SnapOnce,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}"
                         Command="{Binding DistanceCalibCommand}">
                         <Button.Content>
@@ -149,9 +149,9 @@
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="70"/>
-                                    <RowDefinition Height="70"/>
-                                    <RowDefinition Height="70"/>
-                                    <RowDefinition Height="70"/>
+                                    <RowDefinition Height="50"/>
+                                    <RowDefinition Height="50"/>
+                                   
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
@@ -205,7 +205,7 @@
                             Command="{Binding PreDrawModelRegionCommand}" CommandParameter="{Binding SelectedItem, ElementName=ListBoxRoiModel}"/>
                                     </Grid>
                                 </Grid>
-                                <ListBox x:Name="ListBoxRoiModel" Grid.Row="1" Grid.ColumnSpan="2" Grid.RowSpan="3" Margin="5" SelectedIndex="0" ItemsSource="{Binding RoiModelList}" 
+                                <ListBox x:Name="ListBoxRoiModel" Grid.Row="1" Grid.ColumnSpan="2" Grid.RowSpan="2" Margin="5" SelectedIndex="0" ItemsSource="{Binding RoiModelList}" 
                              IsEnabled="{Binding IsEnabled,ElementName=Cb_Cameras}" ScrollViewer.VerticalScrollBarVisibility="Visible">
                                     <ListBox.ContextMenu>
                                         <ContextMenu>
@@ -220,7 +220,7 @@
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                 </ListBox>
-                                <Grid Grid.Row="4" Grid.ColumnSpan="2">
+                                <Grid Grid.Row="3" Grid.ColumnSpan="2">
                                     <Grid>
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="40"/>

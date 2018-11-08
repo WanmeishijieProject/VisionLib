@@ -201,6 +201,8 @@ namespace AxisParaLib
             }
         }
 
+        public string BackwardCaption { get; set; }
+        public string ForwardCaption { get; set; }
 
         public object AxisLock { get; }
 

@@ -387,7 +387,7 @@ namespace JPT_TosaTest.ViewModel
                             var data = item[index];
                             int AxisNo = Config.ConfigMgr.Instance.HardwareCfgMgr.AxisSettings[index - 1].AxisNo;
                             MotionMgr.Instance.GetAxisState(AxisNo, out AxisArgs arg);
-                            MotionMgr.Instance.MoveAbs(AxisNo, 100, 10, double.Parse(data.ToString()));
+                            MotionMgr.Instance.MoveAbs(AxisNo,500, arg.MoveArgs.Speed, double.Parse(data.ToString()));
                         }
                     }
                 });
@@ -464,7 +464,18 @@ namespace JPT_TosaTest.ViewModel
         public RelayCommand CommandFindLine
         {
             get { return new RelayCommand(()=> {
-                WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService").SetCmd(WorkFlow.STEP.CmdFindLine);
+                var station = WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService");
+                if (station != null)
+                {
+                    object curCmd = station.GetCurCmd();
+                    if (curCmd == null)
+                        station.SetCmd(WorkFlow.STEP.CmdFindLine);
+                    else
+                    {
+                        if ((WorkFlow.STEP)curCmd == WorkFlow.STEP.CmdFindLine)
+                            station.ClearAllStep();
+                    }
+                }
             }); }
         }
 
@@ -473,8 +484,18 @@ namespace JPT_TosaTest.ViewModel
             get
             {
                 return new RelayCommand(() => {
-                    WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService").SetCmd(WorkFlow.STEP.CmdGetProduct);        
-                    ;
+                    var station = WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService");
+                    if (station != null)
+                    {
+                        object curCmd = station.GetCurCmd();
+                        if (curCmd == null)
+                            station.SetCmd(WorkFlow.STEP.CmdGetProduct);
+                        else
+                        {
+                            if ((WorkFlow.STEP)curCmd == WorkFlow.STEP.CmdGetProduct)
+                                station.ClearAllStep();
+                        }
+                    }
                 });
             }
         }
@@ -484,38 +505,18 @@ namespace JPT_TosaTest.ViewModel
             get
             {
                 return new RelayCommand(() => {
-                    //Console.WriteLine("FindLineTopCommand");
-                    //List<string> listParas = new List<string>();
-                    //string LineToolParaPath = $"{FileHelper.GetCurFilePathString()}VisionData\\ToolData\\LineToolData\\";
-                    //var fileList = FileHelper.GetProfileList(LineToolParaPath);
-                    //foreach (var file in fileList)
-                    //{
-                    //    if (file.Contains("Top"))
-                    //    {
-                    //        listParas.Add(File.ReadAllText($"{LineToolParaPath}{file}.para"));
-                    //    }
-                    //}
-                    //if(Hom_2D == null || ModelPos == null)
-                    //{
-                    //    string strModelFileName = $"VisionData\\Model\\Cam0_Model.shm";    //Model
-                    //    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T1, 0, strModelFileName, out object Hom2DAndModelPos);
-                    //    if (Hom2DAndModelPos != null)
-                    //    {
-                    //        List<object> list = Hom2DAndModelPos as List<object>;
-                    //        if (list.Count == 2)
-                    //        {
-                    //            Hom_2D = list[0];
-                    //            ModelPos = list[1];
-                    //        }
-                    //    }
-                    //}
-                    //if (Hom_2D != null && ModelPos != null)
-                    //    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T2, 0, new List<object> { Hom_2D, ModelPos, listParas }, out object result);
-                    //else
-                    //{
-                    //    //TO DO
-                    //}
-                    WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService").SetCmd(WorkFlow.STEP.CmdWorkTop);
+                    var station = WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService");
+                    if (station != null)
+                    {
+                        object curCmd = station.GetCurCmd();
+                        if (curCmd == null)
+                            station.SetCmd(WorkFlow.STEP.CmdWorkTop);
+                        else
+                        {
+                            if ((WorkFlow.STEP)curCmd == WorkFlow.STEP.CmdWorkTop)
+                                station.ClearAllStep();
+                        }
+                    }
                 });
             }
         }
@@ -525,39 +526,20 @@ namespace JPT_TosaTest.ViewModel
             get
             {
                 return new RelayCommand(() => {
-                    //Console.WriteLine("FindLineBottomCommand");
-                    //List<string> listParas = new List<string>();
-                    //string LineToolParaPath = $"{FileHelper.GetCurFilePathString()}VisionData\\ToolData\\PairToolData\\";
-                    //var fileList = FileHelper.GetProfileList(LineToolParaPath);
-                    //foreach (var file in fileList)
-                    //{
-                    //    if (file.Contains("Bottom"))
-                    //    {
-                    //        listParas.Add(File.ReadAllText($"{LineToolParaPath}{file}.para"));
-                    //    }
-                    //}
-                    ////if (Hom_2D == null || ModelPos == null)
-                    //{
-                    //    string strModelFileName = $"VisionData\\Model\\Cam0_Model.shm";    //Model
-                    //    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T1, 0, strModelFileName, out object Hom2DAndModelPos);
-                    //    if (Hom2DAndModelPos != null)
-                    //    {
-                    //        List<object> list = Hom2DAndModelPos as List<object>;
-                    //        if (list.Count == 2)
-                    //        {
-                    //            Hom_2D = list[0];
-                    //            ModelPos = list[1];
-                    //        }
-                    //    }
-                    //}
-                    //if (Hom_2D != null && ModelPos != null)
-                    //    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T3, 0, new List<object> { Hom_2D, ModelPos, listParas }, out object result);
-                    //else
-                    //{
-                    //    //TO DO
 
-                    WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService").SetCmd(WorkFlow.STEP.CmdWorkBottom);
+                    var station = WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService");
+                    if (station != null)
+                    {
+                        object curCmd = station.GetCurCmd();
 
+                        if (curCmd == null)
+                            station.SetCmd(WorkFlow.STEP.CmdWorkBottom);
+                        else
+                        {
+                            if((WorkFlow.STEP)curCmd == WorkFlow.STEP.CmdWorkBottom)
+                                station.ClearAllStep();
+                        }
+                    }
                 });
             }
         }

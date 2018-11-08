@@ -37,6 +37,8 @@ namespace JPT_TosaTest.Config.HardwareManager
         public double HomeOffset { get; set; }
         public EnumHomeMode HomeMode {get;set;}
         public EnumAxisType AxisType { get; set; }
+        public string ForwardCaption { get; set; }
+        public string BackwardCaption { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void RaisePropertyChanged([CallerMemberName]string PropertyName = "")

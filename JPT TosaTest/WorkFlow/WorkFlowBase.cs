@@ -67,7 +67,7 @@ namespace JPT_TosaTest.WorkFlow
                 nStepStack.Pop();
             }
         }
-        protected void ClearAllStep()
+        public void ClearAllStep()
         {
             lock (_lock)
             {
@@ -108,6 +108,7 @@ namespace JPT_TosaTest.WorkFlow
         public bool Stop()
         {
             cts.Cancel();
+            ClearAllStep();
             return true;
         }
         public bool Pause()
@@ -127,9 +128,13 @@ namespace JPT_TosaTest.WorkFlow
         {
             Messenger.Default.Send<string>(ErrorMsg, "Error");
         }
-        public void SetCmd(STEP step)
+        public void SetCmd(object step)
         {
             PushStep(step);
+        }
+        public object GetCurCmd()
+        {
+            return PeekStep();
         }
     }
 }

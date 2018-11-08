@@ -648,7 +648,7 @@ namespace JPT_TosaTest.ViewModel
         public RelayCommand DistanceCalibCommand
         {
             get { return new RelayCommand(()=> {
-                HalconVision.Instance.SetCamKValue(CurrentSelectedCamera, 66045);
+                //HalconVision.Instance.SetCamKValue(CurrentSelectedCamera, 66045);
             }); }
         }
         /// <summary>

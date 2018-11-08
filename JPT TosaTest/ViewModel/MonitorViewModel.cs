@@ -235,6 +235,7 @@ namespace JPT_TosaTest.ViewModel
 
         private void Value_OnAxisStateChanged(IMotion sender, int AxisNo, AxisArgs args)
         {
+            //需要实时刷新的
             int AxisNoTotal = AxisNo + sender.MIN_AXIS;
             for (int j = 0; j < ConfigMgr.Instance.HardwareCfgMgr.AxisSettings.Count(); j++)
             {
