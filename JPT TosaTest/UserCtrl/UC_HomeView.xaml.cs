@@ -98,5 +98,7 @@ namespace JPT_TosaTest.UserCtrl
         {
             (DataContext as MainViewModel).MoveToPtCommand.Execute(DatagridPos.CurrentCell);
         }
+
+ 
     }
 }

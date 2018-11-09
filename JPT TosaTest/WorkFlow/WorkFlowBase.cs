@@ -17,6 +17,7 @@ namespace JPT_TosaTest.WorkFlow
         public string StationName;
         public int StationIndex;
         protected bool bPause = false;
+        protected object CmdPara = null;
         public event StationInfoHandler OnStationInfoChanged;
         protected WorkFlowConfig cfg = null;
         protected CancellationTokenSource cts =new CancellationTokenSource();
@@ -41,10 +42,12 @@ namespace JPT_TosaTest.WorkFlow
             }
 
         }
-        protected void PushStep(object Step) {
+        protected void PushStep(object Step, object para=null) {
             lock (_lock)
             {
                 nStepStack.Push(Step);
+                if(para!=null)
+                    CmdPara = para;
             }
         }
         protected void PopAndPushStep(object Step)
@@ -128,9 +131,9 @@ namespace JPT_TosaTest.WorkFlow
         {
             Messenger.Default.Send<string>(ErrorMsg, "Error");
         }
-        public void SetCmd(object step)
+        public void SetCmd(object step,object para=null)
         {
-            PushStep(step);
+            PushStep(step,para);
         }
         public object GetCurCmd()
         {

@@ -39,6 +39,7 @@ namespace JPT_TosaTest.Config.HardwareManager
         public EnumAxisType AxisType { get; set; }
         public string ForwardCaption { get; set; }
         public string BackwardCaption { get; set; }
+        public int MaxSpeed { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void RaisePropertyChanged([CallerMemberName]string PropertyName = "")

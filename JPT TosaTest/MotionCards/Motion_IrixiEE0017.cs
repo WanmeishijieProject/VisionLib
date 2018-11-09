@@ -325,6 +325,8 @@ namespace JPT_TosaTest.MotionCards
             AxisArgsList[AxisNo].AxisType = Setting.AxisType;
             AxisArgsList[AxisNo].BackwardCaption = Setting.BackwardCaption;
             AxisArgsList[AxisNo].ForwardCaption = Setting.ForwardCaption;
+            AxisArgsList[AxisNo].MaxSpeed = Setting.MaxSpeed;
+
             _controller.SetAxisPara(AxisNo + MIN_AXIS, Setting.GainFactor, Setting.LimitP, Setting.LimitN, Setting.HomeOffset, (int)Setting.HomeMode, Setting.AxisName);
         }
 

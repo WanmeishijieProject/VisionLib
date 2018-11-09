@@ -204,6 +204,8 @@ namespace AxisParaLib
         public string BackwardCaption { get; set; }
         public string ForwardCaption { get; set; }
 
+        public int MaxSpeed { get; set; }
+
         public object AxisLock { get; }
 
         public event PropertyChangedEventHandler PropertyChanged;

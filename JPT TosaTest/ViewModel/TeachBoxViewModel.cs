@@ -115,12 +115,15 @@ namespace JPT_TosaTest.ViewModel
                 {
                     try
                     {
+                        if (args == null)
+                            return;
+                        int Speed = (int)(args.MoveArgs.Speed * ((double)args.MaxSpeed / 100.0f));
                         if (args.MoveArgs.MoveMode == 0)
                         {
-                            MotionMgr.Instance.MoveAbs(args.AxisNo, 200, args.MoveArgs.Speed, args.MoveArgs.Distance/args.Unit.Factor);
+                            MotionMgr.Instance.MoveAbs(args.AxisNo, 200, Speed, args.MoveArgs.Distance/args.Unit.Factor);
                         }
                         else
-                            MotionMgr.Instance.MoveRel(args.AxisNo, 200, args.MoveArgs.Speed, -Math.Abs(args.MoveArgs.Distance/args.Unit.Factor));
+                            MotionMgr.Instance.MoveRel(args.AxisNo, 200, Speed, -Math.Abs(args.MoveArgs.Distance/args.Unit.Factor));
                     }
                     catch (Exception ex)
                     {
@@ -137,10 +140,13 @@ namespace JPT_TosaTest.ViewModel
                 {
                     try
                     {
+                        if (args == null)
+                            return;
+                        int Speed = (int)(args.MoveArgs.Speed * ((double)args.MaxSpeed / 100.0f));
                         if (args.MoveArgs.MoveMode == 0)
-                            MotionMgr.Instance.MoveAbs(args.AxisNo, 100, args.MoveArgs.Speed, args.MoveArgs.Distance/args.Unit.Factor);
+                            MotionMgr.Instance.MoveAbs(args.AxisNo, 100, Speed, args.MoveArgs.Distance/args.Unit.Factor);
                         else
-                            MotionMgr.Instance.MoveRel(args.AxisNo, 100, args.MoveArgs.Speed, Math.Abs(args.MoveArgs.Distance/args.Unit.Factor));
+                            MotionMgr.Instance.MoveRel(args.AxisNo, 100, Speed, Math.Abs(args.MoveArgs.Distance/args.Unit.Factor));
                     }
                     catch (Exception ex)
                     {

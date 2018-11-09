@@ -17,9 +17,9 @@ namespace AxisParaLib
         private UnitBase _unit = new Millimeter();
         public AxisMoveArgs()
         {
-            Speed = 0;
-            Distance = 0;
-            MoveMode = 0;
+            Speed = 100;
+            Distance = 1;
+            MoveMode = 1;
         }
         public double Speed
         {

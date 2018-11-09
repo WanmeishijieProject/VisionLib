@@ -204,6 +204,7 @@
     <Compile Include="Model\IDataService.cs" />
     <Compile Include="Model\IOModel.cs" />
     <Compile Include="Model\MessageItem.cs" />
+    <Compile Include="Model\ProductStateModel.cs" />
     <Compile Include="Model\ResultItem.cs" />
     <Compile Include="Model\RoiItem.cs" />
     <Compile Include="Model\ModelItem.cs" />

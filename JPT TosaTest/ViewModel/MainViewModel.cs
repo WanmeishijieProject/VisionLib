@@ -33,12 +33,16 @@ namespace JPT_TosaTest.ViewModel
         private LogExcel PrePointSetExcel;
         private string POINT_FILE = "Config/Point.xls";
         private object Hom_2D=null, ModelPos=null;
+
+       
         public MainViewModel(IDataService dataService)
         {
             //注册错误显示消息
             Messenger.Default.Register<string>(this, "Error", msg => {
                 Application.Current.Dispatcher.Invoke(()=>ShowErrorinfo(msg));
             });
+
+            SupportIsSelected = true;
 
             ResultCollection = new ObservableCollection<ResultItem>()
             {
@@ -90,6 +94,15 @@ namespace JPT_TosaTest.ViewModel
             PrePointSetExcel.ExcelToDataTable(ref dtPoint, "");
             DataForPreSetPosition = dtPoint;
             UpdateWorkFlowData(DataForPreSetPosition);
+
+            //初始化产品状态
+            SupportStateCollect = new ObservableCollection<ProductStateModel>();
+            PLCStateCollect = new ObservableCollection<ProductStateModel>();
+            for (int i = 0; i < 6; i++)
+            {
+                SupportStateCollect.Add(new ProductStateModel() { ProductIndex = i + 1, ProductName=$"Spt{i+1}" });
+                PLCStateCollect.Add(new ProductStateModel() { ProductIndex = i + 1, ProductName = $"PLC{i + 1}" });
+            }
         }
 
         ~MainViewModel()
@@ -228,6 +241,36 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
+        public bool SupportIsSelected { get; set; }
+        public ObservableCollection<ProductStateModel> SupportStateCollect { get; set; }
+        public ObservableCollection<ProductStateModel> PLCStateCollect { get; set; }
+        /// <summary>
+        /// Support高16位， PLC低16位
+        /// </summary>
+        public Int32 ProductStateFlag
+        {
+            get
+            {
+                Int16 H = 0, L = 0;
+                Int32  State=0;
+                for (int i = 0; i < 6; i++)
+                {
+                    if (SupportStateCollect[i].IsChecked)
+                    {
+                        H += (Int16)(1 << i);
+                    
+                    }
+                    if (PLCStateCollect[i].IsChecked)
+                    {
+                        L += (Int16)(1 << i);
+                    }
+                    State = L + (H << 16);
+                  
+                }
+                return State;
+            }
+            set { }
+        }
         #endregion
 
 
@@ -468,7 +511,7 @@ namespace JPT_TosaTest.ViewModel
                 if (station != null)
                 {
                     object curCmd = station.GetCurCmd();
-                    if (curCmd == null)
+                    if (curCmd == null)                  
                         station.SetCmd(WorkFlow.STEP.CmdFindLine);
                     else
                     {
@@ -479,7 +522,8 @@ namespace JPT_TosaTest.ViewModel
             }); }
         }
 
-        public RelayCommand CommandLoadProduct  //上料
+      
+        public RelayCommand CommandWorkPLC  //PLC Top
         {
             get
             {
@@ -489,10 +533,12 @@ namespace JPT_TosaTest.ViewModel
                     {
                         object curCmd = station.GetCurCmd();
                         if (curCmd == null)
-                            station.SetCmd(WorkFlow.STEP.CmdGetProduct);
+                        {
+                            station.SetCmd(WorkFlow.STEP.CmdGetProductPLC, ProductStateFlag);
+                        }
                         else
                         {
-                            if ((WorkFlow.STEP)curCmd == WorkFlow.STEP.CmdGetProduct)
+                            if ((WorkFlow.STEP)curCmd == WorkFlow.STEP.CmdGetProductPLC)
                                 station.ClearAllStep();
                         }
                     }
@@ -500,43 +546,23 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
-        public RelayCommand CommandWorkTop  //在顶部工作
+        public RelayCommand CommandWorkSupport   //Support Bottom
         {
             get
             {
                 return new RelayCommand(() => {
+
                     var station = WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService");
                     if (station != null)
                     {
                         object curCmd = station.GetCurCmd();
                         if (curCmd == null)
-                            station.SetCmd(WorkFlow.STEP.CmdWorkTop);
-                        else
                         {
-                            if ((WorkFlow.STEP)curCmd == WorkFlow.STEP.CmdWorkTop)
-                                station.ClearAllStep();
+                            station.SetCmd(WorkFlow.STEP.CmdGetProductSupport, ProductStateFlag);
                         }
-                    }
-                });
-            }
-        }
-
-        public RelayCommand CommandWorkBottom   //在底部工作
-        {
-            get
-            {
-                return new RelayCommand(() => {
-
-                    var station = WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService");
-                    if (station != null)
-                    {
-                        object curCmd = station.GetCurCmd();
-
-                        if (curCmd == null)
-                            station.SetCmd(WorkFlow.STEP.CmdWorkBottom);
                         else
                         {
-                            if((WorkFlow.STEP)curCmd == WorkFlow.STEP.CmdWorkBottom)
+                            if ((WorkFlow.STEP)curCmd == WorkFlow.STEP.CmdGetProductSupport)
                                 station.ClearAllStep();
                         }
                     }
@@ -554,6 +580,8 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
+
+       
         #endregion
     }
 }

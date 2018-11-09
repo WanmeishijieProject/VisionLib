@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using JPT_TosaTest.Vision;
 
 namespace JPT_TosaTest.WorkFlow
 {
@@ -24,12 +25,7 @@ namespace JPT_TosaTest.WorkFlow
             int i = 0;
             while (!cts.IsCancellationRequested)
             {
-                Thread.Sleep(100);
-                if (bPause)
-                    continue;
-                
-                ShowInfo($"{i}{i}{i}{i++}");
-                
+               
             }
             return 0;
         }
