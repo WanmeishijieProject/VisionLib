@@ -156,6 +156,9 @@ namespace JPT_TosaTest.ViewModel
                 }
             }
         }
+        /// <summary>
+        /// 按照AxisSetting排序的
+        /// </summary>
         public ObservableCollection<AxisArgs> AxisStateCollection { get; set; }
 
         #endregion

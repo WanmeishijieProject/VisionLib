@@ -33,13 +33,33 @@ namespace JPT_TosaTest.ViewModel
             {
                 var MotionCard = MotionMgr.Instance.FindMotionCardByAxisIndex(it.AxisNo);
                 if (MotionCard != null)
+                {
+                    int axisNo = MotionCard.AxisArgsList[it.AxisNo - MotionCard.MIN_AXIS].AxisNo;
+                    string axisName = MotionCard.AxisArgsList[it.AxisNo - MotionCard.MIN_AXIS].AxisName;
+                    string backwardKey = "";
+                    string forwardKey = "";
+                    if (axisName == "X")
+                    {
+                        backwardKey = "Left";
+                        forwardKey = "Right";
+                    }
+                    else if (axisName == "Y2")
+                    {
+                        backwardKey = "Up";
+                        forwardKey = "Down";
+                    }  
                     HotKeyCollect.Add(new HotKeyModel()
                     {
-                        AxisName = MotionCard.AxisArgsList[it.AxisNo - MotionCard.MIN_AXIS].AxisName,
-                        AxisNo = MotionCard.AxisArgsList[it.AxisNo - MotionCard.MIN_AXIS].AxisNo,
+                        AxisName = axisName,
+                        AxisNo = axisNo,
+                        BackwardKeyValue = backwardKey,
+                        ForwardKeyValue=forwardKey
                     });
+                }
                 else
+                {
                     HotKeyCollect.Add(new HotKeyModel());
+                }
             }
 
             //初始化Google控件皮肤

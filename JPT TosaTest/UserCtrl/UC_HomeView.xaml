@@ -33,7 +33,7 @@
                 <RowDefinition Height="100"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="5"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="*" MinHeight="100"/>
             </Grid.RowDefinitions>
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -96,6 +96,11 @@
                 <Grid>
                     <Grid.ContextMenu>
                         <ContextMenu>
+                            <MenuItem Name="UpdatePtMenu" Header="Update this point" Click="UpdatePtMenu_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/JPT TosaTest;component/Images/UpdatePoint.png"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
                             <MenuItem Header="Move to this point" Click="MenuItem_Click">
                                 <MenuItem.Icon>
                                     <Image Source="/JPT TosaTest;component/Images/goto.png"/>
@@ -110,7 +115,7 @@
                         </ContextMenu>
                     </Grid.ContextMenu>
                     <DataGrid x:Name="DatagridPos" CanUserAddRows="False" CanUserSortColumns="False" ItemsSource="{Binding DataForPreSetPosition.DefaultView, UpdateSourceTrigger=PropertyChanged}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
-                    ScrollViewer.VerticalScrollBarVisibility="Visible" Cursor="Arrow" GridLinesVisibility="All" VerticalGridLinesBrush="LightBlue" Background="Transparent" CanUserReorderColumns="False" CanUserResizeColumns="False"/>
+                    ScrollViewer.VerticalScrollBarVisibility="Visible" Cursor="Arrow" GridLinesVisibility="All" VerticalGridLinesBrush="LightBlue" Background="Transparent" CanUserReorderColumns="False" CanUserResizeColumns="False" MinHeight="50"/>
 
                     <materialDesign:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionPopupBox}"
                     PlacementMode="LeftAndAlignMiddles"

@@ -17,9 +17,17 @@ using JPT_TosaTest.MotionCards;
 using AxisParaLib.UnitManager;
 using JPT_TosaTest.Vision;
 using System.IO;
+using GalaSoft.MvvmLight.Ioc;
 
 namespace JPT_TosaTest.ViewModel
 {
+    public enum EnumSystemState
+    {
+        Running,
+        Pause,
+        Idle,
+    }
+
     public class MainViewModel : ViewModelBase
     {
         private int _viewIndex = 1;
@@ -33,8 +41,12 @@ namespace JPT_TosaTest.ViewModel
         private LogExcel PrePointSetExcel;
         private string POINT_FILE = "Config/Point.xls";
         private object Hom_2D=null, ModelPos=null;
+        private EnumSystemState _systemState = EnumSystemState.Idle;
+        private MonitorViewModel MonitorVm = null;
+        private const int HOME_PAGE = 1, SETTING_PAGE = 2, INFO_PAGE=3,
+            CAMERA_PAGE = 4, MONITOR_PAGE = 5, USER_PAGE = 6;
 
-       
+
         public MainViewModel(IDataService dataService)
         {
             //注册错误显示消息
@@ -271,6 +283,17 @@ namespace JPT_TosaTest.ViewModel
             }
             set { }
         }
+        public EnumSystemState SystemState
+        {
+            set {
+                if (_systemState != value)
+                {
+                    _systemState = value;
+                    RaisePropertyChanged();
+                }
+            }
+            get { return _systemState; }
+        }
         #endregion
 
 
@@ -332,7 +355,7 @@ namespace JPT_TosaTest.ViewModel
         /// </summary>
         public RelayCommand BtnHomeCommand
         {
-            get { return new RelayCommand(() => ViewIndex = 1); }
+            get { return new RelayCommand(() => ViewIndex = HOME_PAGE); }
         }
 
         /// <summary>
@@ -340,7 +363,10 @@ namespace JPT_TosaTest.ViewModel
         /// </summary>
         public RelayCommand BtnSettingCommand
         {
-            get { return new RelayCommand(() => ViewIndex = 2); }
+            get { return new RelayCommand(() =>
+            {
+                ViewIndex = SETTING_PAGE; 
+            }); }
         }
 
         /// <summary>
@@ -350,7 +376,7 @@ namespace JPT_TosaTest.ViewModel
         {
             get
             {
-                return new RelayCommand(() =>ViewIndex = 3);
+                return new RelayCommand(() =>ViewIndex = INFO_PAGE);
             }
         }
 
@@ -425,24 +451,74 @@ namespace JPT_TosaTest.ViewModel
                         DataRowView item = drv.Item as DataRowView;
                         DataGridTextColumn dgc = drv.Column as DataGridTextColumn;
                         int index = dgc.DisplayIndex;
+             
                         if (index >= 0)
                         {
                             var data = item[index];
                             int AxisNo = Config.ConfigMgr.Instance.HardwareCfgMgr.AxisSettings[index - 1].AxisNo;
-                            MotionMgr.Instance.GetAxisState(AxisNo, out AxisArgs arg);
-                            MotionMgr.Instance.MoveAbs(AxisNo,500, arg.MoveArgs.Speed, double.Parse(data.ToString()));
+                            MotionMgr.Instance.GetAxisState(AxisNo, out AxisArgs args);
+                            int Speed = (int)(args.MoveArgs.Speed * ((double)args.MaxSpeed / 100.0f));
+                            MotionMgr.Instance.MoveAbs(AxisNo,500, Speed, double.Parse(data.ToString()));
                         }
                     }
                 });
             }
         }
+        public RelayCommand<DataGridCellInfo> UpdatePtCommand
+        {
+            get
+            {
+                return new RelayCommand<DataGridCellInfo>(drv =>
+                {
+                    try
+                    {
+                        if (drv != null)
+                        {
+                            DataRowView item = drv.Item as DataRowView;
+                            string PointName = item[0].ToString();
+                            foreach (DataRow row in DataForPreSetPosition.Rows)
+                            {
+                                if (row[0].ToString().Equals(PointName))
+                                {
+                                    //更新
+                                    MonitorVm = SimpleIoc.Default.GetInstance<MonitorViewModel>();
+                                    int i = 0;
+                                    foreach (var state in MonitorVm.AxisStateCollection)
+                                    {
+                                        if (state.Unit.Category == EnumUnitCategory.Length)
+                                            row[++i] = UnitHelper.ConvertUnit(state.Unit, new Millimeter(), state.CurAbsPos);
+                                        else
+                                            row[++i] = UnitHelper.ConvertUnit(state.Unit, new Degree(), state.CurAbsPos);
 
+                                    }
+                                }
+                            }
+                            UC_MessageBox.ShowMsgBox($"更新点{PointName}成功", "提示", MsgType.Info);
+                        }
+                        else
+                        {
+                            UC_MessageBox.ShowMsgBox($"更新点失败：请选择一行进行更新", "更新点失败", MsgType.Error);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UC_MessageBox.ShowMsgBox($"更新点失败：{ex.Message}", "更新点失败", MsgType.Error);
+                    }
+     
+                });
+            }
+        }
         /// <summary>
         /// 主菜单弹出视觉设置界面
         /// </summary>
         public RelayCommand BtnCameraCommand
         {
-            get { return new RelayCommand(() => ViewIndex = 4); }
+            get { return new RelayCommand(() => {
+                if (SystemState == EnumSystemState.Idle)
+                    ViewIndex = CAMERA_PAGE;
+                else
+                    UC_MessageBox.ShowMsgBox("调试视觉时候，需要关闭自动运行");
+            }); }
         }
 
         /// <summary>
@@ -450,7 +526,7 @@ namespace JPT_TosaTest.ViewModel
         /// </summary>
         public RelayCommand BtnMonitorCommand
         {
-            get { return new RelayCommand(() => ViewIndex = 5); }
+            get { return new RelayCommand(() => ViewIndex = MONITOR_PAGE); }
         }
         
         /// <summary>
@@ -458,7 +534,14 @@ namespace JPT_TosaTest.ViewModel
         /// </summary>
         public RelayCommand StartStationCommand
         {
-            get { return new RelayCommand(() => WorkFlow.WorkFlowMgr.Instance.StartAllStation()); }
+            get { return new RelayCommand(() => {
+
+                if (WorkFlow.WorkFlowMgr.Instance.StartAllStation())
+                    SystemState = EnumSystemState.Running;
+                if (ViewIndex == 4)
+                    ViewIndex = 1;
+                
+            }); }
         }
         public RelayCommand PauseStationCommand
         {
@@ -469,6 +552,7 @@ namespace JPT_TosaTest.ViewModel
             get { return new RelayCommand(() => {
                 WorkFlow.WorkFlowMgr.Instance.StopAllStation();
                 MotionMgr.Instance.StopAll();
+                SystemState = EnumSystemState.Idle;
             });}
         }
         /// <summary>
@@ -478,7 +562,7 @@ namespace JPT_TosaTest.ViewModel
         {
             get
             {
-                return new RelayCommand(() => ViewIndex = 6);
+                return new RelayCommand(() => ViewIndex = USER_PAGE);
             }
         }
 

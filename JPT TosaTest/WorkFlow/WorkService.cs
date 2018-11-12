@@ -33,7 +33,7 @@ namespace JPT_TosaTest.WorkFlow
         //start from 0
         private const int AXIS_X = 3, AXIS_Y1 = 1, AXIS_Y2 = 2, AXIS_Z = 0, AXIS_CY = 5, AXIS_CZ = 4, AXIS_R = 6;
         private const int PT_X = 0, PT_Y1 = 1, PT_Y2 = 2, PT_Z = 3, PT_R = 4, PT_CY = 5, PT_CZ = 6;
-        private const int VAC_PLC = 0,VAC_HSG=2;
+        private const int VAC_PLC = 0,VAC_HSG=2,TouchSensor=6;
         private MotionCards.IMotion  MotionCard=null;
         private IOCards.IIO IOCard = null;
         private object Hom_2D=null, ModelPos=null;
@@ -104,6 +104,9 @@ namespace JPT_TosaTest.WorkFlow
                     case STEP.CmdGetProductPLC:    //取产品
                         {
                             Int32 Flag = (Int32)CmdPara & 0xFFFF;
+                            if (Flag == 0)  
+                                PopAndPushStep(STEP.EXIT);
+
                             if ((Flag >> (ProductIndex[1]++) & 0x01) != 0)
                             {
                                 GetProduct(ProductIndex[1], EnumProductType.PLC);
@@ -142,6 +145,7 @@ namespace JPT_TosaTest.WorkFlow
                     case 0:
                         MotionCard.Home(AXIS_CZ, 0, 500, 5, 10);
                         MotionCard.Home(AXIS_Z, 0, 500, 20, 50);
+                        IOCard.WriteIoOutBit(TouchSensor, true);
                         nStep = 1;
                         break;
                     case 1:

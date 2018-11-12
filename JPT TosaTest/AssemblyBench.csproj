@@ -186,6 +186,7 @@
     <Compile Include="Converter\MsgType2ForeBrush.cs" />
     <Compile Include="Converter\MsgType2Image.cs" />
     <Compile Include="Converter\RoiTemplate2Visibility.cs" />
+    <Compile Include="Converter\SystemState2Enable.cs" />
     <Compile Include="Converter\Text2CameStateImage.cs" />
     <Compile Include="Converter\Uint2bool.cs" />
     <Compile Include="Converter\UserName2Visibility.cs" />
@@ -540,7 +541,9 @@
   <ItemGroup>
     <Resource Include="Images\Pair.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Images\UpdatePoint.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

@@ -54,15 +54,18 @@
                         <dxb:BarButtonItem 
                             Content="{DynamicResource Menu_Run}" 
                             RibbonStyle="Large" Glyph="Images/start.png"
-                            Command="{Binding StartStationCommand}"/>
+                            Command="{Binding StartStationCommand}"
+                            IsEnabled="{Binding SystemState, Converter={StaticResource SystemState2Enable}, ConverterParameter=Start}"/>
                         <dxb:BarButtonItem 
                             Content="{DynamicResource Menu_Pause}" 
                             RibbonStyle="Large" LargeGlyph="Images/pause.png"
-                            Command="{Binding PauseStationCommand}"/>
+                            Command="{Binding PauseStationCommand}"
+                             IsEnabled="{Binding SystemState, Converter={StaticResource SystemState2Enable}, ConverterParameter=pause}"/>
                         <dxb:BarButtonItem 
                             Content="{DynamicResource Menu_Stop}" 
                             RibbonStyle="Large" Glyph="Images/stop.png"
-                            Command="{Binding StopStationCommand}"/>
+                            Command="{Binding StopStationCommand}"
+                             IsEnabled="{Binding SystemState, Converter={StaticResource SystemState2Enable}, ConverterParameter=Stop}"/>
                     </dxr:RibbonPageGroup>
                     <dxr:RibbonPageGroup Caption="{DynamicResource Page_Frame_Menu_Page_Menu}">
                         <dxb:BarButtonItem 

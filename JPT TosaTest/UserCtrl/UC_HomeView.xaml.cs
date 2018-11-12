@@ -99,6 +99,9 @@ namespace JPT_TosaTest.UserCtrl
             (DataContext as MainViewModel).MoveToPtCommand.Execute(DatagridPos.CurrentCell);
         }
 
- 
+        private void UpdatePtMenu_Click(object sender, RoutedEventArgs e)
+        {
+            (DataContext as MainViewModel).UpdatePtCommand.Execute(DatagridPos.CurrentCell);
+        }
     }
 }
