@@ -183,6 +183,7 @@
     <Compile Include="Converter\int2Visibility.cs" />
     <Compile Include="Converter\IsChecked2RegionOperator.cs" />
     <Compile Include="Converter\IsChecked2RegionType.cs" />
+    <Compile Include="Converter\ModelCollect2StringCollect.cs" />
     <Compile Include="Converter\MsgType2ForeBrush.cs" />
     <Compile Include="Converter\MsgType2Image.cs" />
     <Compile Include="Converter\RoiTemplate2Visibility.cs" />

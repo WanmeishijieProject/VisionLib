@@ -13,6 +13,7 @@ namespace JPT_TosaTest.Models
         public virtual string StrName { get; set; }
         public virtual string StrFullName { get; set; }
         public virtual int Index { get; set; }
+        public virtual int CamID { get; set; }
         public virtual RelayCommand<RoiModelBase> OperateAdd
         {
             get;

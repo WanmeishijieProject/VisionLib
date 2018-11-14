@@ -17,7 +17,7 @@ namespace JPT_TosaTest.Vision.VisionTool
     public class PairTool : ToolBase
     {
         #region Private
-        private string _defaultPath = FileHelper.GetCurFilePathString() + @"VisionData\ToolData\PairToolData\";
+        private string _defaultPath = FileHelper.GetCurFilePathString() + @"VisionData\ToolData\";
         private int _caliperNumber = 30;
         private int _expectedPairNum = 2;
         private int _pairType = 0;  //light/dark, dark/light, all
@@ -28,7 +28,7 @@ namespace JPT_TosaTest.Vision.VisionTool
         #region Public
         public override string ToString()
         {
-            return $"{GetType().Name}|{CaliperNumber}&{ExpectedPairNum}&{Polarity}&{SelectType}&{Contrast}";
+            return $"{GetType().Name}|{CaliperNumber}&{ExpectedPairNum}&{Polarity}&{SelectType}&{Contrast}&{ModelName}";
         }
         #endregion
 
@@ -148,6 +148,11 @@ namespace JPT_TosaTest.Vision.VisionTool
                     RaisePropertyChanged();
                 }
             }
+        }
+        public string ModelName
+        {
+            get;
+            set;
         }
         #endregion
     }

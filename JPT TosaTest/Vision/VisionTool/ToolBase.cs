@@ -17,7 +17,7 @@ namespace JPT_TosaTest.Vision.VisionTool
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(PropertyName));
         }
         public event PropertyChangedEventHandler PropertyChanged;
-       
+        
 
     }
 }

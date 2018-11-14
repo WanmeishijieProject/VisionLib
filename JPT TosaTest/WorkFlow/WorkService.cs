@@ -36,12 +36,12 @@ namespace JPT_TosaTest.WorkFlow
         private const int VAC_PLC = 0,VAC_HSG=2,TouchSensor=6;
         private MotionCards.IMotion  MotionCard=null;
         private IOCards.IIO IOCard = null;
-        private object Hom_2D=null, ModelPos=null;
+        private object Hom_2D_Hsg=null, ModelPos_Hsg=null, Hom_2D_Tia = null, ModelPos_Tia = null;
         private List<object> TopLines = null;
         private List<object> BottomLines = null;
-        private string File_PairToolParaPath = $"{FileHelper.GetCurFilePathString()}VisionData\\ToolData\\PairToolData\\";
-        private string File_ModelFileName = $"VisionData\\Model\\Cam0_Model.shm";    //Model
-        private string File_LineToolParaPath = $"{FileHelper.GetCurFilePathString()}VisionData\\ToolData\\LineToolData\\";
+        private string File_ToolParaPath = $"{FileHelper.GetCurFilePathString()}VisionData\\ToolData\\";
+        private string File_ModelFilePath = $"VisionData\\Model\\";    //Model
+       
         private int[] ProductIndex = { 0, 0 };
 
         private List<double> PTCamTop_Support = null;
@@ -89,7 +89,7 @@ namespace JPT_TosaTest.WorkFlow
                         HomeAll();
                         ClearAllStep();
                         break;
-                    case STEP.CmdGetProductSupport:
+                    case STEP.CmdGetProductSupport: //抓取Support
                         {
                             Int32 Flag = ((Int32)CmdPara >> 16) & 0xFFFF;
                             if ((Flag >> (ProductIndex[0]++) & 0x01) != 0)
@@ -101,7 +101,7 @@ namespace JPT_TosaTest.WorkFlow
                             }
                         }
                         break;
-                    case STEP.CmdGetProductPLC:    //取产品
+                    case STEP.CmdGetProductPLC:    //抓取PLC
                         {
                             Int32 Flag = (Int32)CmdPara & 0xFFFF;
                             if (Flag == 0)  
@@ -117,7 +117,7 @@ namespace JPT_TosaTest.WorkFlow
                         }
                         break;
                     
-                    case STEP.CmdFindLine:
+                    case STEP.CmdFindLine:  //FindLine
                         lock (MonitorLock)
                         {
                             FindAndGetModelData();
@@ -341,7 +341,8 @@ namespace JPT_TosaTest.WorkFlow
                     case 1: //CZ到下表面
                         if (MotionCard.IsNormalStop(AXIS_CY))
                         {
-                            MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamBottom_Support[PT_CZ]);                            nStep = 2;
+                            MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamBottom_Support[PT_CZ]);
+                            nStep = 2;
                            
                         }
                         break;
@@ -351,22 +352,42 @@ namespace JPT_TosaTest.WorkFlow
                         {
                             Thread.Sleep(200);
                             HalconVision.Instance.GrabImage(0);
-                            Vision.HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T1, 0, File_ModelFileName, out object Hom2DAndModelPos);
+
+                            //找Hsg
+                            string ModelFulllPathFileName = $"{File_ModelFilePath}{Config.ConfigMgr.Instance.ProcessData.HsgModelName}.shm";
+                            Vision.HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T1, 0, ModelFulllPathFileName, out object Hom2DAndModelPos);
                             if (Hom2DAndModelPos != null)
                             {
                                 List<object> list = Hom2DAndModelPos as List<object>;
                                 if (list.Count == 2)
                                 {
-                                    Hom_2D = list[0];
-                                    ModelPos = list[1];
+                                    Hom_2D_Hsg = list[0];
+                                    ModelPos_Hsg = list[1];
                                 }
                             }
+
+                            //找Tia
+                            Hom2DAndModelPos = null;
+                            ModelFulllPathFileName = $"{File_ModelFilePath}{Config.ConfigMgr.Instance.ProcessData.HsgModelName}.shm";
+                            Vision.HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T1, 0, ModelFulllPathFileName, out  Hom2DAndModelPos);
+                            if (Hom2DAndModelPos != null)
+                            {
+                                List<object> list = Hom2DAndModelPos as List<object>;
+                                if (list.Count == 2)
+                                {
+                                    Hom_2D_Tia = list[0];
+                                    ModelPos_Tia = list[1];
+                                }
+                            }
+
+
+
                             nStep = 3;
                         }
                         break;
                     case 3: //模板找到以后开始找下表面线
                         {
-                            FindLineBottom(out BottomLines);
+                            //FindLineBottom(out BottomLines);
                             MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamTop_PLC[PT_CZ]);       
                             nStep = 4;   
                         }
@@ -388,7 +409,7 @@ namespace JPT_TosaTest.WorkFlow
                                 Thread.Sleep(200);
                                 HalconVision.Instance.GrabImage(0);
                                
-                                FindLineTop(out TopLines);
+                                //FindLineTop(out TopLines);
                                 //顺便将图像尺寸标定了
                                 HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T5, 0, TopLines, out object result);
                                 nStep = 6;
@@ -488,7 +509,19 @@ namespace JPT_TosaTest.WorkFlow
                         if (GetCurStepCount() == 0)
                             nStep = 4;
                         break;
-                    case 4: // 完毕,等待工作完毕
+                    case 4: //去找Tia的线
+                        FindLineTia("", out List<object> lines);
+                        nStep = 5;
+                        break;
+                    case 5: //
+
+                        nStep = 6;
+                        break;
+                    case 6:
+
+                        nStep = 10;
+                        break;
+                    case 10: // 完毕,等待工作完毕
                         BackToTempPos();
                         ShowInfo("Pad完毕");
                         return;
@@ -502,34 +535,7 @@ namespace JPT_TosaTest.WorkFlow
 
 
 
-        private bool FindLineTop(out List<object> lineList)
-        {
-            lineList = new List<object>();
-            try
-            {
-                List<string> listParas = new List<string>();
-                var fileList = FileHelper.GetProfileList(File_LineToolParaPath);
-                foreach (var file in fileList)
-                {
-                    if (file.Contains("Top"))
-                    {
-                        listParas.Add(File.ReadAllText($"{File_LineToolParaPath}{file}.para"));
-                    }
-                }
-                if (Hom_2D != null && ModelPos != null)
-                {
-                    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T2, 0, new List<object> { Hom_2D, ModelPos, listParas }, out object result);
-                    lineList = result as List<object>;
-                }
-                else
-                    return false;
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+       
         private void BackToTempPos()
         {
             int nStep = 0;
@@ -555,29 +561,110 @@ namespace JPT_TosaTest.WorkFlow
                 }
             }
         }
-        private bool FindLineBottom(out List<object> lineList)
+         
+        /// <summary>
+        /// 根据模板找线
+        /// </summary>
+        /// <param name="ModelName"></param>
+        /// <param name="lineList"></param>
+        /// <returns></returns>    
+        private bool FindLineBottom(string ModelName, out List<object> lineList)
         {
             lineList = null;
             try
             {
                 List<string> listParas = new List<string>();  
-                var fileList = FileHelper.GetProfileList(File_PairToolParaPath);
+                var fileList = FileHelper.GetProfileList(File_ToolParaPath);
                 foreach (var file in fileList)
                 {
                     if (file.Contains("Bottom"))
                     {
-                        listParas.Add(File.ReadAllText($"{File_PairToolParaPath}{file}.para"));
+                        string text = File.ReadAllText($"{File_ToolParaPath}{file}.para");
+                        var l1 = text.Split('|');
+                        var l2 = l1[1].Split('&');
+                        string name = l2[l2.Length - 1];
+                        if (!string.IsNullOrEmpty(ModelName) && name == ModelName)
+                        {
+                            listParas.Add(text);
+                        }
                     }
                 }
-                if (Hom_2D != null && ModelPos != null)
+                if (Hom_2D_Hsg != null && ModelPos_Hsg != null)
                 {
-                    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T2, 0, new List<object> { Hom_2D, ModelPos, listParas }, out object result);
+                    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T2, 0, new List<object> { Hom_2D_Hsg, ModelPos_Hsg, listParas }, out object result);
                     lineList = result as List<object>;
                 }
                 else
                 {
                     //TO DO
                 }
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        private bool FindLineTop(string ModelName,out List<object> lineList)
+        {
+            lineList = new List<object>();
+            try
+            {
+                List<string> listParas = new List<string>();
+                var fileList = FileHelper.GetProfileList(File_ToolParaPath);
+                foreach (var file in fileList)
+                {
+                    string text = File.ReadAllText($"{File_ToolParaPath}{file}.para");
+                    var l1 = text.Split('|');
+                    var l2 = l1[1].Split('&');
+                    string name = l2[l2.Length - 1];
+                    if (!string.IsNullOrEmpty(ModelName) && name == ModelName)
+                    {
+                        listParas.Add(text);
+                    }
+                }
+                if (Hom_2D_Hsg != null && ModelPos_Hsg != null)
+                {
+                    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T2, 0, new List<object> { Hom_2D_Hsg, ModelPos_Hsg, listParas }, out object result);
+                    lineList = result as List<object>;
+                }
+                else
+                    return false;
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool FindLineTia(string ModelName, out List<object> lineList)
+        {
+            lineList = new List<object>();
+            try
+            {
+                List<string> listParas = new List<string>();
+                var fileList = FileHelper.GetProfileList(File_ToolParaPath);
+
+                //将所有与该model有关的Roi加载进来
+                foreach (var file in fileList)
+                {
+                    string text = File.ReadAllText($"{File_ToolParaPath}{file}.para");
+                    var l1 = text.Split('|');
+                    var l2 = l1[1].Split('&');
+                    string name = l2[l2.Length - 1];
+                    if (!string.IsNullOrEmpty(ModelName) && name == ModelName)
+                    {
+                        listParas.Add(text);
+                    }
+                }
+                if (Hom_2D_Tia != null && ModelPos_Tia != null)
+                {
+                    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T5, 0, new List<object> { Hom_2D_Tia, ModelPos_Tia, listParas }, out object result);
+                    lineList = result as List<object>;
+                }
+                else
+                    return false;
                 return true;
             }
             catch

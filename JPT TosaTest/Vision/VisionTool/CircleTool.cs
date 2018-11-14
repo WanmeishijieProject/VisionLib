@@ -12,7 +12,7 @@ namespace JPT_TosaTest.Vision.VisionTool
         #region  Property
         public override string DefaultPath
         {
-            get { return FileHelper.GetCurFilePathString() + @"VisionData\ToolData\CircleToolData\"; }
+            get { return FileHelper.GetCurFilePathString() + @"VisionData\ToolData\"; }
             set { }
         }
         #endregion

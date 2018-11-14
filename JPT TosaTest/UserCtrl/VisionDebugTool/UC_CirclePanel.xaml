@@ -8,11 +8,12 @@
              d:DesignHeight="450" d:DesignWidth="400">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="70"/>
-            <RowDefinition Height="70"/>
-            <RowDefinition Height="70"/>
-            <RowDefinition Height="70"/>
-            <RowDefinition Height="70"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
@@ -82,7 +83,16 @@
             <TextBlock Text="边缘对比度" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
             <Slider Value="50" Grid.Column="1" VerticalAlignment="Center" Margin="10,0" HorizontalAlignment="Center" MinWidth="150"/>
         </Grid>
-        <DataGrid Grid.Row="5" CanUserAddRows="False" Margin="2">
+        <Grid Grid.Row="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="绑定模板" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
+            <ComboBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" MinWidth="150"
+                      ItemsSource="{Binding ModelList, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" Text="{Binding ModelName, Mode=OneWayToSource}"/>
+        </Grid>
+        <DataGrid Grid.Row="6" CanUserAddRows="False" Margin="2">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="X" Width="100" FontSize="20"/>
                 <DataGridTextColumn Header="Y" Width="100" FontSize="20"/>

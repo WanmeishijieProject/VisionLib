@@ -12,6 +12,7 @@
             <RowDefinition Height="50"/>
             <RowDefinition Height="50"/>
             <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
@@ -67,15 +68,23 @@
             <TextBlock Text="{Binding Value, ElementName=SliderContrast, Converter={StaticResource ContrastValue2Text}}" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
             <Slider Name="SliderContrast" Maximum="255" Minimum="0" Value="{Binding Contrast}" Grid.Column="1" VerticalAlignment="Center" Margin="10,0" HorizontalAlignment="Left" MinWidth="150" ValueChanged="SliderContrast_ValueChanged"/>
         </Grid>
-        <DataGrid Grid.Row="4" CanUserAddRows="False" Margin="2">
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="115"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="绑定模板" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
+            <ComboBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Margin="10,0" SelectedIndex="0"
+                      ItemsSource="{Binding ModelList, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" Text="{Binding ModelName, Mode=OneWayToSource}"/>
+        </Grid>
+        <DataGrid Grid.Row="5" CanUserAddRows="False" Margin="2">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="X1" Width="100" FontSize="20"/>
                 <DataGridTextColumn Header="Y1" Width="100" FontSize="20"/>
                 <DataGridTextColumn Header="X2" Width="100" FontSize="20"/>
                 <DataGridTextColumn Header="Y2" Width="100" FontSize="20"/>
             </DataGrid.Columns>
-
         </DataGrid>
-        <Button Name="BtnSaveLinePara" Grid.Row="5" Content="保存参数" Margin="10,0" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Command="{Binding SaveLineParaCommand}"/>
+        <Button Name="BtnSaveLinePara" Grid.Row="6" Content="保存参数" Margin="10,0" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Command="{Binding SaveLineParaCommand}"/>
     </Grid>
 </UserControl>

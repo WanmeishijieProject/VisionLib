@@ -18,6 +18,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 
+
+
 namespace JPT_TosaTest.ViewModel
 {
     public class SettingViewModel : ViewModelBase
@@ -25,6 +27,8 @@ namespace JPT_TosaTest.ViewModel
 
         private Dictionary<string, Tuple<HotKey, HotKey>> HotKeyDic = new Dictionary<string, Tuple<HotKey, HotKey>>();
         private string ProcessDataFilePath = FileHelper.GetCurFilePathString() + "Config\\";
+       
+
 
         public SettingViewModel()
         {
@@ -67,6 +71,12 @@ namespace JPT_TosaTest.ViewModel
             PaletteHelper paletteHelper =new PaletteHelper();
             paletteHelper.ReplacePrimaryColor(Swatches.Where(a=>a.Name== "blue").First());
 
+
+            //初始化Model
+            Messenger.Default.Send("", "UpdateModelFiles");
+            TiaColletion = new ObservableCollection<string>();
+            for (int i = 0; i < 20; i++)
+                TiaColletion.Add($"Tia_{i}");
         }
         
         #region Property
@@ -96,6 +106,32 @@ namespace JPT_TosaTest.ViewModel
                 }
             }
         }
+        public string TiaModelName
+        {
+            get { return ConfigMgr.Instance.ProcessData.TiaModelName; }
+            set
+            {
+                if (value != ConfigMgr.Instance.ProcessData.TiaModelName)
+                {
+                    ConfigMgr.Instance.ProcessData.TiaModelName = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+        public string HsgModelName
+        {
+            get { return ConfigMgr.Instance.ProcessData.HsgModelName; }
+            set
+            {
+                if (value != ConfigMgr.Instance.ProcessData.HsgModelName)
+                {
+                    ConfigMgr.Instance.ProcessData.HsgModelName = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+        public string TiaName { get; set; }
+        public ObservableCollection<string> TiaColletion { get; set; }
         #endregion
 
 
@@ -162,7 +198,7 @@ namespace JPT_TosaTest.ViewModel
                 {
                     it.Value.Item1.UnRegisterHotKey();
                     it.Value.Item2.UnRegisterHotKey();
-                    //HotKeyDic.Remove(it.Key);
+            
                 }
             }
         }

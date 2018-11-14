@@ -26,6 +26,25 @@ namespace JPT_TosaTest.ViewModel
 
     public class CamDebugViewModel : ViewModelBase
     {
+        private ObservableCollection<CameraItem> _cameraCollection = new ObservableCollection<CameraItem>();
+        private ObservableCollection<RoiItem> _roiCollection = new ObservableCollection<RoiItem>();
+        private ObservableCollection<ModelItem> _modelCollection = new ObservableCollection<ModelItem>();
+        private ObservableCollection<ModelItem> _allModelCollection = new ObservableCollection<ModelItem>();
+        private FileHelper ModelFileHelper = new FileHelper(FileHelper.GetCurFilePathString() + "VisionData\\Model");
+        private FileHelper RoiFileHelper = new FileHelper(FileHelper.GetCurFilePathString() + "VisionData\\Roi");
+        private int _maxThre = 0, _minThre = 0;
+        private EnumRoiModelType _currentSelectRoiModel;
+        private CancellationTokenSource cts = null;
+        private int _currentSelectedCamera = 0;
+        private bool _saveImageType = true;
+        private IEnumerable<RoiModelBase> _roiModelList = null;
+        private Task GrabTask = null;
+        public EnumCamSnapState _camSnapState;
+        private Storyboard RoiSb = null, TemplateSb = null;
+        private string DefaultImagePath = @"C:\";
+        private int _lightBrightness = 0;
+        private bool _openLightSource = false;
+        private ModelItem _curUsedModel;
         public enum EnumRoiModelType : int
         {
             ROI,
@@ -48,9 +67,9 @@ namespace JPT_TosaTest.ViewModel
             }
             #endregion
 
-            //ModelList
-            RoiModelList = RoiCollection;
-
+            //ModelList           
+            UpdateModelCollect(0);
+            RoiModelList = ModelCollection;
             Messenger.Default.Register<int>(this, "UpdateRoiFiles", nCamID => UpdateRoiCollect(nCamID));
             Messenger.Default.Register<int>(this, "UpdateModelFiles", nCamID => UpdateModelCollect(nCamID));
         }
@@ -62,24 +81,7 @@ namespace JPT_TosaTest.ViewModel
 
         }
 
-        private ObservableCollection<CameraItem> _cameraCollection = new ObservableCollection<CameraItem>();
-        private ObservableCollection<RoiItem> _roiCollection = new ObservableCollection<RoiItem>();
-        private ObservableCollection<ModelItem> _modelCollection = new ObservableCollection<ModelItem>();
-        private FileHelper ModelFileHelper = new FileHelper(FileHelper.GetCurFilePathString() + "VisionData\\Model");
-        private FileHelper RoiFileHelper = new FileHelper(FileHelper.GetCurFilePathString() + "VisionData\\Roi");
-        private int _maxThre = 0, _minThre = 0;
-        private EnumRoiModelType _currentSelectRoiModel;
-        private CancellationTokenSource cts = null;
-        private int _currentSelectedCamera = -1;
-        private bool _saveImageType = true;
-        private IEnumerable<RoiModelBase> _roiModelList = null;
-        private Task GrabTask = null;
-        public EnumCamSnapState _camSnapState;
-        private Storyboard RoiSb = null, TemplateSb=null;
-        private string DefaultImagePath = @"C:\";
-        private int _lightBrightness = 0;
-        private bool _openLightSource = false;
-        private ModelItem _curUsedModel;
+   
 
 
         #region Private method
@@ -92,8 +94,18 @@ namespace JPT_TosaTest.ViewModel
         private void UpdateModelCollect(int nCamID)
         {
             ModelCollection.Clear();
-            foreach (var it in Vision.VisionDataHelper.GetTemplateListForSpecCamera(nCamID, ModelFileHelper.GetWorkDictoryProfileList(new string[] { "shm" })))
+            AllModelCollection.Clear();
+            var FileList = ModelFileHelper.GetWorkDictoryProfileList(new string[] { "shm" });
+            foreach (var it in FileList)
+            {
+                AllModelCollection.Add(new ModelItem() { StrName = it, StrFullName = it });
+            }
+            foreach (var it in Vision.VisionDataHelper.GetTemplateListForSpecCamera(nCamID, FileList))
+            {
                 ModelCollection.Add(new ModelItem() { StrName = it.Replace(string.Format("Cam{0}_", nCamID), ""), StrFullName = it });
+            }
+            RaisePropertyChanged("ModelCollection");
+            RaisePropertyChanged("AllModelCollection");
         }
         private void ThreadFunc(int nCamID)
         {
@@ -138,6 +150,19 @@ namespace JPT_TosaTest.ViewModel
                 if (_modelCollection != value)
                 {
                     _modelCollection = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public ObservableCollection<ModelItem> AllModelCollection
+        {
+            get { return _allModelCollection; }
+            set
+            {
+                if (_allModelCollection != value)
+                {
+                    _allModelCollection = value;
                     RaisePropertyChanged();
                 }
             }
@@ -772,7 +797,6 @@ namespace JPT_TosaTest.ViewModel
                         string[] paraList = para.Split('|')[1].Split('&');
                         if (paraList.Count() == 5)
                         {
-
                             bool bRet = int.TryParse(paraList[0], out int CaliperNum);
                             bRet= int.TryParse(paraList[1], out int ExpectedPairNum);
                             bRet &= Enum.TryParse(paraList[2], out EnumPairType PairType);
@@ -794,38 +818,6 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
-       
-        public RelayCommand<string> UpdatePairResultCommand
-        {
-            get
-            {
-                return new RelayCommand<string>(para => {
-                    try
-                    {
-                        //找边缘对
-                        string[] paraList = para.Split('&');
-                        if (paraList.Count() == 5)
-                        {
-                            bool bRet = int.TryParse(paraList[0], out int CaliperNum);
-                            bRet = int.TryParse(paraList[1], out int ExpectedPairNum);
-                            bRet &= Enum.TryParse(paraList[2], out EnumPairType PairType);
-                            bRet &= Enum.TryParse(paraList[3], out EnumSelectType SelectType);
-                            bRet &= double.TryParse(paraList[4], out double fContrast);
-                            int Contrast = (int)Math.Round(fContrast);
-                            if (bRet)
-                            {
-                                if(!string.IsNullOrEmpty(HalconVision.Instance.PairRoiData))
-                                    HalconVision.Instance.Debug_FindPair(0, PairType, SelectType, ExpectedPairNum, Contrast, CaliperNum);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        UC_MessageBox.ShowMsgBox("Error", ex.Message, MsgType.Error);
-                    }
-                });
-            }
-        }
 
     }
     #endregion

@@ -355,10 +355,12 @@ namespace JPT_TosaTest.Config
             if (strPara.Contains("|"))
             {
                 string[] paraList = strPara.Split('|')[1].Split('&');
-                if (paraList.Count() == 2)
+                if (paraList.Count() == 4)
                 {
                     ProcessData.CenterLineOffset = int.Parse(paraList[0]);
                     ProcessData.PadOffset = int.Parse(paraList[1]);
+                    ProcessData.TiaModelName = paraList[2];
+                    ProcessData.HsgModelName = paraList[3];
                 }
             }
             #endregion
@@ -391,7 +393,7 @@ namespace JPT_TosaTest.Config
                     (objSaved as UserCfgManager).Users= listObj as UserModel[];
                     break;
                 case EnumConfigType.ProcessPara:
-                    File.WriteAllText(File_ProcessPara, $"ProcessPara|{ProcessData.CenterLineOffset}&{ProcessData.PadOffset}");
+                    File.WriteAllText(File_ProcessPara, $"ProcessPara|{ProcessData.CenterLineOffset}&{ProcessData.PadOffset}&{ProcessData.TiaModelName}&{ProcessData.HsgModelName}");
                     return;
                 default:
                     break;

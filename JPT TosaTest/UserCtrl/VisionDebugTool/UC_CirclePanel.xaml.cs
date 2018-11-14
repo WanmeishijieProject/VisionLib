@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,5 +25,18 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         {
             InitializeComponent();
         }
+        public ObservableCollection<string> ModelList
+        {
+            get
+            {
+                return GetValue(ModelListProperty) as ObservableCollection<string>;
+            }
+            set
+            {
+                SetValue(ModelListProperty, value);
+            }
+
+        }
+        public static readonly DependencyProperty ModelListProperty = DependencyProperty.Register("ModelList", typeof(ObservableCollection<string>), typeof(UC_CirclePanel));
     }
 }

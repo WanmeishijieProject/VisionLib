@@ -12,6 +12,10 @@ namespace JPT_TosaTest.Config.ProcessParaManager
     {
         private int _centerLineOffset = 2905;
         private int _padOffset=1000;
+        private string _tiaModelName = "";
+        private string _hsgModelName = "";
+        private string _tiaType = "";
+
 
         public int CenterLineOffset
         {
@@ -33,6 +37,45 @@ namespace JPT_TosaTest.Config.ProcessParaManager
                 if (value != _padOffset)
                 {
                     _padOffset = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public string TiaModelName
+        {
+            get { return _tiaModelName; }
+            set
+            {
+                if (value != _tiaModelName)
+                {
+                    _tiaModelName = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public string HsgModelName
+        {
+            get { return _hsgModelName; }
+            set
+            {
+                if (value != _hsgModelName)
+                {
+                    _hsgModelName = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public string TiaType
+        {
+            get { return _tiaType; }
+            set
+            {
+                if (value != _tiaType)
+                {
+                    _tiaType = value;
                     RaisePropertyChanged();
                 }
             }

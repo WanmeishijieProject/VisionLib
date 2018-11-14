@@ -115,7 +115,7 @@
                             </Grid>
                         </Button.Content>
                     </Button>
-                    <ComboBox Name="Cb_Cameras" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="1" Margin="5,12,5,12" ItemsSource="{Binding CameraCollection}" SelectedIndex="{Binding CurrentSelectedCamera, Mode=OneWayToSource}" 
+                    <ComboBox Name="Cb_Cameras" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="1" Margin="5,12,5,12" ItemsSource="{Binding CameraCollection}" SelectedIndex="{Binding CurrentSelectedCamera}" 
                           IsEnabled="{Binding CamSnapState,ConverterParameter=ComboBoxCameras,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}" SelectionChanged="Cb_Cameras_SelectionChanged">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="SelectionChanged">
@@ -349,8 +349,10 @@
                                 </ListView>
                                 <Rectangle Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Width="2" Fill="{StaticResource ThemColor}"/>
                                 <Grid Grid.Column="2">
-                                    <VisionTool:UC_LinePanel x:Name="LineTool" Visibility="{Binding SelectedIndex, ElementName=lvToolSet, Converter={StaticResource int2Visibility}, ConverterParameter=0}" />
-                                    <VisionTool:UC_PairPanel x:Name="PairTool" Visibility="{Binding SelectedIndex, ElementName=lvToolSet, Converter={StaticResource int2Visibility}, ConverterParameter=1}" />
+                                    <VisionTool:UC_LinePanel x:Name="LineTool" Visibility="{Binding SelectedIndex, ElementName=lvToolSet, Converter={StaticResource int2Visibility}, ConverterParameter=0}" 
+                                                             ModelList="{Binding CamDebugVM.ModelCollection, Source={StaticResource Locator}, Converter={StaticResource ModelCollect2StringCollect}}"/>
+                                    <VisionTool:UC_PairPanel x:Name="PairTool" Visibility="{Binding SelectedIndex, ElementName=lvToolSet, Converter={StaticResource int2Visibility}, ConverterParameter=1}" 
+                                                             ModelList="{Binding CamDebugVM.ModelCollection, Source={StaticResource Locator}, Converter={StaticResource ModelCollect2StringCollect}}"/>
                                 </Grid>
                             </Grid>
                         </TabItem>

@@ -16,7 +16,7 @@ namespace JPT_TosaTest.Vision.VisionTool
     public class LineTool : ToolBase, INotifyPropertyChanged
     {
         #region Private
-        private string _defaultPath = FileHelper.GetCurFilePathString() + @"VisionData\ToolData\LineToolData\";
+        private string _defaultPath = FileHelper.GetCurFilePathString() + @"VisionData\ToolData\";
         private int _caliperNumber = 30;
         private int _polarity = 0;  //light/dark, dark/light, all
         private int _selectType = 0;  //first，last, all
@@ -26,7 +26,7 @@ namespace JPT_TosaTest.Vision.VisionTool
         #region Public
         public override string ToString()
         {
-            return $"{GetType().Name}|{CaliperNumber}&{Polarity}&{SelectType}&{Contrast}";
+            return $"{GetType().Name}|{CaliperNumber}&{Polarity}&{SelectType}&{Contrast}&{ModelName}";
         }
 
         #endregion
@@ -68,7 +68,6 @@ namespace JPT_TosaTest.Vision.VisionTool
                     try
                     {
                         //找直线
-
                         EnumEdgeType EdgeType = (EnumEdgeType)this.Polarity;
                         EnumSelectType SelectType = (EnumSelectType)this.SelectType;
                         if (EdgeType != null && SelectType != null)
@@ -143,8 +142,13 @@ namespace JPT_TosaTest.Vision.VisionTool
                 }
             }
         }
+        public string ModelName
+        {
+            get;
+            set;
+        }
         #endregion
 
-
+        
     }
 }

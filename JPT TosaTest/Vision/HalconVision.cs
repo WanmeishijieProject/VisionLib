@@ -90,9 +90,14 @@ namespace JPT_TosaTest.Vision
         {
             T1, //Get model data 
             T2, //Get line bottom
+           
             T3,  //Get line top
+
             T4, //Display raw line
             T5,//Display line offset
+
+            T6, //找Tia
+
         }
         private List<HObject> HoImageList = new List<HObject>(10);    //Image
         private List<HTuple> AcqHandleList = new List<HTuple>(10);    //Aqu
@@ -293,6 +298,7 @@ namespace JPT_TosaTest.Vision
                         foreach (var it in HwindowDic[nCamID])
                             if (it.Value != -1)
                             {
+                                //HOperatorSet.SetPart(it.Value, height/2-500, width/2-500, height/2+500, width/2+500);
                                 HOperatorSet.SetPart(it.Value, 0, 0, height, width);
                                 HOperatorSet.DispObj(HoImageList[nCamID], it.Value);
                             }
@@ -447,7 +453,26 @@ namespace JPT_TosaTest.Vision
                             }
 
                             break;
-
+                        case IMAGEPROCESS_STEP.T6:
+                            {
+                                List<object> list = para as List<object>;
+                                List<Tuple<HTuple, HTuple, HTuple, HTuple>> TupleList = new List<Tuple<HTuple, HTuple, HTuple, HTuple>>();
+                                foreach (var it in list)
+                                {
+                                    object obj = it;
+                                    TupleList.Add(obj as Tuple<HTuple, HTuple, HTuple, HTuple>);
+                                }
+                                if (list != null)
+                                {
+                                    //显示直线的矩形框
+                                    DisplayLines(nCamID, TupleList);
+                                    if (TupleList.Count >= 1)
+                                    {
+                                        //FindTia(HoImageList[nCamID],)
+                                    }
+                                }
+                            }
+                            break;
                         default:
                             break;
                     }
@@ -836,6 +861,14 @@ namespace JPT_TosaTest.Vision
         }
 
         #region 专用
+        /// <summary>
+        /// 根据模板文件找出模板位置ModelPos，并输出hom_mat2D
+        /// </summary>
+        /// <param name="image">输入的图像</param>
+        /// <param name="ModelFileName">模板名称，根据名称读取模板原始位置方便生成矩阵</param>
+        /// <param name="hm_2D">生成的转换矩阵</param>
+        /// <param name="ModelPos">模板位置</param>
+        /// <returns></returns>
         private bool FindModelAndGetData(HObject image, string ModelFileName, out HTuple hm_2D, out HTuple ModelPos)
         {
             HOperatorSet.HomMat2dIdentity(out hm_2D);
@@ -850,6 +883,7 @@ namespace JPT_TosaTest.Vision
                 string[] strModelListIta = ModelFileName.Split('\\');
                 if (strModelListIta.Length < 2)
                     return false;
+
                 //读取模板与它的起始位置
                 HOperatorSet.ReadTuple($"{strModelListDot[0]}.tup", out HTuple hv_ModelPos);
                 HOperatorSet.ReadShapeModel($"{strModelListDot[0]}.shm", out HTuple hv_ModelID);
@@ -993,7 +1027,11 @@ namespace JPT_TosaTest.Vision
                 return false;
             }
         }
-
+        private bool FindTia(HObject image, List<string> LineParaList, HTuple hom_2D, HTuple ModelPos, out List<object> lineList)
+        {
+            lineList = new List<object>();
+            return true;
+        }
         private bool DisplayLines(int nCamID, List<Tuple<HTuple, HTuple, HTuple, HTuple>> lineList, string Color = "red")
         {
             try
@@ -1034,7 +1072,7 @@ namespace JPT_TosaTest.Vision
                 return true;
             }
         }
-
+       
         /// <summary>
         /// 设定相机的像素对应的实际尺寸
         /// </summary>
@@ -2080,10 +2118,13 @@ namespace JPT_TosaTest.Vision
         public static List<string> GetTemplateListForSpecCamera(int nCamID, List<string> fileListInDataDirection)
         {
             var list = new List<string>();
-            foreach (var it in fileListInDataDirection)
+            if (nCamID >= 0)
             {
-                if (it.Contains(string.Format("Cam{0}_", nCamID)))
-                    list.Add(it);
+                foreach (var it in fileListInDataDirection)
+                {
+                    if (it.Contains(string.Format("Cam{0}_", nCamID)))
+                        list.Add(it);
+                }
             }
             return list;
         }
