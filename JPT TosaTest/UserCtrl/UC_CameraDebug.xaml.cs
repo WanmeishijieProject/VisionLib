@@ -107,19 +107,19 @@ namespace JPT_TosaTest.UserCtrl
             (ListBoxRoiModel.DataContext as CamDebugViewModel).SelectUseRoiModelCommand.Execute(ListBoxRoiModel.SelectedItem);
         }
 
-        private void Debug_Click(object sender, RoutedEventArgs e)
+        private void BtnRunTool_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            (ListBoxRoiModel.DataContext as CamDebugViewModel).DebugFindLineCommand.Execute(LineTool.LinePara);
+            (ListBoxRoiModel.DataContext as CamDebugViewModel).DebugFindLineCommand.Execute(LineTool.Data);
         }
 
-        private void BtnRunLineTool_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        /// <summary>
+        /// EdgeTool选择项发生变化
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void lvToolSet_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            (ListBoxRoiModel.DataContext as CamDebugViewModel).DebugFindLineCommand.Execute(LineTool.LinePara);
-        }
 
-        private void BtnRunPairTool_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            (ListBoxRoiModel.DataContext as CamDebugViewModel).DebugFindPairCommand.Execute(PairTool.PairPara);
         }
     }
 }

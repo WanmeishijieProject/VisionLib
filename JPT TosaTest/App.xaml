@@ -37,6 +37,7 @@
             <Convert:Visibility2Enable x:Key="Visibility2Enable"/>
             <Convert:SystemState2Enable x:Key="SystemState2Enable"/>
             <Convert:ModelCollect2StringCollect x:Key="ModelCollect2StringCollect"/>
+            <Convert:EdgeTool2Image x:Key="EdgeTool2Image"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resource/MDStyle.xaml"/>
                 <ResourceDictionary Source="Resource/StylesResourceDictionary.xaml"/>

@@ -211,7 +211,6 @@
                                         <ContextMenu>
                                             <MenuItem Name="MenueShow" Header="{DynamicResource CameraPage_MenuShow}" FontSize="15" Click="MenueShow_Click"/>
                                             <MenuItem Name="MenueSelectItem" Header="{DynamicResource CameraPage_MenuUseItem}" FontSize="15" Click="MenueSelectItem_Click"/>
-                                            <MenuItem Name="Debug" Header="Debug" Click="Debug_Click"/>
                                         </ContextMenu>
                                     </ListBox.ContextMenu>
                                     <ListBox.ItemTemplate>
@@ -317,42 +316,41 @@
                                     <ColumnDefinition Width="5"/>
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
-                                <ListView Name="lvToolSet" Grid.Column="0" SelectedIndex="0">
-                                    <ListView.Items>
-                                        <ListViewItem>
+                                <ListView Name="lvToolSet" Grid.Column="0" SelectedIndex="0" ItemsSource="{Binding EdgeToolItemCollect}" SelectionChanged="lvToolSet_SelectionChanged">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="50"/>
                                                     <ColumnDefinition Width="80"/>
                                                     <ColumnDefinition Width="40"/>
                                                 </Grid.ColumnDefinitions>
-                                                <Image Source="/JPT TosaTest;component/Images/Line.png" Height="32" HorizontalAlignment="Left"/>
-                                                <TextBlock Grid.Column="1" Text="LineTool" VerticalAlignment="Center" FontSize="15"/>
-                                                <Image Name="BtnRunLineTool" Source="/JPT TosaTest;component/Images/start.png" Width="32" Grid.Column="2" Margin="5,0,5,0" Cursor="Hand" MouseLeftButtonDown="BtnRunLineTool_MouseLeftButtonDown"/>
+                                                <Image Source="{Binding ToolType, Converter={StaticResource EdgeTool2Image}}" Height="32" HorizontalAlignment="Left"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding ToolName}" VerticalAlignment="Center" FontSize="15"/>
+                                                <Image Name="BtnRunLineTool" Source="/JPT TosaTest;component/Images/start.png" Width="32" Grid.Column="2" Margin="5,0,5,0" Cursor="Hand" MouseLeftButtonDown="BtnRunTool_MouseLeftButtonDown"/>
                                             </Grid>
-                                        </ListViewItem>
-                                        
-                                        <ListViewItem>
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="50"/>
-                                                    <ColumnDefinition Width="80"/>
-                                                    <ColumnDefinition Width="40"/>
-                                                </Grid.ColumnDefinitions>
-                                                <Image Source="/JPT TosaTest;component/Images/Pair.png" Height="32" HorizontalAlignment="Left"/>
-                                                <TextBlock Grid.Column="1" Text="PairTool" VerticalAlignment="Center" FontSize="15"/>
-                                                <Image Name="BtnRunPairTool" Source="/JPT TosaTest;component/Images/start.png" Width="32" Grid.Column="2" Margin="5,0,5,0" Cursor="Hand" MouseLeftButtonDown="BtnRunPairTool_MouseLeftButtonDown"/>
-                                            </Grid>
-                                        </ListViewItem>
-                          
-                                    </ListView.Items>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
                                 </ListView>
                                 <Rectangle Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Width="2" Fill="{StaticResource ThemColor}"/>
                                 <Grid Grid.Column="2">
                                     <VisionTool:UC_LinePanel x:Name="LineTool" Visibility="{Binding SelectedIndex, ElementName=lvToolSet, Converter={StaticResource int2Visibility}, ConverterParameter=0}" 
-                                                             ModelList="{Binding CamDebugVM.ModelCollection, Source={StaticResource Locator}, Converter={StaticResource ModelCollect2StringCollect}}"/>
-                                    <VisionTool:UC_PairPanel x:Name="PairTool" Visibility="{Binding SelectedIndex, ElementName=lvToolSet, Converter={StaticResource int2Visibility}, ConverterParameter=1}" 
-                                                             ModelList="{Binding CamDebugVM.ModelCollection, Source={StaticResource Locator}, Converter={StaticResource ModelCollect2StringCollect}}"/>
+                                                             ModelList="{Binding ModelCollection,Converter={StaticResource ModelCollect2StringCollect}}"
+                                                             SaveParaCommand="{Binding SaveEdgeToolCommand}" SaveCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"
+                                                             UpdateParaCommand="{Binding UpdateEdgeToolCommand}" UpdateCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"/>
+                                    <VisionTool:UC_CirclePanel x:Name="CircleTool" Visibility="{Binding SelectedIndex, ElementName=lvToolSet, Converter={StaticResource int2Visibility}, ConverterParameter=1}" 
+                                                             ModelList="{Binding ModelCollection, Converter={StaticResource ModelCollect2StringCollect}}"
+                                                             SaveParaCommand="{Binding SaveEdgeToolCommand}" SaveCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"
+                                                             UpdateParaCommand="{Binding UpdateEdgeToolCommand}" UpdateCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"/>
+                                   
+                                    <VisionTool:UC_PairPanel x:Name="PairTool" Visibility="{Binding SelectedIndex, ElementName=lvToolSet, Converter={StaticResource int2Visibility}, ConverterParameter=2}" 
+                                                             ModelList="{Binding ModelCollection , Converter={StaticResource ModelCollect2StringCollect}}"
+                                                             SaveParaCommand="{Binding SaveEdgeToolCommand}" SaveCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"
+                                                             UpdateParaCommand="{Binding UpdateEdgeToolCommand}" UpdateCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"/>
+                                    <VisionTool:UC_FlagPanel x:Name="TagTool" Visibility="{Binding SelectedIndex, ElementName=lvToolSet, Converter={StaticResource int2Visibility}, ConverterParameter=3}" 
+                                                             LineList="{Binding EdgeFileCollect}"
+                                                             SaveParaCommand="{Binding SaveEdgeToolCommand}" SaveCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"
+                                                             UpdateParaCommand="{Binding UpdateEdgeToolCommand}" UpdateCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"/>
                                 </Grid>
                             </Grid>
                         </TabItem>

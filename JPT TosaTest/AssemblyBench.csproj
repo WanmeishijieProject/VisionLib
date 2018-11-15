@@ -176,6 +176,7 @@
     <Compile Include="Converter\Bool2LimitColor.cs" />
     <Compile Include="Converter\Bool2Visibility.cs" />
     <Compile Include="Converter\Double2Text.cs" />
+    <Compile Include="Converter\EdgeTool2Image.cs" />
     <Compile Include="Converter\EnumCamSnapState2SnapButtonEnable.cs" />
     <Compile Include="Converter\Int2BackgroundBrush.cs" />
     <Compile Include="Converter\Int2String.cs" />
@@ -205,6 +206,7 @@
     <Compile Include="Model\HotKeyModel.cs" />
     <Compile Include="Model\IDataService.cs" />
     <Compile Include="Model\IOModel.cs" />
+    <Compile Include="Model\LvEdgeToolItem.cs" />
     <Compile Include="Model\MessageItem.cs" />
     <Compile Include="Model\ProductStateModel.cs" />
     <Compile Include="Model\ResultItem.cs" />
@@ -267,6 +269,9 @@
     <Compile Include="UserCtrl\VisionDebugTool\UC_CirclePanel.xaml.cs">
       <DependentUpon>UC_CirclePanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserCtrl\VisionDebugTool\UC_FlagPanel.xaml.cs">
+      <DependentUpon>UC_FlagPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserCtrl\VisionDebugTool\UC_LinePanel.xaml.cs">
       <DependentUpon>UC_LinePanel.xaml</DependentUpon>
     </Compile>
@@ -289,10 +294,6 @@
     <Compile Include="Vision\Light\Light_JK_PWD6024.cs" />
     <Compile Include="Vision\Light\LigtMgr.cs" />
     <Compile Include="Vision\VisionDataOperateSet.cs" />
-    <Compile Include="Vision\VisionTool\CircleTool.cs" />
-    <Compile Include="Vision\VisionTool\LineTool.cs" />
-    <Compile Include="Vision\VisionTool\PairTool.cs" />
-    <Compile Include="Vision\VisionTool\ToolBase.cs" />
     <Compile Include="WorkFlow\WorkFlowData.cs" />
     <Compile Include="WorkFlow\WorkTemplate2.cs" />
     <Compile Include="WorkFlow\WorkTemplate1.cs" />
@@ -397,6 +398,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserCtrl\VisionDebugTool\UC_CirclePanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserCtrl\VisionDebugTool\UC_FlagPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -544,6 +549,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\UpdatePoint.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Draw.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

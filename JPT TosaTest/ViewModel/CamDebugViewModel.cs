@@ -3,6 +3,7 @@ using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
 using JPT_TosaTest.Classes;
 using JPT_TosaTest.Config;
+using JPT_TosaTest.Model;
 using JPT_TosaTest.Models;
 using JPT_TosaTest.UserCtrl;
 using JPT_TosaTest.UserCtrl.VisionDebugTool;
@@ -42,9 +43,13 @@ namespace JPT_TosaTest.ViewModel
         public EnumCamSnapState _camSnapState;
         private Storyboard RoiSb = null, TemplateSb = null;
         private string DefaultImagePath = @"C:\";
+        private string DefaultToolPath = FileHelper.GetCurFilePathString() + @"VisionData\ToolData\";
         private int _lightBrightness = 0;
         private bool _openLightSource = false;
         private ModelItem _curUsedModel;
+        
+
+
         public enum EnumRoiModelType : int
         {
             ROI,
@@ -72,7 +77,21 @@ namespace JPT_TosaTest.ViewModel
             RoiModelList = ModelCollection;
             Messenger.Default.Register<int>(this, "UpdateRoiFiles", nCamID => UpdateRoiCollect(nCamID));
             Messenger.Default.Register<int>(this, "UpdateModelFiles", nCamID => UpdateModelCollect(nCamID));
+
+            //初始化EdgeTool工具列表
+            EdgeToolItemCollect = new ObservableCollection<LvEdgeToolItem>();
+            EdgeToolItemCollect.Add(new LvEdgeToolItem() { ToolType=EnumToolType.LineTool, ToolName="LineTool"});
+            EdgeToolItemCollect.Add(new LvEdgeToolItem() { ToolType = EnumToolType.CircleTool, ToolName = "CircleTool" });
+            EdgeToolItemCollect.Add(new LvEdgeToolItem() { ToolType = EnumToolType.PairTool, ToolName = "PairTool" });
+            EdgeToolItemCollect.Add(new LvEdgeToolItem() { ToolType = EnumToolType.FlagTool, ToolName = "FlagTool" });
+
+            //初始化ToolFile
+            EdgeFileCollect = new ObservableCollection<string>();
+            UpdateToolFileCollect();
+
         }
+
+
         ~CamDebugViewModel()
         {
             HalconVision.Instance.CloseCamera();
@@ -125,6 +144,26 @@ namespace JPT_TosaTest.ViewModel
         private void RoiSb_Completed(object sender, EventArgs e)
         {
             RoiModelList = RoiCollection;
+        }
+        private void UpdateToolFileCollect()
+        {
+            
+            List<string> fileList= FileHelper.GetProfileList(DefaultToolPath);
+            foreach (var file in fileList)
+            {
+                string strContent = File.ReadAllText(DefaultToolPath+file+".para");
+                string[] list= strContent.Split('|');
+                if (list.Count() >= 2)
+                {
+                    if (Enum.TryParse(list[0], out EnumToolType ToolType))
+                    {
+                        if (ToolType == EnumToolType.LineTool && !EdgeFileCollect.Contains(file))
+                        {
+                            EdgeFileCollect.Add(file);
+                        }
+                    }
+                }
+            }           
         }
         #endregion
 
@@ -340,6 +379,18 @@ namespace JPT_TosaTest.ViewModel
                 }
             }
             get { return _curUsedModel; }
+        }
+
+        public ObservableCollection<LvEdgeToolItem> EdgeToolItemCollect
+        { get; set; }
+
+        /// <summary>
+        /// 为手绘工具做准备
+        /// </summary>
+        public ObservableCollection<string> EdgeFileCollect
+        {
+            get;
+            set;
         }
         #endregion
 
@@ -764,7 +815,7 @@ namespace JPT_TosaTest.ViewModel
                     //找直线
                   
                     string[] paraList = para.Split('|')[1].Split('&');
-                    if (paraList.Count() == 4)
+                    if (paraList.Count() == 5)
                     {
 
                         bool bRet = int.TryParse(paraList[0],out int CaliperNum);
@@ -795,7 +846,7 @@ namespace JPT_TosaTest.ViewModel
                     {
                         //找直线
                         string[] paraList = para.Split('|')[1].Split('&');
-                        if (paraList.Count() == 5)
+                        if (paraList.Count() == 6)
                         {
                             bool bRet = int.TryParse(paraList[0], out int CaliperNum);
                             bRet= int.TryParse(paraList[1], out int ExpectedPairNum);
@@ -818,6 +869,126 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
+        public RelayCommand<string> SaveEdgeToolCommand
+        {
+            get
+            {
+                return new RelayCommand<string>(para => {
+                    try
+                    {
+                        string[] list = para.Split('|');
+                        Enum.TryParse(list[0], out EnumToolType ToolType);
+                        SaveFileDialog sfd = new SaveFileDialog();
+                        sfd.Filter = "文本文件(*.para)|*.para|所有文件|*.*";//设置文件类型
+                        sfd.FileName = "LinePara";//设置默认文件名
+                        sfd.DefaultExt = "para";//设置默认格式（可以不设）
+                        sfd.AddExtension = true;//设置自动在文件名中添加扩展名
+                        sfd.RestoreDirectory = true;
+                        sfd.InitialDirectory = DefaultToolPath;
+
+                        string HalconData = "";
+                        switch (ToolType)
+                        {
+                            case EnumToolType.CircleTool:
+                                throw new Exception("没有实现");
+                            case EnumToolType.FlagTool:
+                                HalconData = HalconVision.Instance.GeometryPosString;
+                                break;
+                            case EnumToolType.LineTool:
+                                HalconData = HalconVision.Instance.LineRoiData;
+
+                                break;
+                            case EnumToolType.PairTool:
+                                HalconData = HalconVision.Instance.PairRoiData;
+                                break;
+                            default:
+                                break;
+                        }
+
+                        if (sfd.ShowDialog() == DialogResult.OK)
+                        {
+                            string strPara = $"{para}|{HalconData}";
+                            File.WriteAllText(sfd.FileName, strPara);
+                            if (ToolType == EnumToolType.LineTool)
+                            {
+                                UpdateToolFileCollect();
+                            }
+                            else
+                            {
+                                //Do nothing
+                            }
+                        }
+                        else
+                        {
+                            //Do Nothing
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UC_MessageBox.ShowMsgBox("Error", ex.Message, MsgType.Error);
+                    }
+                });
+            }
+        }
+        public RelayCommand<string> UpdateEdgeToolCommand
+        {
+            get
+            {
+                return new RelayCommand<string>(para => {
+                    try
+                    {
+                        //找直线
+                        string[] list= para.Split('|');
+                        string[] paras = list[1].Split('&');
+                        Enum.TryParse(list[0], out EnumToolType ToolType);
+                        switch (ToolType)
+                        {
+                            case EnumToolType.LineTool:
+                                {
+                                    int.TryParse(paras[0], out int CaliperNumber);
+                                    Enum.TryParse(paras[1], out EnumEdgeType Polarity);
+                                    Enum.TryParse(paras[2], out EnumSelectType SelectType);
+                                    int.TryParse(paras[3], out int Contrast);    
+                                    if (!string.IsNullOrEmpty(HalconVision.Instance.LineRoiData))
+                                        HalconVision.Instance.Debug_FindLine(0, Polarity, SelectType,Contrast, CaliperNumber);
+                                }
+                                break;
+                            case EnumToolType.CircleTool:
+                                break;
+                            case EnumToolType.PairTool:
+                                {
+                                    int.TryParse(paras[0], out int CaliperNumber);
+                                    int.TryParse(paras[1], out int ExpectedPairNum);
+                                    Enum.TryParse(paras[2], out EnumPairType PairType);
+                                    Enum.TryParse(paras[3], out EnumSelectType SelectType);
+                                    int.TryParse(paras[4], out int Contrast);
+                                    if (!string.IsNullOrEmpty(HalconVision.Instance.PairRoiData))
+                                        HalconVision.Instance.Debug_FindPair(0, PairType, SelectType, ExpectedPairNum, Contrast, CaliperNumber);
+                                }
+                                break;
+                            case EnumToolType.FlagTool:
+                                {
+
+
+                                }
+                                break;
+                        }
+
+
+
+
+                      
+
+                    }
+                    catch (Exception ex)
+                    {
+                        UC_MessageBox.ShowMsgBox("Error", ex.Message, MsgType.Error);
+                    }
+
+                });
+            }
+        }
+        
 
     }
     #endregion

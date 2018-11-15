@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GalaSoft.MvvmLight.Command;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -38,5 +39,71 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
 
         }
         public static readonly DependencyProperty ModelListProperty = DependencyProperty.Register("ModelList", typeof(ObservableCollection<string>), typeof(UC_CirclePanel));
+
+
+        public RelayCommand<string> SaveParaCommand
+        {
+            get
+            {
+                return GetValue(SaveParaCommandProperty) as RelayCommand<string>;
+            }
+            set
+            {
+                SetValue(SaveParaCommandProperty, value);
+            }
+
+        }
+        public static readonly DependencyProperty SaveParaCommandProperty = DependencyProperty.Register("SaveParaCommand", typeof(RelayCommand<string>), typeof(UC_CirclePanel));
+
+        public object SaveCommandParameter
+        {
+            get
+            {
+                return GetValue(SaveCommandParameterProperty);
+            }
+            set
+            {
+                SetValue(SaveCommandParameterProperty, value);
+            }
+
+        }
+        public static readonly DependencyProperty SaveCommandParameterProperty = DependencyProperty.Register("SaveCommandParameter", typeof(object), typeof(UC_CirclePanel));
+
+        public RelayCommand<string> UpdateParaCommand
+        {
+            get
+            {
+                return GetValue(UpdateParaCommandProperty) as RelayCommand<string>;
+            }
+            set
+            {
+                SetValue(UpdateParaCommandProperty, value);
+            }
+
+        }
+        public static readonly DependencyProperty UpdateParaCommandProperty = DependencyProperty.Register("UpdateParaCommand", typeof(RelayCommand<string>), typeof(UC_CirclePanel));
+
+        public object UpdateCommandParameter
+        {
+            get
+            {
+                return GetValue(UpdateCommandParameterProperty) as object;
+            }
+            set
+            {
+                SetValue(UpdateCommandParameterProperty, value);
+            }
+
+        }
+        public static readonly DependencyProperty UpdateCommandParameterProperty = DependencyProperty.Register("UpdateCommandParameter", typeof(object), typeof(UC_CirclePanel));
+
+
+        public string Data { get; set; }
+
+        private void ExcuteUpdateCommand()
+        {
+            if (UpdateParaCommand != null)
+                UpdateParaCommand.Execute(UpdateCommandParameter);
+        }
     }
 }
