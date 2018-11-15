@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,7 +22,7 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
     /// <summary>
     /// UC_CirclePanel.xaml 的交互逻辑
     /// </summary>
-    public partial class UC_CirclePanel : UserControl
+    public partial class UC_CirclePanel : UserControl , INotifyPropertyChanged
     {
         public UC_CirclePanel()
         {
@@ -103,7 +105,17 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         private void ExcuteUpdateCommand()
         {
             if (UpdateParaCommand != null)
+            {
+                RaisePropertyChanged("Data");
                 UpdateParaCommand.Execute(UpdateCommandParameter);
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void RaisePropertyChanged([CallerMemberName]string PropertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(PropertyName));
         }
     }
 }

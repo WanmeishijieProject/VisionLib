@@ -4,8 +4,10 @@ using JPT_TosaTest.Vision;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,7 +25,7 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
     /// <summary>
     /// UC_LinePanel.xaml 的交互逻辑
     /// </summary>
-    public partial class UC_LinePanel : UserControl
+    public partial class UC_LinePanel : UserControl, INotifyPropertyChanged
     {
        
         public UC_LinePanel()
@@ -115,7 +117,7 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
             }
 
         }
-        public static readonly DependencyProperty UpdateCommandParameterProperty = DependencyProperty.Register("UpdateCommandParameter", typeof(object), typeof(UC_LinePanel));
+       
 
 
         //#region Command
@@ -187,8 +189,19 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         private void ExcuteUpdateCommand()
         {
             if (UpdateParaCommand != null)
+            {
+                RaisePropertyChanged("Data");
                 UpdateParaCommand.Execute(UpdateCommandParameter);
+            }
         }
-       
+
+        public static readonly DependencyProperty UpdateCommandParameterProperty = DependencyProperty.Register("UpdateCommandParameter", typeof(object), typeof(UC_LinePanel));
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void RaisePropertyChanged([CallerMemberName]string PropertyName = "")
+        {
+            PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(PropertyName));
+        }
     }
 }
