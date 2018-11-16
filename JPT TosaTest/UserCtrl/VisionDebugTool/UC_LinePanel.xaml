@@ -30,7 +30,8 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="Line极性" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
-            <ComboBox Name="CbPolarity" Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" FontSize="20" Margin="5" SelectionChanged="CbPolarity_SelectionChanged">
+            <ComboBox Name="CbPolarity" Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" FontSize="20" Margin="5" 
+                      SelectionChanged="CbPolarity_SelectionChanged">
                 <ComboBoxItem>
                     <TextBlock Text="DarkToLight"/>
                 </ComboBoxItem>

@@ -1,5 +1,7 @@
 ﻿using GalaSoft.MvvmLight.Command;
 using JPT_TosaTest.Classes;
+using JPT_TosaTest.Model.ToolData;
+using JPT_TosaTest.Vision;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -27,6 +29,7 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
 
     public partial class UC_PairPanel : UserControl, INotifyPropertyChanged
     {
+        private PairToolData ToolData = new PairToolData();
         public UC_PairPanel()
         {
             InitializeComponent();
@@ -71,11 +74,11 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         }
         public static readonly DependencyProperty ModelListProperty = DependencyProperty.Register("ModelList", typeof(ObservableCollection<string>), typeof(UC_PairPanel));
 
-        public RelayCommand<string> SaveParaCommand
+        public RelayCommand<ToolDataBase> SaveParaCommand
         {
             get
             {
-                return GetValue(SaveParaCommandProperty) as RelayCommand<string>;
+                return GetValue(SaveParaCommandProperty) as RelayCommand<ToolDataBase>;
             }
             set
             {
@@ -83,7 +86,19 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
             }
 
         }
-        public static readonly DependencyProperty SaveParaCommandProperty = DependencyProperty.Register("SaveParaCommand", typeof(RelayCommand<string>), typeof(UC_PairPanel));
+       
+        public RelayCommand<ToolDataBase> UpdateParaCommand
+        {
+            get
+            {
+                return GetValue(UpdateParaCommandProperty) as RelayCommand<ToolDataBase>;
+            }
+            set
+            {
+                SetValue(UpdateParaCommandProperty, value);
+            }
+
+        }
 
         public object SaveCommandParameter
         {
@@ -97,22 +112,6 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
             }
 
         }
-        public static readonly DependencyProperty SaveCommandParameterProperty = DependencyProperty.Register("SaveCommandParameter", typeof(object), typeof(UC_PairPanel));
-
-        public RelayCommand<string> UpdateParaCommand
-        {
-            get
-            {
-                return GetValue(UpdateParaCommandProperty) as RelayCommand<string>;
-            }
-            set
-            {
-                SetValue(UpdateParaCommandProperty, value);
-            }
-
-        }
-        public static readonly DependencyProperty UpdateParaCommandProperty = DependencyProperty.Register("UpdateParaCommand", typeof(RelayCommand<string>), typeof(UC_PairPanel));
-
         public object UpdateCommandParameter
         {
             get
@@ -125,23 +124,32 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
             }
 
         }
+
+        public static readonly DependencyProperty SaveParaCommandProperty = DependencyProperty.Register("SaveParaCommand", typeof(RelayCommand<ToolDataBase>), typeof(UC_PairPanel));
+
+        public static readonly DependencyProperty UpdateParaCommandProperty = DependencyProperty.Register("UpdateParaCommand", typeof(RelayCommand<ToolDataBase>), typeof(UC_PairPanel));
+        
+        public static readonly DependencyProperty SaveCommandParameterProperty = DependencyProperty.Register("SaveCommandParameter", typeof(object), typeof(UC_PairPanel));
+   
         public static readonly DependencyProperty UpdateCommandParameterProperty = DependencyProperty.Register("UpdateCommandParameter", typeof(object), typeof(UC_PairPanel));
 
 
-        public string Data
+        public PairToolData Data
         {
-            get { return $"PairTool|{TbCaliberNum.Text}&{TbPairNum.Text}&{CbPolarity.Text}&{CbSelectType.Text}&{(int)SliderContrast.Value}&{cbModelName.Text}"; }
+            get { return ToolData; }
         }
 
         private void BtnSavePara_Click(object sender, RoutedEventArgs e)
         {
-            SaveParaCommand.Execute(SaveCommandParameter);
+            UpdatePairToolData();
+            if (SaveParaCommand!=null)
+                SaveParaCommand.Execute(SaveCommandParameter);
         }
         private void ExcuteUpdateCommand()
         {
             if (UpdateParaCommand != null)
             {
-                RaisePropertyChanged("Data");
+                UpdatePairToolData();
                 UpdateParaCommand.Execute(UpdateCommandParameter);
             }
         }
@@ -151,6 +159,19 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         private void RaisePropertyChanged([CallerMemberName]string PropertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(PropertyName));
+        }
+        private void UpdatePairToolData()
+        {
+            if (int.TryParse(TbCaliberNum.Text, out int CaliperNum))
+                ToolData.CaliperNum = CaliperNum;
+            if (Enum.TryParse(CbSelectType.Text, out EnumPairType Polarity))
+                ToolData.Polarity = Polarity;
+            if (Enum.TryParse(CbSelectType.Text, out EnumSelectType SelectType))
+                ToolData.SelectType = SelectType;
+            if (int.TryParse(TbPairNum.Text, out int ExpectPairNum))
+                ToolData.ExpectPairNum = ExpectPairNum;
+            ToolData.Contrast = (int)SliderContrast.Value;
+            ToolData.ModelName = cbModelName.Text;
         }
     }
 }

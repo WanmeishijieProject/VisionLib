@@ -1,4 +1,5 @@
 ﻿using GalaSoft.MvvmLight.Command;
+using JPT_TosaTest.Model.ToolData;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -43,11 +44,11 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         public static readonly DependencyProperty ModelListProperty = DependencyProperty.Register("ModelList", typeof(ObservableCollection<string>), typeof(UC_CirclePanel));
 
 
-        public RelayCommand<string> SaveParaCommand
+        public RelayCommand<ToolDataBase> SaveParaCommand
         {
             get
             {
-                return GetValue(SaveParaCommandProperty) as RelayCommand<string>;
+                return GetValue(SaveParaCommandProperty) as RelayCommand<ToolDataBase>;
             }
             set
             {
@@ -55,7 +56,7 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
             }
 
         }
-        public static readonly DependencyProperty SaveParaCommandProperty = DependencyProperty.Register("SaveParaCommand", typeof(RelayCommand<string>), typeof(UC_CirclePanel));
+        public static readonly DependencyProperty SaveParaCommandProperty = DependencyProperty.Register("SaveParaCommand", typeof(RelayCommand<ToolDataBase>), typeof(UC_CirclePanel));
 
         public object SaveCommandParameter
         {
@@ -71,11 +72,11 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         }
         public static readonly DependencyProperty SaveCommandParameterProperty = DependencyProperty.Register("SaveCommandParameter", typeof(object), typeof(UC_CirclePanel));
 
-        public RelayCommand<string> UpdateParaCommand
+        public RelayCommand<ToolDataBase> UpdateParaCommand
         {
             get
             {
-                return GetValue(UpdateParaCommandProperty) as RelayCommand<string>;
+                return GetValue(UpdateParaCommandProperty) as RelayCommand<ToolDataBase>;
             }
             set
             {
@@ -83,7 +84,7 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
             }
 
         }
-        public static readonly DependencyProperty UpdateParaCommandProperty = DependencyProperty.Register("UpdateParaCommand", typeof(RelayCommand<string>), typeof(UC_CirclePanel));
+        public static readonly DependencyProperty UpdateParaCommandProperty = DependencyProperty.Register("UpdateParaCommand", typeof(RelayCommand<ToolDataBase>), typeof(UC_CirclePanel));
 
         public object UpdateCommandParameter
         {
@@ -100,7 +101,7 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         public static readonly DependencyProperty UpdateCommandParameterProperty = DependencyProperty.Register("UpdateCommandParameter", typeof(object), typeof(UC_CirclePanel));
 
 
-        public string Data { get; set; }
+        public CircleToolData Data { get;}
 
         private void ExcuteUpdateCommand()
         {

@@ -27,16 +27,19 @@
             <ComboBox Name="CbFlagType" Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" HorizontalAlignment="Left" 
                       MinWidth="150" FontSize="20" Margin="5">
                 <ComboBoxItem>
-                    <TextBlock Text="点"/>
+                    <TextBlock Text="POINT"/>
                 </ComboBoxItem>
                 <ComboBoxItem>
-                    <TextBlock Text="线"/>
+                    <TextBlock Text="LINE"/>
                 </ComboBoxItem>
                 <ComboBoxItem>
-                    <TextBlock Text="圆"/>
+                    <TextBlock Text="CIRCLE"/>
                 </ComboBoxItem>
                 <ComboBoxItem>
-                    <TextBlock Text="矩形"/>
+                    <TextBlock Text="RECTANGLE1"/>
+                </ComboBoxItem>
+                <ComboBoxItem>
+                    <TextBlock Text="RECTANGLE2"/>
                 </ComboBoxItem>
             </ComboBox>
         </Grid>

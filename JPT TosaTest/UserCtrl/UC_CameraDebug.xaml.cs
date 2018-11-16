@@ -1,4 +1,6 @@
-﻿using JPT_TosaTest.ViewModel;
+﻿using JPT_TosaTest.Model;
+using JPT_TosaTest.Model.ToolData;
+using JPT_TosaTest.ViewModel;
 using JPT_TosaTest.Vision;
 using System;
 using System.Collections.Generic;
@@ -109,7 +111,26 @@ namespace JPT_TosaTest.UserCtrl
 
         private void BtnRunTool_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            (ListBoxRoiModel.DataContext as CamDebugViewModel).DebugFindLineCommand.Execute(LineTool.Data);
+            LvEdgeToolItem model = lvToolSet.SelectedItem as LvEdgeToolItem;
+            ToolDataBase Data = null;
+            switch (model.ToolType)
+            {
+                case EnumToolType.CircleTool:
+                    Data = CircleTool.Data;
+                    break;
+                case EnumToolType.LineTool:
+                    Data = LineTool.Data;
+                    break;
+                case EnumToolType.PairTool:
+                    Data = PairTool.Data;
+                    break;
+                case EnumToolType.FlagTool:
+                    Data = TagTool.Data;
+                    break;
+                default:
+                    break;
+            }
+            (ListBoxRoiModel.DataContext as CamDebugViewModel).DebugRunToolCommand.Execute(Data);
         }
 
         /// <summary>

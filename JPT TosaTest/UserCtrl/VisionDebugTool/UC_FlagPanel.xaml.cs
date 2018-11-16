@@ -1,4 +1,6 @@
 ﻿using GalaSoft.MvvmLight.Command;
+using JPT_TosaTest.Model.ToolData;
+using JPT_TosaTest.Vision;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -24,6 +26,7 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
     /// </summary>
     public partial class UC_FlagPanel : UserControl , INotifyPropertyChanged
     {
+        private TagToolData ToolData = new TagToolData();
         public UC_FlagPanel()
         {
             InitializeComponent();
@@ -42,11 +45,11 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         }
         public static readonly DependencyProperty LineListProperty = DependencyProperty.Register("LineList", typeof(ObservableCollection<string>), typeof(UC_FlagPanel));
 
-        public RelayCommand<string> SaveParaCommand
+        public RelayCommand<ToolDataBase> SaveParaCommand
         {
             get
             {
-                return GetValue(SaveParaCommandProperty) as RelayCommand<string>;
+                return GetValue(SaveParaCommandProperty) as RelayCommand<ToolDataBase>;
             }
             set
             {
@@ -54,7 +57,7 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
             }
 
         }
-        public static readonly DependencyProperty SaveParaCommandProperty = DependencyProperty.Register("SaveParaCommand", typeof(RelayCommand<string>), typeof(UC_FlagPanel));
+        public static readonly DependencyProperty SaveParaCommandProperty = DependencyProperty.Register("SaveParaCommand", typeof(RelayCommand<ToolDataBase>), typeof(UC_FlagPanel));
 
         public object SaveCommandParameter
         {
@@ -70,11 +73,11 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         }
         public static readonly DependencyProperty SaveCommandParameterProperty = DependencyProperty.Register("SaveCommandParameter", typeof(object), typeof(UC_FlagPanel));
 
-        public RelayCommand<string> UpdateParaCommand
+        public RelayCommand<ToolDataBase> UpdateParaCommand
         {
             get
             {
-                return GetValue(UpdateParaCommandProperty) as RelayCommand<string>;
+                return GetValue(UpdateParaCommandProperty) as RelayCommand<ToolDataBase>;
             }
             set
             {
@@ -82,7 +85,7 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
             }
 
         }
-        public static readonly DependencyProperty UpdateParaCommandProperty = DependencyProperty.Register("UpdateParaCommand", typeof(RelayCommand<string>), typeof(UC_FlagPanel));
+        public static readonly DependencyProperty UpdateParaCommandProperty = DependencyProperty.Register("UpdateParaCommand", typeof(RelayCommand<ToolDataBase>), typeof(UC_FlagPanel));
 
         public object UpdateCommandParameter
         {
@@ -100,21 +103,23 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
 
 
 
-        public string Data
+        public TagToolData Data
         {
-            get { return $"FlagTool|{CbFlagType.Text}&{cbLine1.Text}&{cbLine2.Text}"; }
+            get { return ToolData; }
+            
         }
 
         private void BtnSavePara_Click(object sender, RoutedEventArgs e)
         {
-            if(SaveParaCommand!=null)
+            UpdateToolData();
+            if (SaveParaCommand!=null)
                 SaveParaCommand.Execute(SaveCommandParameter);
         }
         private void ExcuteUpdateCommand()
         {
             if (UpdateParaCommand != null)
             {
-                RaisePropertyChanged("Data");
+                UpdateToolData();
                 UpdateParaCommand.Execute(UpdateCommandParameter);
             }
         }
@@ -124,6 +129,13 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         private void RaisePropertyChanged([CallerMemberName]string PropertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(PropertyName));
+        }
+        private void UpdateToolData()
+        {
+            if (Enum.TryParse(CbFlagType.Text, out EnumGeometryType GeometryType))
+                ToolData.GeometryType = GeometryType;
+            ToolData.L1Name = cbLine1.Text;
+            ToolData.L2Name = cbLine2.Text;
         }
     }
 }

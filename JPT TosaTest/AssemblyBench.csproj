@@ -214,6 +214,11 @@
     <Compile Include="Model\ModelItem.cs" />
     <Compile Include="Model\RoiModelBase.cs" />
     <Compile Include="Config\HardwareManager\AxisSetting.cs" />
+    <Compile Include="Model\ToolData\CircleToolData.cs" />
+    <Compile Include="Model\ToolData\LineToolData.cs" />
+    <Compile Include="Model\ToolData\PairToolData.cs" />
+    <Compile Include="Model\ToolData\TagToolData.cs" />
+    <Compile Include="Model\ToolData\ToolDataBase.cs" />
     <Compile Include="MotionCards\IMotion.cs" />
     <Compile Include="MotionCards\MotionMgr.cs" />
     <Compile Include="MotionCards\Motion_IrixiEE0017.cs" />

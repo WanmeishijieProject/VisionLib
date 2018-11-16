@@ -338,6 +338,7 @@
                                                              ModelList="{Binding ModelCollection,Converter={StaticResource ModelCollect2StringCollect}}"
                                                              SaveParaCommand="{Binding SaveEdgeToolCommand}" SaveCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"
                                                              UpdateParaCommand="{Binding UpdateEdgeToolCommand}" UpdateCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"/>
+                                    
                                     <VisionTool:UC_CirclePanel x:Name="CircleTool" Visibility="{Binding SelectedIndex, ElementName=lvToolSet, Converter={StaticResource int2Visibility}, ConverterParameter=1}" 
                                                              ModelList="{Binding ModelCollection, Converter={StaticResource ModelCollect2StringCollect}}"
                                                              SaveParaCommand="{Binding SaveEdgeToolCommand}" SaveCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"
@@ -347,10 +348,12 @@
                                                              ModelList="{Binding ModelCollection , Converter={StaticResource ModelCollect2StringCollect}}"
                                                              SaveParaCommand="{Binding SaveEdgeToolCommand}" SaveCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"
                                                              UpdateParaCommand="{Binding UpdateEdgeToolCommand}" UpdateCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"/>
+                                    
                                     <VisionTool:UC_FlagPanel x:Name="TagTool" Visibility="{Binding SelectedIndex, ElementName=lvToolSet, Converter={StaticResource int2Visibility}, ConverterParameter=3}" 
                                                              LineList="{Binding EdgeFileCollect}"
                                                              SaveParaCommand="{Binding SaveEdgeToolCommand}" SaveCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"
-                                                             UpdateParaCommand="{Binding UpdateEdgeToolCommand}" UpdateCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"/>
+                                                             UpdateParaCommand="{Binding UpdateEdgeToolCommand}" UpdateCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"
+                                                             />
                                 </Grid>
                             </Grid>
                         </TabItem>

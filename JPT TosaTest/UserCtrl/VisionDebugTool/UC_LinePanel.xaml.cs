@@ -1,5 +1,6 @@
 ﻿using GalaSoft.MvvmLight.Command;
 using JPT_TosaTest.Classes;
+using JPT_TosaTest.Model.ToolData;
 using JPT_TosaTest.Vision;
 using System;
 using System.Collections.Generic;
@@ -27,7 +28,7 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
     /// </summary>
     public partial class UC_LinePanel : UserControl, INotifyPropertyChanged
     {
-       
+        private LineToolData ToolData = new LineToolData();
         public UC_LinePanel()
         {
             InitializeComponent();
@@ -63,11 +64,11 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         public static readonly DependencyProperty ModelListProperty = DependencyProperty.Register("ModelList", typeof(ObservableCollection<string>), typeof(UC_LinePanel));
 
        
-        public RelayCommand<string> SaveParaCommand
+        public RelayCommand<ToolDataBase> SaveParaCommand
         {
             get
             {
-                return GetValue(SaveParaCommandProperty) as RelayCommand<string>;
+                return GetValue(SaveParaCommandProperty) as RelayCommand<ToolDataBase>;
             }
             set
             {
@@ -75,7 +76,7 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
             }
 
         }
-        public static readonly DependencyProperty SaveParaCommandProperty = DependencyProperty.Register("SaveParaCommand", typeof(RelayCommand<string>), typeof(UC_LinePanel));
+        public static readonly DependencyProperty SaveParaCommandProperty = DependencyProperty.Register("SaveParaCommand", typeof(RelayCommand<ToolDataBase>), typeof(UC_LinePanel));
 
         public object SaveCommandParameter
         {
@@ -91,11 +92,11 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         }
         public static readonly DependencyProperty SaveCommandParameterProperty = DependencyProperty.Register("SaveCommandParameter", typeof(object), typeof(UC_LinePanel));
 
-        public RelayCommand<string> UpdateParaCommand
+        public RelayCommand<ToolDataBase> UpdateParaCommand
         {
             get
             {
-                return GetValue(UpdateParaCommandProperty) as RelayCommand<string>;
+                return GetValue(UpdateParaCommandProperty) as RelayCommand<ToolDataBase>;
             }
             set
             {
@@ -103,7 +104,7 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
             }
 
         }
-        public static readonly DependencyProperty UpdateParaCommandProperty = DependencyProperty.Register("UpdateParaCommand", typeof(RelayCommand<string>), typeof(UC_LinePanel));
+        public static readonly DependencyProperty UpdateParaCommandProperty = DependencyProperty.Register("UpdateParaCommand", typeof(RelayCommand<ToolDataBase>), typeof(UC_LinePanel));
 
         public object UpdateCommandParameter
         {
@@ -176,21 +177,24 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         //}
         //#endregion
 
-        public string Data
+        public LineToolData Data
         {
-            get { return $"LineTool|{TbCaliberNum.Text}&{CbPolarity.Text}&{CbSelectType.Text}&{(int)SliderContrast.Value}&{cbModelName.Text}"; }
+            get { return ToolData; }
         }
+
+      
 
         private void BtnSavePara_Click(object sender, RoutedEventArgs e)
         {
-            if(SaveParaCommand!=null)
+            UpdateLineToolData();
+            if (SaveParaCommand!=null)
                 SaveParaCommand.Execute(SaveCommandParameter);
         }
         private void ExcuteUpdateCommand()
         {
             if (UpdateParaCommand != null)
             {
-                RaisePropertyChanged("Data");
+                UpdateLineToolData();
                 UpdateParaCommand.Execute(UpdateCommandParameter);
             }
         }
@@ -202,6 +206,20 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         private void RaisePropertyChanged([CallerMemberName]string PropertyName = "")
         {
             PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(PropertyName));
+        }
+
+        private void UpdateLineToolData()
+        {
+            if (int.TryParse(TbCaliberNum.Text, out int CaliperNum))
+                ToolData.CaliperNum = CaliperNum;
+            if (Enum.TryParse(CbSelectType.Text, out EnumEdgeType Polarity))
+                ToolData.Polarity = Polarity;
+            if (Enum.TryParse(CbSelectType.Text, out EnumSelectType SelectType))
+                ToolData.SelectType = SelectType;
+
+            ToolData.Contrast = (int)SliderContrast.Value;
+            ToolData.ModelName = cbModelName.Text;
+           
         }
     }
 }
