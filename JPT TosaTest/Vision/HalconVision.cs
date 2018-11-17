@@ -452,15 +452,16 @@ namespace JPT_TosaTest.Vision
                             {
                                 List<object> list = para as List<object>;
                                 List<Tuple<HTuple, HTuple, HTuple, HTuple>> TupleList = new List<Tuple<HTuple, HTuple, HTuple, HTuple>>();
-                                if (list.Count >= 3)
+                                if (list.Count >= 2)
                                 {
-                                    for (int i=0;i<2;i++)
-                                    {
-                                        object obj = list[i];
-                                        TupleList.Add(obj as Tuple<HTuple, HTuple, HTuple, HTuple>);
-                                    }
-                                    GeometryPose = list[3] as HTuple;
+                                    object lines = list[0];
 
+                                    foreach(var it in lines as List<object>)
+                                    {
+                                        TupleList.Add(it as Tuple<HTuple, HTuple, HTuple, HTuple>);
+                                    }
+                                    GeometryPose = list[1] as HTuple;
+                                   //线，后一个是Pose
 
                                         //显示直线的矩形框
                                     DisplayLines(nCamID, TupleList);    //显示Tia的参考线
@@ -2111,7 +2112,7 @@ namespace JPT_TosaTest.Vision
         {
             try
             {
-                HOperatorSet.WriteRegion(GeometryRegion, FileFullPathName);
+                HOperatorSet.WriteRegion(GeometryRegion, FileFullPathName.Replace(".para",".reg"));
                 return true;
             }
             catch
@@ -2246,7 +2247,6 @@ namespace JPT_TosaTest.Vision
             HOperatorSet.AffineTransRegion(region, out regionOut, homMat2D, "false");
         }
         #endregion
-
     }
 
     public class VisionDataHelper

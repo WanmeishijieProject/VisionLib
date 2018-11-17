@@ -89,9 +89,14 @@ namespace JPT_TosaTest.Vision
 
         private string _lineRectData = "";
         private string _pairRectData = "";
-        private HObject _geometryRegion;
-        private HTuple _geometryPose = new HTuple();
         private string _circleData = "";
+        private HObject _geometryRegion;
+
+        public VisionDataOperateSet()
+        {
+            HOperatorSet.GenEmptyObj(out HObject _geometryRegion);
+               
+        }
         //private HTuple 
         protected string GetRectData(EnumToolType ToolType, HTuple Row, HTuple Col, HTuple Pi, HTuple L1, HTuple L2)
         {
@@ -118,26 +123,21 @@ namespace JPT_TosaTest.Vision
                     break;
                 case EnumToolType.FlagTool:
                     if (_geometryRegion != null)
+                    {
                         _geometryRegion.Dispose();
-                    _geometryRegion = null;
-                    _geometryPose = new HTuple();
+                        _geometryRegion = null;
+                    }
                     HOperatorSet.GenEmptyObj(out _geometryRegion);
-                    bool b = GeometryRegion.IsInitialized();
+                    GeometryPose = new HTuple();
                     break;
                 case EnumToolType.CircleTool:
-                    
-                    
+                   
                     _circleData = "";
                     
                     break;
                 default:
                     break;
             }
-        }
-
-        public VisionDataOperateSet()
-        {
-            HOperatorSet.GenEmptyObj(out _geometryRegion);
         }
 
         public string LineRoiData
@@ -158,8 +158,7 @@ namespace JPT_TosaTest.Vision
         }
         public HTuple GeometryPose
         {
-            get { return _geometryPose; }
-            set { _geometryPose = value; }
+            get;set;
         }
 
         /// <summary>
