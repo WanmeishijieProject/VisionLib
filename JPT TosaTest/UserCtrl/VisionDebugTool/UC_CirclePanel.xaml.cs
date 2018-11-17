@@ -25,9 +25,23 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
     /// </summary>
     public partial class UC_CirclePanel : UserControl , INotifyPropertyChanged
     {
+        private CircleToolData ToolData = new CircleToolData();
         public UC_CirclePanel()
         {
             InitializeComponent();
+            PolarityCollect = new ObservableCollection<string>();
+            SelectTypeCollect = new ObservableCollection<string>();
+            DirectCollect = new ObservableCollection<string>();
+            var L1 = new List<string> { "First", "Last", "All" };
+            var L2 = new List<string> { "LightToDark", "DarkToLight", "All" };
+            var L3 = new List<string> { "OutToIn", "InToOut" };
+            foreach (var str in L1)
+                SelectTypeCollect.Add(str);
+            foreach (var str in L2)
+                PolarityCollect.Add(str);
+            foreach (var str in L3)
+                DirectCollect.Add(str);
+
         }
         public ObservableCollection<string> ModelList
         {
@@ -101,13 +115,18 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         public static readonly DependencyProperty UpdateCommandParameterProperty = DependencyProperty.Register("UpdateCommandParameter", typeof(object), typeof(UC_CirclePanel));
 
 
-        public CircleToolData Data { get;}
+        public CircleToolData Data { get
+            {
+                UpdateCircleToolData();
+                return ToolData;
+            }
+        }
 
         private void ExcuteUpdateCommand()
         {
             if (UpdateParaCommand != null)
             {
-                RaisePropertyChanged("Data");
+                UpdateCircleToolData();
                 UpdateParaCommand.Execute(UpdateCommandParameter);
             }
         }
@@ -118,5 +137,12 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(PropertyName));
         }
+        private void UpdateCircleToolData()
+        {
+           
+        }
+        public ObservableCollection<string> PolarityCollect { get; set; }
+        public ObservableCollection<string> SelectTypeCollect { get; set; }
+        public ObservableCollection<string> DirectCollect { get; set; }
     }
 }

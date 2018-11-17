@@ -355,7 +355,8 @@ namespace JPT_TosaTest.WorkFlow
 
                             //找Hsg
                             string ModelFulllPathFileName = $"{File_ModelFilePath}{Config.ConfigMgr.Instance.ProcessData.HsgModelName}.shm";
-                            Vision.HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T1, 0, ModelFulllPathFileName, out object Hom2DAndModelPos);
+                            Vision.HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T1, 0, ModelFulllPathFileName, out object Hom2DAndModelPos);
+
                             if (Hom2DAndModelPos != null)
                             {
                                 List<object> list = Hom2DAndModelPos as List<object>;
@@ -369,7 +370,7 @@ namespace JPT_TosaTest.WorkFlow
                             //找Tia
                             Hom2DAndModelPos = null;
                             ModelFulllPathFileName = $"{File_ModelFilePath}{Config.ConfigMgr.Instance.ProcessData.HsgModelName}.shm";
-                            Vision.HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T1, 0, ModelFulllPathFileName, out  Hom2DAndModelPos);
+                            Vision.HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T1, 0, ModelFulllPathFileName, out  Hom2DAndModelPos);
                             if (Hom2DAndModelPos != null)
                             {
                                 List<object> list = Hom2DAndModelPos as List<object>;
@@ -411,7 +412,7 @@ namespace JPT_TosaTest.WorkFlow
                                
                                 //FindLineTop(out TopLines);
                                 //顺便将图像尺寸标定了
-                                HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T5, 0, TopLines, out object result);
+                                HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T5, 0, TopLines, out object result);
                                 nStep = 6;
                             }
                         }
@@ -457,7 +458,7 @@ namespace JPT_TosaTest.WorkFlow
                     case 3: //开始拍照并显示
                         //HalconVision.Instance.GrabImage(0,true,true);
                         StartMonitor(0);
-                        HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T3, 0, TopLines, out object r);
+                        HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T3, 0, TopLines, out object r);
                         if(GetCurStepCount()==0)
                             nStep = 4;
                         break;
@@ -505,7 +506,7 @@ namespace JPT_TosaTest.WorkFlow
                     case 3:
                         //HalconVision.Instance.GrabImage(0, true, true);
                         StartMonitor(0);
-                        HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T4, 0, BottomLines, out object r);
+                        HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T4, 0, BottomLines, out object r);
                         if (GetCurStepCount() == 0)
                             nStep = 4;
                         break;
@@ -591,7 +592,7 @@ namespace JPT_TosaTest.WorkFlow
                 }
                 if (Hom_2D_Hsg != null && ModelPos_Hsg != null)
                 {
-                    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T2, 0, new List<object> { Hom_2D_Hsg, ModelPos_Hsg, listParas }, out object result);
+                    HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T2, 0, new List<object> { Hom_2D_Hsg, ModelPos_Hsg, listParas }, out object result);
                     lineList = result as List<object>;
                 }
                 else
@@ -625,7 +626,7 @@ namespace JPT_TosaTest.WorkFlow
                 }
                 if (Hom_2D_Hsg != null && ModelPos_Hsg != null)
                 {
-                    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T2, 0, new List<object> { Hom_2D_Hsg, ModelPos_Hsg, listParas }, out object result);
+                    HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T2, 0, new List<object> { Hom_2D_Hsg, ModelPos_Hsg, listParas }, out object result);
                     lineList = result as List<object>;
                 }
                 else
@@ -660,7 +661,7 @@ namespace JPT_TosaTest.WorkFlow
                 }
                 if (Hom_2D_Tia != null && ModelPos_Tia != null)
                 {
-                    HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T5, 0, new List<object> { Hom_2D_Tia, ModelPos_Tia, listParas }, out object result);
+                    HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T5, 0, new List<object> { Hom_2D_Tia, ModelPos_Tia, listParas }, out object result);
                     lineList = result as List<object>;
                 }
                 else

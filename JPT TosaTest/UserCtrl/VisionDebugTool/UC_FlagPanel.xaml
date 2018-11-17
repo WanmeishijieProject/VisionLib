@@ -24,23 +24,9 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="标记类型" FontSize="20" VerticalAlignment="Center" Margin="10,0" />
-            <ComboBox Name="CbFlagType" Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" HorizontalAlignment="Left" 
-                      MinWidth="150" FontSize="20" Margin="5">
-                <ComboBoxItem>
-                    <TextBlock Text="POINT"/>
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <TextBlock Text="LINE"/>
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <TextBlock Text="CIRCLE"/>
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <TextBlock Text="RECTANGLE1"/>
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <TextBlock Text="RECTANGLE2"/>
-                </ComboBoxItem>
+            <ComboBox Name="CbFlagType" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Margin="10,0" SelectedIndex="0"
+                      FontSize="15" ItemsSource="{Binding GeometryTypeCollect, RelativeSource={RelativeSource AncestorType=UserControl}}">
+          
             </ComboBox>
         </Grid>
         <Grid Grid.Row="1">
@@ -50,7 +36,7 @@
             </Grid.ColumnDefinitions>
             <TextBlock Text="绑定直线1" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
             <ComboBox Name="cbLine1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Margin="10,0" SelectedIndex="0"
-                      ItemsSource="{Binding LineList, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"/>
+                      ItemsSource="{Binding LineList, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" FontSize="15"/>
         </Grid>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
@@ -59,7 +45,7 @@
             </Grid.ColumnDefinitions>
             <TextBlock Text="绑定直线2" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
             <ComboBox Name="cbLine2" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Margin="10,0" SelectedIndex="0"
-                      ItemsSource="{Binding LineList, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"/>
+                      ItemsSource="{Binding LineList, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" FontSize="15"/>
         </Grid>
         <DataGrid Grid.Row="5" CanUserAddRows="False" Margin="2">
             <DataGrid.Columns>

@@ -70,12 +70,26 @@ namespace JPT_TosaTest.Vision
         RECTANGLE1,
         RECTANGLE2,
     }
+    public enum IMAGEPROCESS_STEP
+    {
+        T1, //Get model data 
+        T2, //Get line bottom
+
+        T3,  //Get line top
+
+        T4, //Display raw line
+        T5,//Display line offset
+
+        T6, //找Tia模板
+        T7, //显示Tia最终处理后的region
+
+    }
     public class VisionDataOperateSet
     {
 
         private string _lineRectData = "";
         private string _pairRectData = "";
-        private HObject _geometryData = new HObject();
+        private HObject _geometryRegion;
         private HTuple _geometryPose = new HTuple();
         private string _circleData = "";
         //private HTuple 
@@ -103,41 +117,59 @@ namespace JPT_TosaTest.Vision
                     _pairRectData = "";
                     break;
                 case EnumToolType.FlagTool:
-                    _circleData = "";
+                    if (_geometryRegion != null)
+                        _geometryRegion.Dispose();
+                    _geometryRegion = null;
+                    _geometryPose = new HTuple();
+                    HOperatorSet.GenEmptyObj(out _geometryRegion);
+                    bool b = GeometryRegion.IsInitialized();
                     break;
                 case EnumToolType.CircleTool:
-                    _geometryData = null;
-                    _geometryPose = null;
+                    
+                    
+                    _circleData = "";
+                    
                     break;
                 default:
                     break;
             }
         }
 
+        public VisionDataOperateSet()
+        {
+            HOperatorSet.GenEmptyObj(out _geometryRegion);
+        }
+
         public string LineRoiData
         {
             get { return _lineRectData; }
+            set { _lineRectData = value; }
 
         }
         public string PairRoiData
         {
             get { return _pairRectData; }
+            set { _pairRectData = value; }
         }
         public HObject GeometryRegion
         {
-            get { return _geometryData; }
-            set { }
+            get { return _geometryRegion; }
+            set { _geometryRegion = value; }
         }
         public HTuple GeometryPose
         {
             get { return _geometryPose; }
-            set { }
+            set { _geometryPose = value; }
         }
+
+        /// <summary>
+        /// Row, Col, Phi
+        /// </summary>
         public string GeometryPosString
         {
             get {
                 if (GeometryPose!=null && GeometryPose.Length == 3)
-                    return $"{GeometryPose[0]}&{GeometryPose[1]}&{GeometryPose[2]}";
+                    return $"{GeometryPose[0].D}&{GeometryPose[1].D}&{GeometryPose[2].D}";
                 else
                     return "";    
             }
@@ -145,6 +177,7 @@ namespace JPT_TosaTest.Vision
         public string CircleRoiData
         {
             get { return _circleData; }
+            set { _circleData = value; }
         }
     }
 }

@@ -7,7 +7,7 @@ using JPT_TosaTest.Vision;
 
 namespace JPT_TosaTest.Model.ToolData
 {
-    public class TagToolData : ToolDataBase
+    public class FlagToolDaga : ToolDataBase
     {
         public override EnumToolType ToolType { get { return EnumToolType.FlagTool; } set => throw new NotImplementedException(); }
         public EnumGeometryType GeometryType { get; set; }

@@ -26,10 +26,14 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
     /// </summary>
     public partial class UC_FlagPanel : UserControl , INotifyPropertyChanged
     {
-        private TagToolData ToolData = new TagToolData();
+        private FlagToolDaga ToolData = new FlagToolDaga();
         public UC_FlagPanel()
         {
             InitializeComponent();
+            GeometryTypeCollect=new ObservableCollection<string>();
+            string[] GtypeList = { "POINT", "LINE", "CIRCLE", "RECTANGLE1", "RECTANGLE2" };
+            foreach(var type in GtypeList)
+                GeometryTypeCollect.Add(type);
         }
         public ObservableCollection<string> LineList
         {
@@ -103,15 +107,18 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
 
 
 
-        public TagToolData Data
+        public FlagToolDaga Data
         {
-            get { return ToolData; }
+            get {
+                UpdateTagToolData();
+                return ToolData;
+            }
             
         }
 
         private void BtnSavePara_Click(object sender, RoutedEventArgs e)
         {
-            UpdateToolData();
+            UpdateTagToolData();
             if (SaveParaCommand!=null)
                 SaveParaCommand.Execute(SaveCommandParameter);
         }
@@ -119,7 +126,7 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         {
             if (UpdateParaCommand != null)
             {
-                UpdateToolData();
+                UpdateTagToolData();
                 UpdateParaCommand.Execute(UpdateCommandParameter);
             }
         }
@@ -130,12 +137,14 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(PropertyName));
         }
-        private void UpdateToolData()
+        private void UpdateTagToolData()
         {
             if (Enum.TryParse(CbFlagType.Text, out EnumGeometryType GeometryType))
                 ToolData.GeometryType = GeometryType;
             ToolData.L1Name = cbLine1.Text;
             ToolData.L2Name = cbLine2.Text;
         }
+
+        public ObservableCollection<string> GeometryTypeCollect { get; set; }
     }
 }

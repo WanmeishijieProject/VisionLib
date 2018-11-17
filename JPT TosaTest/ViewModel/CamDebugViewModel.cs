@@ -43,8 +43,10 @@ namespace JPT_TosaTest.ViewModel
         private Task GrabTask = null;
         public EnumCamSnapState _camSnapState;
         private Storyboard RoiSb = null, TemplateSb = null;
-        private string DefaultImagePath = @"C:\";
-        private string DefaultToolPath = FileHelper.GetCurFilePathString() + @"VisionData\ToolData\";
+        private string PATH_DEFAULT_IMAGEPATH = @"C:\";
+        private string PATH_TOOLPATH = FileHelper.GetCurFilePathString() + @"VisionData\ToolData\";
+        private string PATH_MODELPATH= FileHelper.GetCurFilePathString() + @"VisionData\Model\";
+
         private int _lightBrightness = 0;
         private bool _openLightSource = false;
         private ModelItem _curUsedModel;
@@ -150,10 +152,10 @@ namespace JPT_TosaTest.ViewModel
         private void UpdateToolFileCollect()
         {
             
-            List<string> fileList= FileHelper.GetProfileList(DefaultToolPath);
+            List<string> fileList= FileHelper.GetProfileList(PATH_TOOLPATH);
             foreach (var file in fileList)
             {
-                string strContent = File.ReadAllText(DefaultToolPath+file+".para");
+                string strContent = File.ReadAllText(PATH_TOOLPATH+file+".para");
                 string[] list= strContent.Split('|');
                 if (list.Count() >= 2)
                 {
@@ -193,7 +195,17 @@ namespace JPT_TosaTest.ViewModel
                         }
                     case EnumToolType.FlagTool:
                         {
+                            FlagToolDaga data = para as FlagToolDaga;
+                            int nCamID = 0;
+                            var L1Data = File.ReadAllText($"{PATH_TOOLPATH}{data.L1Name}.para");
+                            var L2Data = File.ReadAllText($"{PATH_TOOLPATH}{data.L2Name}.para");
+                            string ModelName = L1Data.Split('|')[1].Split('&')[4];
 
+                            //先找模板
+                            string ModelFullPathName = $"{PATH_MODELPATH}Cam{nCamID}_{ModelName}.shm";
+                            string paraIn = $"{ModelFullPathName},{L1Data},{L2Data},{data.GeometryType.ToString()}";
+                            HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T6, nCamID, paraIn, out object Hom2DAndModelPos);
+                            //有了垂线才能画点，同时存储角度与位置关系
                         }
                         break;
                     default:
@@ -663,7 +675,7 @@ namespace JPT_TosaTest.ViewModel
                         try
                         {
                             //查找模板并获取数据
-                            bool bRet = HalconVision.Instance.ProcessImage(HalconVision.IMAGEPROCESS_STEP.T1, nCamID, strModelFileName, out object result);
+                            bool bRet = HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T1, nCamID, strModelFileName, out object result);
                         }
                         catch (Exception ex)
                         {
@@ -759,11 +771,11 @@ namespace JPT_TosaTest.ViewModel
                     OpenFileDialog ofd = new OpenFileDialog();
                     ofd.Title = "请选择要打开的文件";
                     ofd.Multiselect = false;
-                    ofd.InitialDirectory = DefaultImagePath;
+                    ofd.InitialDirectory = PATH_DEFAULT_IMAGEPATH;
                     if (ofd.ShowDialog() == DialogResult.OK)
                     {
-                        DefaultImagePath = ofd.FileName;
-                        HalconVision.Instance.OpenImageInWindow(CurrentSelectedCamera, DefaultImagePath, hWindow);
+                        PATH_DEFAULT_IMAGEPATH = ofd.FileName;
+                        HalconVision.Instance.OpenImageInWindow(CurrentSelectedCamera, PATH_DEFAULT_IMAGEPATH, hWindow);
                     }
 
                 });
@@ -888,37 +900,37 @@ namespace JPT_TosaTest.ViewModel
                         sfd.DefaultExt = "para";//设置默认格式（可以不设）
                         sfd.AddExtension = true;//设置自动在文件名中添加扩展名
                         sfd.RestoreDirectory = true;
-                        sfd.InitialDirectory = DefaultToolPath;
-                        string HalconData = "";
-                        switch (para.ToolType)
-                        {
-                            case EnumToolType.CircleTool:
-                                throw new Exception("没有实现");
-                            case EnumToolType.FlagTool:
-                                HalconData = HalconVision.Instance.GeometryPosString;
-                                break;
-                            case EnumToolType.LineTool:
-                                HalconData = HalconVision.Instance.LineRoiData;
-                                break;
-                            case EnumToolType.PairTool:
-                                HalconData = HalconVision.Instance.PairRoiData;
-                                break;
-                            default:
-                                break;
-                        }
+                        sfd.InitialDirectory = PATH_TOOLPATH;
+                       
 
                         if (sfd.ShowDialog() == DialogResult.OK)
                         {
+                            string HalconData = "";
+                            switch (para.ToolType)
+                            {
+                                case EnumToolType.CircleTool:
+                                    throw new Exception("没有实现");
+                                case EnumToolType.FlagTool:
+                                    HalconData = HalconVision.Instance.GeometryPosString;
+                                    break;
+                                case EnumToolType.LineTool:
+                                    HalconData = HalconVision.Instance.LineRoiData;
+                                    break;
+                                case EnumToolType.PairTool:
+                                    HalconData = HalconVision.Instance.PairRoiData;
+                                    break;
+                                default:
+                                    break;
+                            }
+
                             string strPara = $"{para.ToString()}|{HalconData}";
-                            File.WriteAllText(sfd.FileName, strPara);
-                            if (para.ToolType == EnumToolType.LineTool)
-                            {
+                            if(para.ToolType== EnumToolType.LineTool)
                                 UpdateToolFileCollect();
-                            }
-                            else
-                            {
-                                //Do nothing
-                            }
+                            //保存Flag的区域
+                            if (para.ToolType == EnumToolType.FlagTool)
+                                HalconVision.Instance.SaveFlagToolRegion(sfd.FileName);
+                            File.WriteAllText(sfd.FileName, strPara);
+
                         }
                         else
                         {
@@ -962,7 +974,7 @@ namespace JPT_TosaTest.ViewModel
                                 break;
                             case EnumToolType.FlagTool:
                                 {
-                                    var Data = para as TagToolData;
+                                    var Data = para as FlagToolDaga;
 
                                 }
                                 break;

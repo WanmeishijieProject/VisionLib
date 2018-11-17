@@ -201,5 +201,7 @@
             </MultiTrigger>
         </Style.Triggers>
     </Style>
+         
     <SolidColorBrush x:Key="ThemColor">#BFDBFF</SolidColorBrush>
+       
 </ResourceDictionary>

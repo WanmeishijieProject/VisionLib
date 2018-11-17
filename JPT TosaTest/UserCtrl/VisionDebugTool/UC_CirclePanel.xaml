@@ -30,17 +30,10 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="极性方向" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
-            <ComboBox Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Margin="10,0">
-                <ComboBoxItem>
-                    <TextBlock Text="明到暗"/>
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <TextBlock Text="暗到明"/>
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <TextBlock Text="所有方向"/>
-                </ComboBoxItem>
-            </ComboBox>
+            <ComboBox Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Margin="10,0"
+                      ItemsSource="{Binding PolarityCollect, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+
+
         </Grid>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
@@ -48,17 +41,10 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="线类型" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
-            <ComboBox Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Margin="10,0">
-                <ComboBoxItem>
-                    <TextBlock Text="第一点"/>
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <TextBlock Text="最后点"/>
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <TextBlock Text="所有点"/>
-                </ComboBoxItem>
-            </ComboBox>
+            <ComboBox Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Margin="10,0" 
+                      FontSize="15" ItemsSource="{Binding SelectTypeCollect, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+
+
         </Grid>
         <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
@@ -66,14 +52,10 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="探测方向" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
-            <ComboBox Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Margin="10,0">
-                <ComboBoxItem>
-                    <TextBlock Text="内向外"/>
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <TextBlock Text="外向内"/>
-                </ComboBoxItem>
-            </ComboBox>
+            <ComboBox Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Margin="10,0" FontSize="15"
+                      ItemsSource="{Binding DirectCollect, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+
+
         </Grid>
         <Grid Grid.Row="4">
             <Grid.ColumnDefinitions>
@@ -90,7 +72,7 @@
             </Grid.ColumnDefinitions>
             <TextBlock Text="绑定模板" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
             <ComboBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Margin="10,0" SelectedIndex="0"
-                      ItemsSource="{Binding ModelList, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"/>
+                      ItemsSource="{Binding ModelList, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" FontSize="15"/>
         </Grid>
         <DataGrid Grid.Row="6" CanUserAddRows="False" Margin="2">
             <DataGrid.Columns>

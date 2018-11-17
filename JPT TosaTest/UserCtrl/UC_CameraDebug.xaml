@@ -312,7 +312,7 @@
                         <TabItem Header="EdgeTool" FontSize="15" Height="30">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="175" MinWidth="175"/>
+                                    <ColumnDefinition Width="170"/>
                                     <ColumnDefinition Width="5"/>
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>

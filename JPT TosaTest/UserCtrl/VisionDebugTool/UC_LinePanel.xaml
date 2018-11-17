@@ -29,19 +29,11 @@
                 <ColumnDefinition Width="115"/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="Line极性" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
-            <ComboBox Name="CbPolarity" Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" FontSize="20" Margin="5" 
-                      SelectionChanged="CbPolarity_SelectionChanged">
-                <ComboBoxItem>
-                    <TextBlock Text="DarkToLight"/>
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <TextBlock Text="LightToDark"/>
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <TextBlock Text="All"/>
-                </ComboBoxItem>
-            </ComboBox>
+            <TextBlock Text="Line极性" FontSize="15" VerticalAlignment="Center" Margin="10,0"/>
+            <ComboBox Name="CbPolarity" Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" HorizontalAlignment="Left"  FontSize="15" Margin="5" MinWidth="150" 
+                      SelectionChanged="CbPolarity_SelectionChanged" ItemsSource="{Binding PolarityCollect, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+
+
         </Grid>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
@@ -49,17 +41,10 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="选择类型" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
-            <ComboBox Name="CbSelectType" Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" FontSize="20" Margin="5" SelectionChanged="CbSelectType_SelectionChanged">
-                <ComboBoxItem>
-                    <TextBlock Text="First"/>
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <TextBlock Text="Last"/>
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <TextBlock Text="All"/>
-                </ComboBoxItem>
-            </ComboBox>
+            <ComboBox Name="CbSelectType" Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" HorizontalAlignment="Left"  FontSize="15" Margin="5" MinWidth="150"
+                      SelectionChanged="CbSelectType_SelectionChanged" ItemsSource="{Binding SelectTypeCollect, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+
+
         </Grid>
         <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
@@ -76,7 +61,7 @@
             </Grid.ColumnDefinitions>
             <TextBlock Text="绑定模板" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
             <ComboBox Name="cbModelName" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Margin="10,0" SelectedIndex="0"
-                      ItemsSource="{Binding ModelList, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"/>
+                      ItemsSource="{Binding ModelList, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" FontSize="15"/>
         </Grid>
         <DataGrid Grid.Row="5" CanUserAddRows="False" Margin="2">
             <DataGrid.Columns>

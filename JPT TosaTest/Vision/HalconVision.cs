@@ -8,6 +8,7 @@ using HalconDotNet;
 using JPT_TosaTest.Classes;
 using JPT_TosaTest.UserCtrl;
 using JPT_TosaTest.UserCtrl.VisionDebugTool;
+using JPT_TosaTest.Vision.ProcessStep;
 
 namespace JPT_TosaTest.Vision
 {
@@ -38,20 +39,7 @@ namespace JPT_TosaTest.Vision
 
         #region  Field
         public List<object> _lockList = new List<object>();
-        public enum IMAGEPROCESS_STEP
-        {
-            T1, //Get model data 
-            T2, //Get line bottom
-           
-            T3,  //Get line top
-
-            T4, //Display raw line
-            T5,//Display line offset
-
-            T6, //找Tia模板
-            T7, //显示Tia最终处理后的region
-
-        }
+       
         private List<HObject> HoImageList = new List<HObject>(10);    //Image
         private List<HTuple> AcqHandleList = new List<HTuple>(10);    //Aqu
         private List<double> KList = new List<double>(10);
@@ -272,6 +260,19 @@ namespace JPT_TosaTest.Vision
         }
 
         /// <summary>
+        /// 传入的处理步骤参数
+        /// </summary>
+        /// <param name="ProcessStep"></param>
+        /// <returns></returns>
+        public bool ProcessImage(VisionProcessStepBase ProcessStep)
+        {
+            int nCamID = ProcessStep.CamID;
+            if (nCamID < 0)
+                return false;
+            ProcessStep.Image = HoImageList[nCamID];     
+            return ProcessStep.Process();
+        }
+        /// <summary>
         /// 最终的供客户端使用的接口，处理不同的任务
         /// </summary>
         /// <param name="nStep"></param>
@@ -405,48 +406,65 @@ namespace JPT_TosaTest.Vision
                             }
 
                             break;
-                        //利用模板找两条垂线
+
+
+                        //画几何标记
                         case IMAGEPROCESS_STEP.T6:
                             {
-                                //画区域
-                                List<object> list = (para as List<object>);
-                                //0--类型
-                                //1--线
-                                if (list.Count == 2)
+                                bRet = true;
+                                string[] originList = para.ToString().Split(',');
+                                if (originList.Length >= 4)
                                 {
-                                    EnumGeometryType GeometryType = (EnumGeometryType)list[0];
-                                    object L1 = list[1];
+                                    //先找模板
+                                    string strModelFileName = originList[0];
+                                    bRet &= FindModelAndGetData(HoImageList[nCamID], strModelFileName, out HTuple hom_2D, out HTuple ModelPos);
 
-                                    List<Tuple<HTuple, HTuple, HTuple, HTuple>> TupleList = new List<Tuple<HTuple, HTuple, HTuple, HTuple>>();
-                                    foreach (var it in L1 as List<object>)
-                                    {
-                                        object obj = it;
-                                        TupleList.Add(obj as Tuple<HTuple, HTuple, HTuple, HTuple>);
-                                    }
+                                    //找参考线，根据线的名字找线
+                                    Enum.TryParse(originList[3].ToString(),out EnumGeometryType GeometryType);
+                                    List<string> listParas = new List<string> { originList[1], originList[2] };
+                                    bRet &= FindLineBasedModelRoi(HoImageList[nCamID], listParas, hom_2D, ModelPos, out List<object> lineList);   //只需要显示
 
-                                    if (TupleList.Count >= 2)
+                                    //画区域
+                                    
+                                    if (lineList.Count == 2)
                                     {
-                                        DrawGeometry(HwindowDic[nCamID][DebugWindowName], HoImageList[nCamID], TupleList[0].Item1, TupleList[0].Item2, TupleList[0].Item3, TupleList[0].Item4,
-                                                                    TupleList[1].Item1, TupleList[1].Item2, TupleList[1].Item3, TupleList[1].Item4, GeometryType);
+                                        List<Tuple<HTuple, HTuple, HTuple, HTuple>> TupleList = new List<Tuple<HTuple, HTuple, HTuple, HTuple>>();
+                                        foreach (var it in lineList)
+                                        {
+                                            object obj = it;
+                                            TupleList.Add(obj as Tuple<HTuple, HTuple, HTuple, HTuple>);
+                                        }
+
+                                        if (TupleList.Count >= 2)
+                                        {
+                                            DrawGeometry(HwindowDic[nCamID][DebugWindowName], HoImageList[nCamID], TupleList[0].Item1, TupleList[0].Item2, TupleList[0].Item3, TupleList[0].Item4,
+                                                                        TupleList[1].Item1, TupleList[1].Item2, TupleList[1].Item3, TupleList[1].Item4, GeometryType);
+                                        }
                                     }
                                 }
                                 
                             }
                             break;
-                        //利用垂线画出之前预设的region
+
+
+                        //显示几何标记
                         case IMAGEPROCESS_STEP.T7:
                             {
                                 List<object> list = para as List<object>;
                                 List<Tuple<HTuple, HTuple, HTuple, HTuple>> TupleList = new List<Tuple<HTuple, HTuple, HTuple, HTuple>>();
-                                foreach (var it in list)
+                                if (list.Count >= 3)
                                 {
-                                    object obj = it;
-                                    TupleList.Add(obj as Tuple<HTuple, HTuple, HTuple, HTuple>);
-                                }
-                                if (list != null)
-                                {
-                                    //显示直线的矩形框
+                                    for (int i=0;i<2;i++)
+                                    {
+                                        object obj = list[i];
+                                        TupleList.Add(obj as Tuple<HTuple, HTuple, HTuple, HTuple>);
+                                    }
+                                    GeometryPose = list[3] as HTuple;
+
+
+                                        //显示直线的矩形框
                                     DisplayLines(nCamID, TupleList);    //显示Tia的参考线
+
                                     if (TupleList.Count >= 2)
                                     {
                                         //利用参考线画出原来画的区域
@@ -456,9 +474,10 @@ namespace JPT_TosaTest.Vision
                                         {
                                             HOperatorSet.DispRegion(NewRegion, it.Value);
                                         }
-                                        if(NewRegion.IsInitialized())
+                                        if (NewRegion.IsInitialized())
                                             NewRegion.Dispose();
                                     }
+                                    
                                 }
                             }
                             break;
@@ -858,7 +877,7 @@ namespace JPT_TosaTest.Vision
         /// <param name="hm_2D">生成的转换矩阵</param>
         /// <param name="ModelPos">模板位置</param>
         /// <returns></returns>
-        private bool FindModelAndGetData(HObject image, string ModelFileName, out HTuple hm_2D, out HTuple ModelPos)
+        public bool FindModelAndGetData(HObject image, string ModelFileName, out HTuple hm_2D, out HTuple ModelPos)
         {
             HOperatorSet.HomMat2dIdentity(out hm_2D);
             ModelPos = new HTuple();
@@ -919,7 +938,7 @@ namespace JPT_TosaTest.Vision
 
         }
 
-        private bool FindLineBasedModelRoi(HObject image, List<string> LineParaList, HTuple hom_2D, HTuple ModelPos, out List<object> lineList)
+        public bool FindLineBasedModelRoi(HObject image, List<string> LineParaList, HTuple hom_2D, HTuple ModelPos, out List<object> lineList)
         {
             List<object> lineListRawData = new List<object>();
             lineList = new List<object>();
@@ -1017,12 +1036,12 @@ namespace JPT_TosaTest.Vision
                 return false;
             }
         }
-        private bool FindTia(HObject image, List<string> LineParaList, HTuple hom_2D, HTuple ModelPos, out List<object> lineList)
+        public bool FindTia(HObject image, List<string> LineParaList, HTuple hom_2D, HTuple ModelPos, out List<object> lineList)
         {
             lineList = new List<object>();
             return true;
         }
-        private bool DisplayLines(int nCamID, List<Tuple<HTuple, HTuple, HTuple, HTuple>> lineList, string Color = "red")
+        public bool DisplayLines(int nCamID, List<Tuple<HTuple, HTuple, HTuple, HTuple>> lineList, string Color = "red")
         {
             try
             {
@@ -1046,7 +1065,7 @@ namespace JPT_TosaTest.Vision
                 return false;
             }
         }
-        private bool DisplayPolygonRegion(int nCamID, HTuple Row, HTuple Col, string Color = "red")
+        public bool DisplayPolygonRegion(int nCamID, HTuple Row, HTuple Col, string Color = "red")
         {
             lock (_lockList[nCamID])
             {
@@ -2088,9 +2107,22 @@ namespace JPT_TosaTest.Vision
                 }
                 return;
             }
+        public bool SaveFlagToolRegion(string FileFullPathName)
+        {
+            try
+            {
+                HOperatorSet.WriteRegion(GeometryRegion, FileFullPathName);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         /// <summary>
-        /// 确定一个点的唯一位置，通过两条相交直线确定
+        ///  确定一个点的唯一位置，通过两条相交直线确定
         /// </summary>
+        /// <param name="WindowHandle"></param>
         /// <param name="image"></param>
         /// <param name="rowStart"></param>
         /// <param name="colStart"></param>
@@ -2101,45 +2133,67 @@ namespace JPT_TosaTest.Vision
         /// <param name="rowEnd1"></param>
         /// <param name="colEnd1"></param>
         /// <param name="GeometryType"></param>
+        /// <param name="geometryPose">输出参数</param>
+        /// <param name="geometryRegion">几何区域</param>
         public void DrawGeometry(HTuple WindowHandle, HObject image, HTuple rowStart, HTuple colStart, HTuple rowEnd, HTuple colEnd, HTuple rowStart1,
             HTuple colStart1, HTuple rowEnd1, HTuple colEnd1, EnumGeometryType GeometryType)
         {
-            
             switch (GeometryType)
             {
                 case EnumGeometryType.CIRCLE:
                     {
                         HOperatorSet.DrawCircleMod(WindowHandle, 500, 500, 200, out HTuple row, out HTuple col, out HTuple radius);
-                        HOperatorSet.GenCrossContourXld(out HObject Cross, row, col, 20, 0);
                         HOperatorSet.GenCircle(out HObject Circle, row, col, radius);
-                        GeometryRegion.ConcatObj(Cross);
-                        GeometryRegion.ConcatObj(Circle);
-                        
-                        Cross.Dispose();
+                        HOperatorSet.GenRegionLine(out HObject region1, row - 30, col, row + 30, col);
+                        HOperatorSet.GenRegionLine(out HObject region2, row, col - 30, row, col + 30);
+                        HOperatorSet.Union2(region1, Circle, out HObject UnionRegion);
+                        HOperatorSet.Union2(region2, UnionRegion, out UnionRegion);
+                        HOperatorSet.Union2(GeometryRegion, UnionRegion, out UnionRegion);
+                        GeometryRegion = UnionRegion.SelectObj(1);
+                        UnionRegion.Dispose();
                         Circle.Dispose();
+                        region1.Dispose();
+                        region2.Dispose();
                     }
                     break;
                 case EnumGeometryType.LINE:
                     {
                         HOperatorSet.DrawLineMod(WindowHandle, 20, 20, 200, 200, out HTuple row1, out HTuple col1, out HTuple row2, out HTuple col2);
                         HOperatorSet.GenRegionLine(out HObject Line, row1, col1, row2, col2);
-                        GeometryRegion.ConcatObj(Line);
+                        HOperatorSet.Union2(GeometryRegion, Line, out HObject UnionRegion);
+                        HOperatorSet.Union2(GeometryRegion, UnionRegion, out UnionRegion);
+                        GeometryRegion = UnionRegion.SelectObj(1);
+
+                        UnionRegion.Dispose();
                         Line.Dispose();
+
                     }
                     break;
                 case EnumGeometryType.POINT:
                     {
                         HOperatorSet.DrawPointMod(WindowHandle,200,200, out HTuple row, out HTuple col);
-                        HOperatorSet.GenCrossContourXld(out HObject Cross, row, col, 20, 0);
-                        GeometryRegion.ConcatObj(Cross);
-                        Cross.Dispose();
+                        HOperatorSet.GenRegionLine(out HObject region1, row - 30, col, row + 30, col);
+                        HOperatorSet.GenRegionLine(out HObject region2, row, col - 30, row , col + 30);
+                        HOperatorSet.Union2(region1, region2, out HObject UnionRegion);
+
+                        HOperatorSet.Union2(GeometryRegion, UnionRegion, out UnionRegion);
+                        GeometryRegion = UnionRegion.SelectObj(1);
+
+                        UnionRegion.Dispose();
+                        region1.Dispose();
+                        region2.Dispose();
+
                     }
                     break;
                 case EnumGeometryType.RECTANGLE1:
                     {
                         HOperatorSet.DrawRectangle1Mod(WindowHandle,20,20,200,200, out HTuple row1, out HTuple col1, out HTuple row2, out HTuple col2);
                         HOperatorSet.GenRectangle1(out HObject Rectangle, row1, col1, row2, col2);
-                        GeometryRegion.ConcatObj(Rectangle);
+
+                        HOperatorSet.Union2(GeometryRegion, Rectangle, out HObject UnionRegion);
+                        GeometryRegion = UnionRegion.SelectObj(1);
+
+                        UnionRegion.Dispose();
                         Rectangle.Dispose();
                     }
                     break;
@@ -2147,19 +2201,17 @@ namespace JPT_TosaTest.Vision
                     {
                         HOperatorSet.DrawRectangle2Mod(WindowHandle, 100,100,0,100,100, out HTuple row, out HTuple col, out HTuple phi, out  HTuple L1, out HTuple L2);
                         HOperatorSet.GenRectangle2(out HObject Rectangle, row, col, phi, L1,L2);
-                        GeometryRegion.ConcatObj(Rectangle);
+
+                        HOperatorSet.Union2(GeometryRegion, Rectangle, out HObject UnionRegion);
+                        GeometryRegion = UnionRegion.SelectObj(1);
+
+                        UnionRegion.Dispose();
                         Rectangle.Dispose();
                     }
                     break;
                 default:
                     break;
             }
-            
-            //GeometryRegion
-            HOperatorSet.Union1(GeometryRegion, out HObject UnitionObject);
-            GeometryRegion=UnitionObject.SelectObj(1);
-
-            UnitionObject.Dispose();
 
             //采用极坐标表示当前region的姿态
             //与其中一条线的夹角，与两条直线交点的距离
@@ -2168,9 +2220,12 @@ namespace JPT_TosaTest.Vision
             HOperatorSet.AngleLx(rowStart, colStart, rowEnd, colEnd, out HTuple angle);
            
             GeometryPose[0] = rowSection;
-            GeometryPose[1] = rowSection;
+            GeometryPose[1] = colSection;
             GeometryPose[2] = angle;
 
+            HOperatorSet.SetColor(WindowHandle,"green");
+            HOperatorSet.DispObj(GeometryRegion, WindowHandle);
+            HOperatorSet.DispRegion(GeometryRegion, WindowHandle);       
         }
 
         public void GetGeometryRegionBy2Lines(HObject region ,HTuple rowStart, HTuple colStart, HTuple rowEnd, HTuple colEnd, HTuple rowStart1,

@@ -298,7 +298,13 @@
     <Compile Include="Vision\Light\LightBase.cs" />
     <Compile Include="Vision\Light\Light_JK_PWD6024.cs" />
     <Compile Include="Vision\Light\LigtMgr.cs" />
+    <Compile Include="Vision\ProcessStep\StepCalibImage.cs" />
+    <Compile Include="Vision\ProcessStep\StepFindeLineByModel.cs" />
+    <Compile Include="Vision\ProcessStep\StepFindModel.cs" />
+    <Compile Include="Vision\ProcessStep\StepShowLineBottom.cs" />
+    <Compile Include="Vision\ProcessStep\StepShowLineTop.cs" />
     <Compile Include="Vision\VisionDataOperateSet.cs" />
+    <Compile Include="Vision\ProcessStep\VisionProcessStepBase.cs" />
     <Compile Include="WorkFlow\WorkFlowData.cs" />
     <Compile Include="WorkFlow\WorkTemplate2.cs" />
     <Compile Include="WorkFlow\WorkTemplate1.cs" />

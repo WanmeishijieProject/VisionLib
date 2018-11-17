@@ -33,6 +33,18 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         public UC_PairPanel()
         {
             InitializeComponent();
+            PolarityCollect = new ObservableCollection<string>();
+            SelectTypeCollect = new ObservableCollection<string>();
+            var L1 = new List<string> { "First", "Last", "All" };
+            var L2 = new List<string> { "Dark", "Light", "All" };
+            foreach (var str in L1)
+            {
+                SelectTypeCollect.Add(str);
+            }
+            foreach (var str in L2)
+            {
+                PolarityCollect.Add(str);
+            }
         }
     
         private void CbPolarity_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -136,7 +148,7 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
 
         public PairToolData Data
         {
-            get { return ToolData; }
+            get { UpdatePairToolData(); return ToolData; }
         }
 
         private void BtnSavePara_Click(object sender, RoutedEventArgs e)
@@ -173,5 +185,7 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
             ToolData.Contrast = (int)SliderContrast.Value;
             ToolData.ModelName = cbModelName.Text;
         }
+        public ObservableCollection<string> PolarityCollect { get; set; }
+        public ObservableCollection<string> SelectTypeCollect { get; set; }
     }
 }

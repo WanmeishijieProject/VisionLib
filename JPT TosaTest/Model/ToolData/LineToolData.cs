@@ -27,5 +27,6 @@ namespace JPT_TosaTest.Model.ToolData
         {
             return $"{ToolType.ToString()}|{CaliperNum}&{Polarity.ToString()}&{SelectType.ToString()}&{Contrast}&{ModelName}";
         }
+        
     }
 }

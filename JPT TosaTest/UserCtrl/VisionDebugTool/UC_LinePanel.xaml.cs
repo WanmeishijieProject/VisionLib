@@ -32,6 +32,20 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         public UC_LinePanel()
         {
             InitializeComponent();
+
+            PolarityCollect = new ObservableCollection<string>();
+            SelectTypeCollect = new ObservableCollection<string>();
+            var L1 =new List<string> { "First","Last","All"};
+            var L2 = new List<string> { "LightToDark", "DarkToLight", "All" };
+            foreach (var str in L1)
+            {
+                SelectTypeCollect.Add(str);
+            }
+            foreach (var str in L2)
+            {
+                PolarityCollect.Add(str);
+            }
+
         }
         private void SliderContrast_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
@@ -179,7 +193,7 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
 
         public LineToolData Data
         {
-            get { return ToolData; }
+            get { UpdateLineToolData(); return ToolData; }
         }
 
       
@@ -221,5 +235,8 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
             ToolData.ModelName = cbModelName.Text;
            
         }
+
+        public ObservableCollection<string> PolarityCollect { get; set; }
+        public ObservableCollection<string> SelectTypeCollect { get; set; }
     }
 }
