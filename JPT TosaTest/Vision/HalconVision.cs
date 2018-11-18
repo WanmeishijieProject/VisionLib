@@ -437,7 +437,7 @@ namespace JPT_TosaTest.Vision
 
                                         if (TupleList.Count >= 2)
                                         {
-                                            DrawGeometry(HwindowDic[nCamID][DebugWindowName], HoImageList[nCamID], TupleList[0].Item1, TupleList[0].Item2, TupleList[0].Item3, TupleList[0].Item4,
+                                            DrawGeometry(nCamID, HoImageList[nCamID], TupleList[0].Item1, TupleList[0].Item2, TupleList[0].Item3, TupleList[0].Item4,
                                                                         TupleList[1].Item1, TupleList[1].Item2, TupleList[1].Item3, TupleList[1].Item4, GeometryType);
                                         }
                                     }
@@ -469,7 +469,7 @@ namespace JPT_TosaTest.Vision
                                     if (TupleList.Count >= 2)
                                     {
                                         //利用参考线画出原来画的区域
-                                        GetGeometryRegionBy2Lines(GeometryRegion, TupleList[0].Item1, TupleList[0].Item2, TupleList[0].Item3, TupleList[0].Item4,
+                                        GetGeometryRegionBy2Lines(nCamID,GeometryRegion, TupleList[0].Item1, TupleList[0].Item2, TupleList[0].Item3, TupleList[0].Item4,
                                                                 TupleList[1].Item1, TupleList[1].Item2, TupleList[1].Item3, TupleList[1].Item4, GeometryPose, out HObject NewRegion);
                                         foreach (var it in HwindowDic[nCamID])
                                         {
@@ -703,7 +703,21 @@ namespace JPT_TosaTest.Vision
 
 
         }
+        public bool ShowRoi(int nCamID,object Region)     //显示ROI
+        {
+            HObject region = Region as HObject;
+            foreach (var it in HwindowDic[nCamID])
+            {
+                if (it.Value != -1)
+                {
+                    HOperatorSet.SetDraw(it.Value, "margin");
+                    HOperatorSet.SetColor(it.Value, "green");
+                    HOperatorSet.DispObj(region, it.Value);
+                }
+            }
 
+            return true;
+        }
         public bool ShowRoi(string RoiFilePathName)     //显示ROI
         {
             string[] splitString = RoiFilePathName.Split('\\');
@@ -715,14 +729,13 @@ namespace JPT_TosaTest.Vision
                 {
                     if (it.Value != -1)
                     {
-                        //HOperatorSet.ClearWindow(it.Value);
-                        //if (HoImageList[nCamID] != null)
-                        //HOperatorSet.DispObj(HoImageList[nCamID], it.Value);
                         HOperatorSet.SetDraw(it.Value, "margin");
                         HOperatorSet.SetColor(it.Value, "green");
                         HOperatorSet.DispObj(region, it.Value);
                     }
                 }
+                if (region.IsInitialized())
+                    region.Dispose();
                 return true;
             }
             return false;
@@ -915,8 +928,8 @@ namespace JPT_TosaTest.Vision
                     {
                         HOperatorSet.SetPart(it.Value, 0, 0, ImageHeight, ImageWidth);
                         HOperatorSet.SetColor(it.Value, "red");
-                        disp_message(it.Value, $"模板位置:({ hv_Row1},{ hv_Column1})", "window", 10, 10, "red", "true");
-                        disp_message(it.Value, $"分数: { hv_Score}", "window", 50, 10, "red", "true");
+                        //disp_message(it.Value, $"模板位置:({ hv_Row1},{ hv_Column1})", "window", 10, 10, "red", "true");
+                        //disp_message(it.Value, $"分数: { hv_Score}", "window", 50, 10, "red", "true");
                         HOperatorSet.DispCross(it.Value, hv_Row1, hv_Column1, 80, hv_Angle);
                         ModelPos[0] = hv_Row1;
                         ModelPos[1] = hv_Column1;
@@ -955,14 +968,14 @@ namespace JPT_TosaTest.Vision
             //ReadRectangle
             try
             {
-                foreach (var it in HwindowDic[0])
-                {
-                    HOperatorSet.SetSystem("flush_graphic", "false");
-                    HOperatorSet.ClearWindow(it.Value);
-                    HOperatorSet.DispObj(image, it.Value);
-                    HOperatorSet.SetDraw(it.Value, "margin");
-                    HOperatorSet.SetSystem("flush_graphic", "true");
-                }
+                //foreach (var it in HwindowDic[0])
+                //{
+                //    HOperatorSet.SetSystem("flush_graphic", "false");
+                //    HOperatorSet.ClearWindow(it.Value);
+                //    HOperatorSet.DispObj(image, it.Value);
+                //    HOperatorSet.SetDraw(it.Value, "margin");
+                //    HOperatorSet.SetSystem("flush_graphic", "true");
+                //}
                 foreach (var para in LineParaList)
                 {
                    
@@ -2148,9 +2161,10 @@ namespace JPT_TosaTest.Vision
         /// <param name="GeometryType"></param>
         /// <param name="geometryPose">输出参数</param>
         /// <param name="geometryRegion">几何区域</param>
-        public void DrawGeometry(HTuple WindowHandle, HObject image, HTuple rowStart, HTuple colStart, HTuple rowEnd, HTuple colEnd, HTuple rowStart1,
+        public void DrawGeometry(int nCamID, HObject image, HTuple rowStart, HTuple colStart, HTuple rowEnd, HTuple colEnd, HTuple rowStart1,
             HTuple colStart1, HTuple rowEnd1, HTuple colEnd1, EnumGeometryType GeometryType)
         {
+            HTuple WindowHandle = HwindowDic[nCamID][DebugWindowName];
             switch (GeometryType)
             {
                 case EnumGeometryType.CIRCLE:
@@ -2159,7 +2173,8 @@ namespace JPT_TosaTest.Vision
                         HOperatorSet.GenCircle(out HObject Circle, row, col, radius);
                         HOperatorSet.GenRegionLine(out HObject region1, row - 30, col, row + 30, col);
                         HOperatorSet.GenRegionLine(out HObject region2, row, col - 30, row, col + 30);
-                        HOperatorSet.Union2(region1, Circle, out HObject UnionRegion);
+                        HOperatorSet.Union2(Circle, GeometryRegion, out HObject UnionRegion);
+                        HOperatorSet.Union2(region1, UnionRegion, out  UnionRegion);
                         HOperatorSet.Union2(region2, UnionRegion, out UnionRegion);
                         HOperatorSet.Union2(GeometryRegion, UnionRegion, out UnionRegion);
                         GeometryRegion = UnionRegion.SelectObj(1);
@@ -2241,7 +2256,7 @@ namespace JPT_TosaTest.Vision
             HOperatorSet.DispRegion(GeometryRegion, WindowHandle);       
         }
 
-        public void GetGeometryRegionBy2Lines(HObject region ,HTuple rowStart, HTuple colStart, HTuple rowEnd, HTuple colEnd, HTuple rowStart1,
+        public void GetGeometryRegionBy2Lines(int CamID, HObject region ,HTuple rowStart, HTuple colStart, HTuple rowEnd, HTuple colEnd, HTuple rowStart1,
             HTuple colStart1, HTuple rowEnd1, HTuple colEnd1, HTuple GeometryPose, out HObject regionOut)
         {
             regionOut = new HObject();
@@ -2257,6 +2272,8 @@ namespace JPT_TosaTest.Vision
             HOperatorSet.VectorAngleToRigid(originRow, originCol, originAngle, rowSection, colSection, angle, out HTuple homMat2D);
             //投影变换
             HOperatorSet.AffineTransRegion(region, out regionOut, homMat2D, "false");
+            foreach(var it in HwindowDic[CamID])
+                HOperatorSet.DispObj(regionOut, it.Value);
         }
         #endregion
     }

@@ -56,7 +56,7 @@ namespace JPT_TosaTest.Model.ToolData
             {
                 Enum.TryParse(list[0], out EnumToolType type);
                 HalconData = list[2];
-                if (type != EnumToolType.LineTool)
+                if (type != EnumToolType.FlagTool)
                 {
                     throw new Exception($"Wrong {ToolType.ToString()} when parse {ParaList}, Please check!");
                 }
@@ -75,7 +75,7 @@ namespace JPT_TosaTest.Model.ToolData
                     {
                         this.GeometryType = geometryType;
                         this.L1Name = l1Name;
-                        this.L2Name = L2Name;
+                        this.L2Name = l2Name;
                         return true;
                     }
                 }

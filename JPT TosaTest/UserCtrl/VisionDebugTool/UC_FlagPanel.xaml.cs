@@ -95,11 +95,11 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         {
             get
             {
-                return GetValue(UpdateParaCommandProperty) as RelayCommand<ToolDataBase>;
+                return GetValue(AddFlagCommandProperty) as RelayCommand<ToolDataBase>;
             }
             set
             {
-                SetValue(UpdateParaCommandProperty, value);
+                SetValue(AddFlagCommandProperty, value);
             }
 
         }

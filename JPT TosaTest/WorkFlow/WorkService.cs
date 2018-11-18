@@ -41,6 +41,7 @@ namespace JPT_TosaTest.WorkFlow
         private object Hom_2D_Hsg=null, ModelPos_Hsg=null, Hom_2D_Tia = null, ModelPos_Tia = null;
         private List<object> TopLines = null;
         private List<object> BottomLines = null;
+        private object TiaFlag = null;
         private string File_ToolParaPath = $"{FileHelper.GetCurFilePathString()}VisionData\\ToolData\\";
         private string File_ModelFilePath = $"VisionData\\Model\\";    //Model
        
@@ -452,6 +453,9 @@ namespace JPT_TosaTest.WorkFlow
                             Line2 = LineList[1]
                         };
                         HalconVision.Instance.ProcessImage(Tool_ShowLineTop);
+
+                        //同时显示Tia的Region
+                        HalconVision.Instance.ShowRoi(0, TiaFlag);
                         if(GetCurStepCount()==0)
                             nStep = 4;
                         break;
@@ -477,7 +481,7 @@ namespace JPT_TosaTest.WorkFlow
                 switch (nStep)
                 {
                     case 0: //移动CY
-                        
+                        TiaFlag = null;
                         MotionCard.MoveAbs(AXIS_CY, 1000, 10, PtCamBottom_Support[PT_CY]);
                         nStep = 1;
                         break;
@@ -513,7 +517,11 @@ namespace JPT_TosaTest.WorkFlow
                             nStep = 4;
                         break;
                     case 4: //去找Tia的Model和基准线，并画出region
-                         FindLineTia();
+                        if (TiaFlag == null)
+                            FindLineTia();
+                        else
+                            HalconVision.Instance.ShowRoi(0, TiaFlag);
+
                          nStep = 5;
                         break;
                     case 5: //
@@ -691,7 +699,7 @@ namespace JPT_TosaTest.WorkFlow
 
             //显示region
             //定义两条直线
-            string RegionFullPathFileName = $"{File_ModelFilePath}{Config.ConfigMgr.Instance.ProcessData.HsgModelName}.reg";
+            string RegionFullPathFileName = $"{File_ToolParaPath}Flag.reg";
             List<Tuple<double, double, double, double>> TiaLineList = new List<Tuple<double, double, double, double>>();
             foreach (var it in FindTiaLine.Out_Lines)
                 TiaLineList.Add(new Tuple<double, double, double, double>(it.Item1.D, it.Item2.D, it.Item3.D, it.Item4.D));
@@ -707,6 +715,8 @@ namespace JPT_TosaTest.WorkFlow
                 In_RegionFullPathFileName = RegionFullPathFileName
             };
             HalconVision.Instance.ProcessImage(ShowFlagStep);
+
+            TiaFlag = ShowFlagStep.Out_Region;
             return true;
         }
 
