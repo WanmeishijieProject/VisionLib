@@ -266,10 +266,10 @@ namespace JPT_TosaTest.Vision
         /// <returns></returns>
         public bool ProcessImage(VisionProcessStepBase ProcessStep)
         {
-            int nCamID = ProcessStep.CamID;
+            int nCamID = ProcessStep.In_CamID;
             if (nCamID < 0)
                 return false;
-            ProcessStep.Image = HoImageList[nCamID];     
+            ProcessStep.In_Image = HoImageList[nCamID];     
             return ProcessStep.Process();
         }
         /// <summary>
@@ -402,7 +402,7 @@ namespace JPT_TosaTest.Vision
                         //通过两条平行线来标定
                         case IMAGEPROCESS_STEP.T5:  //标定图像
                             {
-                                result= SetKValueOfCam(nCamID, 6600, para as List<Object>);
+                                result= SetKValueOfCam(nCamID, 6600, para as List<Object>, out double factor);
                             }
 
                             break;
@@ -938,7 +938,15 @@ namespace JPT_TosaTest.Vision
 
 
         }
-
+        /// <summary>
+        /// 可以找直线和边缘对
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="LineParaList"></param>
+        /// <param name="hom_2D"></param>
+        /// <param name="ModelPos"></param>
+        /// <param name="lineList"></param>
+        /// <returns></returns>
         public bool FindLineBasedModelRoi(HObject image, List<string> LineParaList, HTuple hom_2D, HTuple ModelPos, out List<object> lineList)
         {
             List<object> lineListRawData = new List<object>();
@@ -957,6 +965,8 @@ namespace JPT_TosaTest.Vision
                 }
                 foreach (var para in LineParaList)
                 {
+                   
+
                     string[] paralist = para.Split('|');
                     if (paralist.Count() != 3)
                         continue;
@@ -1090,8 +1100,9 @@ namespace JPT_TosaTest.Vision
         /// <param name="RealDistance">实际距离um</param>
         /// <param name="PLineList">应该包含至少两条平行线用来计算像素距离</param>
         /// <returns></returns>
-        private bool SetKValueOfCam(int nCamID, double RealDistance, List<object> PLineList)
+        public bool SetKValueOfCam(int nCamID, double RealDistance, List<object> PLineList, out double factor)
         {
+            factor = 1;
             if (PLineList == null || PLineList.Count < 2 || RealDistance==0.0f)
                 return false;
             Tuple<HTuple, HTuple, HTuple, HTuple> line1 = PLineList[0] as Tuple<HTuple, HTuple, HTuple, HTuple>;
@@ -1101,6 +1112,7 @@ namespace JPT_TosaTest.Vision
             HOperatorSet.DistancePl(line1.Item1, line1.Item2, line2.Item1, line2.Item2, line2.Item3, line2.Item4, out HTuple D1);
             HOperatorSet.DistancePl(line1.Item3, line1.Item4, line2.Item1, line2.Item2, line2.Item3, line2.Item4, out HTuple D2);
             KList[nCamID] = (2 * RealDistance) / (D1 + D2);
+            factor=KList[nCamID];
             return true;
         }
 #endregion

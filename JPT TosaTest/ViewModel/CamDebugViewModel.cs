@@ -10,6 +10,7 @@ using JPT_TosaTest.UserCtrl;
 using JPT_TosaTest.UserCtrl.VisionDebugTool;
 using JPT_TosaTest.Vision;
 using JPT_TosaTest.Vision.Light;
+using JPT_TosaTest.Vision.ProcessStep;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -44,8 +45,8 @@ namespace JPT_TosaTest.ViewModel
         public EnumCamSnapState _camSnapState;
         private Storyboard RoiSb = null, TemplateSb = null;
         private string PATH_DEFAULT_IMAGEPATH = @"C:\";
-        private string PATH_TOOLPATH = FileHelper.GetCurFilePathString() + @"VisionData\ToolData\";
-        private string PATH_MODELPATH= FileHelper.GetCurFilePathString() + @"VisionData\Model\";
+        private string PATH_TOOLPATH =  @"VisionData\ToolData\";
+        private string PATH_MODELPATH=  @"VisionData\Model\";
 
         private int _lightBrightness = 0;
         private bool _openLightSource = false;
@@ -663,25 +664,20 @@ namespace JPT_TosaTest.ViewModel
                 return new RelayCommand<ModelItem>(item =>
                 {
                     int nCamID = CurrentSelectedCamera;
+                    if (nCamID < 0)
+                        nCamID = 0;
                     if (item == null)
                     {
                         UC_MessageBox.ShowMsgBox("请选择一个模板进行操作", "请选择模板", MsgType.Error);
                         return;
                     }
-                      
-                    if (nCamID >= 0)
+                    string strModelFileName = $"VisionData\\Model\\Cam{nCamID}_{item.StrName}.shm";    //Model
+                    StepFindModel FindModelStep = new StepFindModel()
                     {
-                        string strModelFileName = $"VisionData\\Model\\Cam{nCamID}_{item.StrName}.shm";    //Model
-                        try
-                        {
-                            //查找模板并获取数据
-                            bool bRet = HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T1, nCamID, strModelFileName, out object result);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new Exception($"测试Model发生错误{ex.Message}");
-                        }
-                    }
+                        In_CamID = 0,
+                        In_ModelNameFullPath = strModelFileName
+                    };
+                    HalconVision.Instance.ProcessImage(FindModelStep);
                 });
             }
         }
@@ -867,7 +863,6 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
-
         public RelayCommand<ToolDataBase> DebugRunToolCommand
         {
             get
@@ -885,8 +880,6 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
-      
-
         public RelayCommand<ToolDataBase> SaveEdgeToolCommand
         {
             get
@@ -896,46 +889,22 @@ namespace JPT_TosaTest.ViewModel
                     {           
                         SaveFileDialog sfd = new SaveFileDialog();
                         sfd.Filter = "文本文件(*.para)|*.para|所有文件|*.*";//设置文件类型
-                        sfd.FileName = "LinePara";//设置默认文件名
+                        sfd.FileName = para.ToolType.ToString();//设置默认文件名
                         sfd.DefaultExt = "para";//设置默认格式（可以不设）
                         sfd.AddExtension = true;//设置自动在文件名中添加扩展名
                         sfd.RestoreDirectory = true;
-                        sfd.InitialDirectory = PATH_TOOLPATH;
-                       
-
+                        sfd.InitialDirectory =FileHelper.GetCurFilePathString()+PATH_TOOLPATH;
+                      
                         if (sfd.ShowDialog() == DialogResult.OK)
                         {
-                            string HalconData = "";
-                            switch (para.ToolType)
-                            {
-                                case EnumToolType.CircleTool:
-                                    throw new Exception("没有实现");
-                                case EnumToolType.FlagTool:
-                                    HalconData = HalconVision.Instance.GeometryPosString;
-                                    break;
-                                case EnumToolType.LineTool:
-                                    HalconData = HalconVision.Instance.LineRoiData;
-                                    break;
-                                case EnumToolType.PairTool:
-                                    HalconData = HalconVision.Instance.PairRoiData;
-                                    break;
-                                default:
-                                    break;
-                            }
-
-                            string strPara = $"{para.ToString()}|{HalconData}";
                             if(para.ToolType== EnumToolType.LineTool)
                                 UpdateToolFileCollect();
                             //保存Flag的区域
                             if (para.ToolType == EnumToolType.FlagTool)
                                 HalconVision.Instance.SaveFlagToolRegion(sfd.FileName);
-                            File.WriteAllText(sfd.FileName, strPara);
-
+                            File.WriteAllText(sfd.FileName, para.ToString());
                         }
-                        else
-                        {
-                            //Do Nothing
-                        }
+                 
                     }
                     catch (Exception ex)
                     {
@@ -994,7 +963,81 @@ namespace JPT_TosaTest.ViewModel
                 });
             }
         }
-        
+        public RelayCommand<ToolDataBase> AddFlagCommand
+        {
+            get { return new RelayCommand<ToolDataBase>(para=> {
+                int nCamID = 0;
+                FlagToolDaga data = para as FlagToolDaga;
+                var L1Data = File.ReadAllText($"{PATH_TOOLPATH}{data.L1Name}.para");
+                var L2Data = File.ReadAllText($"{PATH_TOOLPATH}{data.L2Name}.para");
+                string ModelName = L1Data.Split('|')[1].Split('&')[4];
+
+                //先找模板
+                string ModelFullPathName = $"{PATH_MODELPATH}Cam{nCamID}_{ModelName}.shm";
+                string paraIn = $"{ModelFullPathName},{L1Data},{L2Data},{data.GeometryType.ToString()}";
+                HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T6, nCamID, paraIn, out object Hom2DAndModelPos);
+                //有了垂线才能画点，同时存储角度与位置关系
+            }); }
+        }
+
+        public RelayCommand DebugCommand
+        {
+            get { return new RelayCommand(()=> {
+                try
+                {                 //找模板
+                    StepFindModel FindModel = new StepFindModel()
+                    {
+                        In_CamID = 0,
+                        In_ModelNameFullPath = PATH_MODELPATH + "Cam0_HsgModel.shm"
+
+                    };
+                    HalconVision.Instance.ProcessImage(FindModel);
+
+                    List<string> Rois = new List<string>();
+                    LineToolData data = new LineToolData();
+                    PairToolData pairData = new PairToolData();
+
+                    pairData.FromString(File.ReadAllText(PATH_TOOLPATH + "Pair1.para"));
+                    Rois.Add(pairData.ToString());
+
+                    pairData.FromString(File.ReadAllText(PATH_TOOLPATH + "Pair2.para"));
+                    Rois.Add(pairData.ToString());
+
+                    data.FromString(File.ReadAllText(PATH_TOOLPATH + "LineTool1.para"));
+                    Rois.Add(data.ToString());
+                    data.FromString(File.ReadAllText(PATH_TOOLPATH + "LineTool2.para"));
+                    Rois.Add(data.ToString());
+                    //找线
+                    StepFindeLineByModel FindLineTool = new StepFindeLineByModel()
+                    {
+                        In_CamID = 0,
+                        In_ModelCOl = FindModel.Out_ModelCol,
+                        In_ModelPhi = FindModel.Out_ModelPhi,
+                        In_ModelRow = FindModel.Out_ModelRow,
+                        In_Hom_mat2D = FindModel.Out_Hom_mat2D,
+
+                        In_LineRoiPara = Rois
+                    };
+
+                    //显示线
+                    HalconVision.Instance.ProcessImage(FindLineTool);
+                    HalconVision.Instance.DisplayLines(0, FindLineTool.Out_Lines);
+
+                    //显示上表面线
+                    StepShowLineTop ShowLineTopTool = new StepShowLineTop()
+                    {
+                        In_PixGainFactor = 1,
+                        In_CamID = 0
+
+                    };
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+
+            }); }
+        }
 
     }
     #endregion

@@ -25,7 +25,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS, _TEST</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS, TEST</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>true</RunCodeAnalysis>
@@ -217,7 +217,7 @@
     <Compile Include="Model\ToolData\CircleToolData.cs" />
     <Compile Include="Model\ToolData\LineToolData.cs" />
     <Compile Include="Model\ToolData\PairToolData.cs" />
-    <Compile Include="Model\ToolData\TagToolData.cs" />
+    <Compile Include="Model\ToolData\FlagToolData.cs" />
     <Compile Include="Model\ToolData\ToolDataBase.cs" />
     <Compile Include="MotionCards\IMotion.cs" />
     <Compile Include="MotionCards\MotionMgr.cs" />
@@ -299,6 +299,8 @@
     <Compile Include="Vision\Light\Light_JK_PWD6024.cs" />
     <Compile Include="Vision\Light\LigtMgr.cs" />
     <Compile Include="Vision\ProcessStep\StepCalibImage.cs" />
+    <Compile Include="Vision\ProcessStep\StepDrawFlag.cs" />
+    <Compile Include="Vision\ProcessStep\StepShowFlag.cs" />
     <Compile Include="Vision\ProcessStep\StepFindeLineByModel.cs" />
     <Compile Include="Vision\ProcessStep\StepFindModel.cs" />
     <Compile Include="Vision\ProcessStep\StepShowLineBottom.cs" />

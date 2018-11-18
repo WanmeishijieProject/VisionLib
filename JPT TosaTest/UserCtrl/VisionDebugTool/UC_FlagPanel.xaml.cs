@@ -91,6 +91,21 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         }
         public static readonly DependencyProperty UpdateParaCommandProperty = DependencyProperty.Register("UpdateParaCommand", typeof(RelayCommand<ToolDataBase>), typeof(UC_FlagPanel));
 
+        public RelayCommand<ToolDataBase> AddFlagCommand
+        {
+            get
+            {
+                return GetValue(UpdateParaCommandProperty) as RelayCommand<ToolDataBase>;
+            }
+            set
+            {
+                SetValue(UpdateParaCommandProperty, value);
+            }
+
+        }
+        public static readonly DependencyProperty AddFlagCommandProperty = DependencyProperty.Register("AddFlagCommand", typeof(RelayCommand<ToolDataBase>), typeof(UC_FlagPanel));
+
+
         public object UpdateCommandParameter
         {
             get
@@ -104,6 +119,20 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
 
         }
         public static readonly DependencyProperty UpdateCommandParameterProperty = DependencyProperty.Register("UpdateCommandParameter", typeof(object), typeof(UC_FlagPanel));
+
+        public object AddFlagCommandParameter
+        {
+            get
+            {
+                return GetValue(UpdateCommandParameterProperty) as object;
+            }
+            set
+            {
+                SetValue(UpdateCommandParameterProperty, value);
+            }
+
+        }
+        public static readonly DependencyProperty AddFlagCommandParameterProperty = DependencyProperty.Register("AddFlagCommandParameter", typeof(object), typeof(UC_FlagPanel));
 
 
 
@@ -143,8 +172,16 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
                 ToolData.GeometryType = GeometryType;
             ToolData.L1Name = cbLine1.Text;
             ToolData.L2Name = cbLine2.Text;
+            ToolData.HalconData = HalconVision.Instance.GeometryPosString;
         }
 
         public ObservableCollection<string> GeometryTypeCollect { get; set; }
+
+        private void ButtonAddFlag_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateTagToolData();
+            if (AddFlagCommand != null)
+                AddFlagCommand.Execute(AddFlagCommandParameter);
+        }
     }
 }

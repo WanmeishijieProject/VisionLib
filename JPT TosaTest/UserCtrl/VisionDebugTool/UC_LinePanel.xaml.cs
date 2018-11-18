@@ -226,13 +226,14 @@ namespace JPT_TosaTest.UserCtrl.VisionDebugTool
         {
             if (int.TryParse(TbCaliberNum.Text, out int CaliperNum))
                 ToolData.CaliperNum = CaliperNum;
-            if (Enum.TryParse(CbSelectType.Text, out EnumEdgeType Polarity))
+            if (Enum.TryParse(CbPolarity.Text, out EnumEdgeType Polarity))
                 ToolData.Polarity = Polarity;
             if (Enum.TryParse(CbSelectType.Text, out EnumSelectType SelectType))
                 ToolData.SelectType = SelectType;
 
             ToolData.Contrast = (int)SliderContrast.Value;
             ToolData.ModelName = cbModelName.Text;
+            ToolData.HalconData = HalconVision.Instance.LineRoiData;
            
         }
 

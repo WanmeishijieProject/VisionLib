@@ -9,19 +9,20 @@ namespace JPT_TosaTest.Vision.ProcessStep
 {
     public class StepShowLineBottom : VisionProcessStepBase
     {
-        public List<Tuple<double, double, double, double>> Lines {get;set;}
+        public List<Tuple<double, double, double, double>> In_Lines {get;set;}
+        public double In_PixGainFactor { get; set; }
         public override bool Process()
         {
             try
             {
                 //转换像素与实际关系
-                double PadOffset = Config.ConfigMgr.Instance.ProcessData.PadOffset / PixGainFactor;
+                double PadOffset = Config.ConfigMgr.Instance.ProcessData.PadOffset / In_PixGainFactor;
                 List<Tuple<HTuple, HTuple, HTuple, HTuple>> TupleList = new List<Tuple<HTuple, HTuple, HTuple, HTuple>>();
-                foreach (var it in Lines)
+                foreach (var it in In_Lines)
                 {
                     TupleList.Add(new Tuple<HTuple, HTuple, HTuple, HTuple>(it.Item1, it.Item2, it.Item3, it.Item4));
                 }
-                HalconVision.Instance.DisplayLines(CamID, TupleList);
+                HalconVision.Instance.DisplayLines(In_CamID, TupleList);
                 int LineNum = TupleList.Count;
                 if (LineNum >= 3)
                 {
@@ -54,7 +55,7 @@ namespace JPT_TosaTest.Vision.ProcessStep
                     HalconVision.Instance.GetParallelLineFromDistance(TupleList[LineNum - 1].Item1, TupleList[LineNum - 1].Item2, TupleList[LineNum - 1].Item3, TupleList[LineNum - 1].Item4, PadOffset, "row", -1, out HTuple hv_PLineRow, out HTuple hv_PLineCol,
                                                 out HTuple hv_PLineRow1, out HTuple hv_PLineCol1, out HTuple k1, out HTuple b1);
 
-                    HalconVision.Instance.DisplayLines(CamID, new List<Tuple<HTuple, HTuple, HTuple, HTuple>>() { new Tuple<HTuple, HTuple, HTuple, HTuple>(hv_PLineRow, hv_PLineCol, hv_PLineRow1, hv_PLineCol1) });
+                    HalconVision.Instance.DisplayLines(In_CamID, new List<Tuple<HTuple, HTuple, HTuple, HTuple>>() { new Tuple<HTuple, HTuple, HTuple, HTuple>(hv_PLineRow, hv_PLineCol, hv_PLineRow1, hv_PLineCol1) });
                     return true;
                 }
                 else

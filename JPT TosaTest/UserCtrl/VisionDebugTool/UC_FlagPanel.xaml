@@ -47,6 +47,8 @@
             <ComboBox Name="cbLine2" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Margin="10,0" SelectedIndex="0"
                       ItemsSource="{Binding LineList, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" FontSize="15"/>
         </Grid>
+        <Button Name="ButtonAddFlag" Grid.Row="3" Content="增加" Style="{StaticResource RoundButtonStyle1}" Background="{StaticResource ThemColor}"
+                HorizontalAlignment="Left" MinWidth="265" Margin="10" Click="ButtonAddFlag_Click"/>
         <DataGrid Grid.Row="5" CanUserAddRows="False" Margin="2">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="X1" Width="100" FontSize="20"/>

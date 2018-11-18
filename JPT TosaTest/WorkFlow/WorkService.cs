@@ -1,7 +1,9 @@
 ﻿
 using JPT_TosaTest.Classes;
 using JPT_TosaTest.Config.SoftwareManager;
+using JPT_TosaTest.Model.ToolData;
 using JPT_TosaTest.Vision;
+using JPT_TosaTest.Vision.ProcessStep;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -57,6 +59,15 @@ namespace JPT_TosaTest.WorkFlow
         List<double> PtDropDown_Support = null;
         Task GrabTask = null;
         private object MonitorLock = new object();
+
+
+        //Tool
+        private StepFindModel Tool_StepFindHsgModel = null;
+        private StepFindeLineByModel Tool_StepFindLineBottomByModel=null;
+        private StepFindeLineByModel Tool_StepFindLineTopByModel = null;
+        private StepShowLineTop Tool_ShowLineTop = null;
+        private StepShowLineBottom Tool_ShowLineBottom = null;
+        private StepCalibImage Tool_CalibImage = null;
 
         #endregion
 
@@ -355,25 +366,18 @@ namespace JPT_TosaTest.WorkFlow
 
                             //找Hsg
                             string ModelFulllPathFileName = $"{File_ModelFilePath}{Config.ConfigMgr.Instance.ProcessData.HsgModelName}.shm";
-                            Vision.HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T1, 0, ModelFulllPathFileName, out object Hom2DAndModelPos);
-
-                            if (Hom2DAndModelPos != null)
+                            Tool_StepFindHsgModel = new StepFindModel()
                             {
-                                List<object> list = Hom2DAndModelPos as List<object>;
-                                if (list.Count == 2)
-                                {
-                                    Hom_2D_Hsg = list[0];
-                                    ModelPos_Hsg = list[1];
-                                }
-                            }
-
+                                In_CamID = 0,
+                                In_ModelNameFullPath = ModelFulllPathFileName
+                            };
+                            HalconVision.Instance.ProcessImage(Tool_StepFindHsgModel);
                             nStep = 3;
                         }
                         break;
                     case 3: //模板找到以后开始找下表面线
                         {
-                            string ModelName=Config.ConfigMgr.Instance.ProcessData.HsgModelName;
-                            FindLineBottom(ModelName,out BottomLines);
+                            FindLineBottom();
                             MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamTop_PLC[PT_CZ]);       
                             nStep = 4;   
                         }
@@ -391,16 +395,10 @@ namespace JPT_TosaTest.WorkFlow
                     case 5: //升到上表面寻找上表面的线
                         if (MotionCard.IsNormalStop(AXIS_CY))
                         {
-                            {
-                                Thread.Sleep(200);
-                                HalconVision.Instance.GrabImage(0);
-                                string ModelName = Config.ConfigMgr.Instance.ProcessData.HsgModelName;
-                                FindLineBottom(ModelName, out BottomLines);
-                                FindLineTop(ModelName,out TopLines);
-                                //顺便将图像尺寸标定了
-                                HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T5, 0, TopLines, out object result);
-                                nStep = 6;
-                            }
+                            Thread.Sleep(200);
+                            HalconVision.Instance.GrabImage(0);
+                            FindLineTop();
+                            nStep = 6;                       
                         }
                         break;
                     case 6: // 完毕,等待工作
@@ -442,9 +440,18 @@ namespace JPT_TosaTest.WorkFlow
                         }
                         break;
                     case 3: //开始拍照并显示
-                        //HalconVision.Instance.GrabImage(0,true,true);
                         StartMonitor(0);
-                        HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T3, 0, TopLines, out object r);
+                        var LineList = new List<Tuple<double, double, double, double>>();
+                        foreach (var it in Tool_StepFindLineTopByModel.Out_Lines)
+                            LineList.Add(new Tuple<double, double, double, double>(it.Item1.D, it.Item2.D, it.Item3.D, it.Item4.D));
+                        Tool_ShowLineTop = new StepShowLineTop()
+                        {
+                            In_CamID = 0,
+                            In_PixGainFactor = Tool_CalibImage.Out_PixGainFactor,
+                            Line1 = LineList[0],
+                            Line2 = LineList[1]
+                        };
+                        HalconVision.Instance.ProcessImage(Tool_ShowLineTop);
                         if(GetCurStepCount()==0)
                             nStep = 4;
                         break;
@@ -492,35 +499,22 @@ namespace JPT_TosaTest.WorkFlow
                     case 3:
                         //HalconVision.Instance.GrabImage(0, true, true);
                         StartMonitor(0);
-                        HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T4, 0, BottomLines, out object r);
+                        var LineList = new List<Tuple<double, double, double, double>>();
+                        foreach (var it in Tool_StepFindLineBottomByModel.Out_Lines)
+                            LineList.Add(new Tuple<double, double, double, double>(it.Item1.D, it.Item2.D, it.Item3.D, it.Item4.D));
+                        Tool_ShowLineBottom = new StepShowLineBottom()
+                        {
+                            In_CamID = 0,
+                            In_PixGainFactor = Tool_CalibImage.Out_PixGainFactor,
+                            In_Lines= LineList
+                        };
+                        HalconVision.Instance.ProcessImage(Tool_ShowLineBottom);
                         if (GetCurStepCount() == 0)
                             nStep = 4;
                         break;
-                    case 4: //去找Tia的线
-                        object Hom2DAndModelPos = null;
-                        string ModelFulllPathFileName = $"{File_ModelFilePath}{Config.ConfigMgr.Instance.ProcessData.HsgModelName}.shm";
-                        Vision.HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T1, 0, ModelFulllPathFileName, out Hom2DAndModelPos);
-
-                        if (Hom2DAndModelPos != null)
-                        {
-                            List<object> list = Hom2DAndModelPos as List<object>;
-                            if (list.Count == 2)
-                            {
-                                Hom_2D_Tia = list[0];
-                                ModelPos_Tia = list[1];
-                            }
-                        }
-
-                        FindLineTia(ModelFulllPathFileName, out List<object> lines);
-                        List<object> listIn = new List<object>();
-                        listIn.Add(lines);
-                        listIn.Add(Hom2DAndModelPos);
-                        HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T7, 0, null, out object result);
-                        
-                        
-                        //找Tia
-                       
-                        nStep = 5;
+                    case 4: //去找Tia的Model和基准线，并画出region
+                         FindLineTia();
+                         nStep = 5;
                         break;
                     case 5: //
 
@@ -541,8 +535,6 @@ namespace JPT_TosaTest.WorkFlow
             ShowInfo("Pad被终止");
         }
         #endregion
-
-
 
        
         private void BackToTempPos()
@@ -571,57 +563,54 @@ namespace JPT_TosaTest.WorkFlow
             }
         }
          
+   
         /// <summary>
-        /// 根据模板找线
+        /// 找Bottom的基线
         /// </summary>
-        /// <param name="ModelName"></param>
-        /// <param name="lineList"></param>
-        /// <returns></returns>    
-        private bool FindLineBottom(string ModelName, out List<object> lineList)
+        /// <returns></returns>
+        private bool FindLineBottom()
         {
-            lineList = null;
-            try
+            string ModelName = Config.ConfigMgr.Instance.ProcessData.HsgModelName;
+            List<string> LineList = new List<string>();
+            var fileList = FileHelper.GetProfileList(File_ToolParaPath);
+            //既包含Pair也包含Line
+            foreach (var file in fileList)
             {
-                List<string> listParas = new List<string>();  
-                var fileList = FileHelper.GetProfileList(File_ToolParaPath);
-                foreach (var file in fileList)
+                if (file.Contains("Bottom"))
                 {
-                    if (file.Contains("Bottom"))
-                    {
-                        string text = File.ReadAllText($"{File_ToolParaPath}{file}.para");
-                        var l1 = text.Split('|');
-                        var l2 = l1[1].Split('&');
-                        string name = l2[l2.Length - 1];
-                        if (!string.IsNullOrEmpty(ModelName) && name == ModelName)
-                        {
-                            listParas.Add(text);
-                        }
-                    }
+                    string text = File.ReadAllText($"{File_ToolParaPath}{file}.para");
+                    LineList.Add(text);
                 }
-                if (Hom_2D_Hsg != null && ModelPos_Hsg != null)
-                {
-                    HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T2, 0, new List<object> { Hom_2D_Hsg, ModelPos_Hsg, listParas }, out object result);
-                    lineList = result as List<object>;
-                }
-                else
-                {
-                    //TO DO
-                }
-                return true;
             }
-            catch
+            Tool_StepFindLineBottomByModel = new StepFindeLineByModel()
             {
-                return false;
+                In_CamID = 0,
+                In_ModelRow = Tool_StepFindHsgModel.Out_ModelRow,
+                In_ModelCOl = Tool_StepFindHsgModel.Out_ModelCol,
+                In_ModelPhi = Tool_StepFindHsgModel.Out_ModelPhi,
+                In_LineRoiPara = LineList
+            };
+            HalconVision.Instance.ProcessImage(Tool_StepFindLineBottomByModel);
+            //BottomLines = new List<object>();
+            foreach (var it in Tool_StepFindLineBottomByModel.Out_Lines)
+            {
+                BottomLines.Add(it);
             }
+            return true;
         }
-        private bool FindLineTop(string ModelName,out List<object> lineList)
+
+        /// <summary>
+        /// 找Top的基线
+        /// </summary>
+        /// <returns></returns>
+        private bool FindLineTop()
         {
-            lineList = new List<object>();
-            try
+            string ModelName = Config.ConfigMgr.Instance.ProcessData.HsgModelName;
+            List<string> LineList = new List<string>();
+            var fileList = FileHelper.GetProfileList(File_ToolParaPath);
+            foreach (var file in fileList)
             {
-                List<string> listParas = new List<string>();
-                var fileList = FileHelper.GetProfileList(File_ToolParaPath);
-                foreach (var file in fileList)
+                if (file.Contains("Bottom"))
                 {
                     string text = File.ReadAllText($"{File_ToolParaPath}{file}.para");
                     var l1 = text.Split('|');
@@ -629,25 +618,40 @@ namespace JPT_TosaTest.WorkFlow
                     string name = l2[l2.Length - 1];
                     if (!string.IsNullOrEmpty(ModelName) && name == ModelName)
                     {
-                        listParas.Add(text);
+                        LineList.Add(text);
                     }
                 }
-                if (Hom_2D_Hsg != null && ModelPos_Hsg != null)
-                {
-                    HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T2, 0, new List<object> { Hom_2D_Hsg, ModelPos_Hsg, listParas }, out object result);
-                    lineList = result as List<object>;
-                }
-                else
-                    return false;
-                return true;
             }
-            catch
+
+            Tool_StepFindLineTopByModel = new StepFindeLineByModel()
             {
-                return false;
+                In_CamID = 0,
+                In_LineRoiPara = LineList,
+                In_Hom_mat2D = Tool_StepFindHsgModel.Out_Hom_mat2D,
+                In_ModelRow = Tool_StepFindHsgModel.Out_ModelRow,
+                In_ModelCOl = Tool_StepFindHsgModel.Out_ModelCol,
+                In_ModelPhi = Tool_StepFindHsgModel.Out_ModelPhi
+            };
+            HalconVision.Instance.ProcessImage(Tool_StepFindLineTopByModel);
+
+
+            //找线
+            var LinesForCalib = new List<Tuple<double, double, double, double>>();
+            foreach (var it in Tool_StepFindLineTopByModel.Out_Lines)
+            {
+                TopLines.Add(it);
             }
+            Tool_CalibImage = new StepCalibImage()
+            {
+                In_CamID = 0,
+                In_RealDistance = 6600,
+                In_Line1 = LinesForCalib[0],
+                In_Line2 = LinesForCalib[1]
+            };
+            //顺便将图像尺寸标定了
+            HalconVision.Instance.ProcessImage(Tool_CalibImage);
+            return true;
         }
-
-
 
         /// <summary>
         /// 找Tia的基准线
@@ -655,41 +659,84 @@ namespace JPT_TosaTest.WorkFlow
         /// <param name="ModelName">只需要名称，不需要路径</param>
         /// <param name="lineList"></param>
         /// <returns></returns>
-        private bool FindLineTia(string ModelName, out List<object> lineList)
+        private bool FindLineTia()
         {
-            lineList = new List<object>();
-            try
+            //找Model
+            string ModelFulllPathFileName = $"{File_ModelFilePath}{Config.ConfigMgr.Instance.ProcessData.HsgModelName}.shm";
+            StepFindModel FindTiaModelStep = new StepFindModel()
             {
+                In_CamID = 0,
+                In_ModelNameFullPath = ModelFulllPathFileName
+            };
+            HalconVision.Instance.ProcessImage(FindTiaModelStep);
 
-                List<string> listParas = new List<string>();
-                var fileList = FileHelper.GetProfileList(File_ToolParaPath);
+            //准备Tia的FlagData,读取L1与L2
+            List<string> LineList = new List<string>();
+            FlagToolDaga FlagData = new FlagToolDaga();
+            FlagData.FromString(File.ReadAllText(File_ToolParaPath + "Tia.para"));
+            LineList.Add(File.ReadAllText(File_ToolParaPath + FlagData.L1Name + ".para"));
+            LineList.Add(File.ReadAllText(File_ToolParaPath + FlagData.L2Name + ".para"));
 
-                //将所有与该model有关的Roi加载进来
-                foreach (var file in fileList)
-                {
-                    string text = File.ReadAllText($"{File_ToolParaPath}{file}.para");
-                    var l1 = text.Split('|');
-                    var l2 = l1[1].Split('&');
-                    string name = l2[l2.Length - 1];
-                    if (!string.IsNullOrEmpty(ModelName) && name == ModelName)
-                    {
-                        listParas.Add(text);
-                    }
-                }
-                if (Hom_2D_Tia != null && ModelPos_Tia != null)
-                {
-                    HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T5, 0, new List<object> { Hom_2D_Tia, ModelPos_Tia, listParas }, out object result);
-                    lineList = result as List<object>;
-                }
-                else
-                    return false;
-                return true;
-            }
-            catch
+            //找线
+            StepFindeLineByModel FindTiaLine = new StepFindeLineByModel()
             {
-                return false;
-            }
+                In_CamID = 0,
+                In_Hom_mat2D = FindTiaModelStep.Out_Hom_mat2D,
+                In_ModelRow = FindTiaModelStep.Out_ModelRow,
+                In_ModelCOl = FindTiaModelStep.Out_ModelCol,
+                In_ModelPhi = FindTiaModelStep.Out_ModelPhi,
+                In_LineRoiPara = LineList
+            };
+            HalconVision.Instance.ProcessImage(FindTiaLine);
+
+            //显示region
+            //定义两条直线
+            string RegionFullPathFileName = $"{File_ModelFilePath}{Config.ConfigMgr.Instance.ProcessData.HsgModelName}.reg";
+            List<Tuple<double, double, double, double>> TiaLineList = new List<Tuple<double, double, double, double>>();
+            foreach (var it in FindTiaLine.Out_Lines)
+                TiaLineList.Add(new Tuple<double, double, double, double>(it.Item1.D, it.Item2.D, it.Item3.D, it.Item4.D));
+
+            StepShowFlag ShowFlagStep = new StepShowFlag()
+            {
+                In_CamID = 0,
+                In_CenterRow = FlagData.Halcon_Row,
+                In_CenterCol = FlagData.Halcon_Col,
+                In_Phi = FlagData.Halcon_Phi,
+                In_HLine = TiaLineList[0],
+                In_VLine = TiaLineList[1],
+                In_RegionFullPathFileName = RegionFullPathFileName
+            };
+            HalconVision.Instance.ProcessImage(ShowFlagStep);
+            return true;
         }
+
+        private List<string> GetToolRoiDataByFileName(string ModelName,string SubString, int[] IndexList=null)
+        {
+            List<string> RoiDataList = new List<string>();
+            var fileList = FileHelper.GetProfileList(File_ToolParaPath);
+            string ExpectedName = "";
+            if (IndexList == null)
+                ExpectedName = SubString;
+            foreach (var file in fileList)
+            {
+                string text = File.ReadAllText($"{File_ToolParaPath}{file}.para");
+                var L1 = text.Split('|');
+                var L2 = L1[1].Split('&');
+                string modelName = L2[L2.Length - 1];
+                if (!string.IsNullOrEmpty(modelName) && modelName == ModelName)
+                {
+                    RoiDataList.Add(text);
+                }
+
+            }
+            return RoiDataList;
+        }
+
+      
+
+
+
+
         private bool GetAllPoint()
         {
             PTCamTop_Support = WorkFlowMgr.Instance.GetPoint("Pad相机顶部位置");

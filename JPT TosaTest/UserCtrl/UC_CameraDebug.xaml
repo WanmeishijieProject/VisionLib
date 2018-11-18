@@ -211,6 +211,7 @@
                                         <ContextMenu>
                                             <MenuItem Name="MenueShow" Header="{DynamicResource CameraPage_MenuShow}" FontSize="15" Click="MenueShow_Click"/>
                                             <MenuItem Name="MenueSelectItem" Header="{DynamicResource CameraPage_MenuUseItem}" FontSize="15" Click="MenueSelectItem_Click"/>
+                                            <MenuItem Name="Debug" Header="Debug" Command="{Binding DebugCommand}"/>
                                         </ContextMenu>
                                     </ListBox.ContextMenu>
                                     <ListBox.ItemTemplate>
@@ -353,7 +354,7 @@
                                                              LineList="{Binding EdgeFileCollect}"
                                                              SaveParaCommand="{Binding SaveEdgeToolCommand}" SaveCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"
                                                              UpdateParaCommand="{Binding UpdateEdgeToolCommand}" UpdateCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"
-                                                             />
+                                                             AddFlagCommand="{Binding AddFlagCommand}" AddFlagCommandParameter="{Binding Data, RelativeSource={RelativeSource Mode=Self}}"/>
                                 </Grid>
                             </Grid>
                         </TabItem>

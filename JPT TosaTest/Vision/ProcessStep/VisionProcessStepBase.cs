@@ -10,9 +10,8 @@ namespace JPT_TosaTest.Vision.ProcessStep
 {
     public abstract class VisionProcessStepBase
     {
-        public int CamID { get; set; }
-        public HObject Image { get; set; } 
+        public int In_CamID { get; set; }
+        public HObject In_Image { get; set; } 
         public abstract bool Process();
-        public double PixGainFactor { get; set; }
     }
 }

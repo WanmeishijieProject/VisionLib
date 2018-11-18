@@ -12,7 +12,11 @@ namespace JPT_TosaTest.Model.ToolData
     public abstract class ToolDataBase : INotifyPropertyChanged
     {
         public abstract EnumToolType ToolType { get; set; }
-    
+        public abstract bool FromString(string ParaList);
+ 
+
+
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected void RaisePropertyChanged([CallerMemberName] string PropertyName="")
         {
