@@ -15,7 +15,18 @@ namespace JPT_TosaTest.Config.ProcessParaManager
         private string _tiaModelName = "";
         private string _hsgModelName = "";
         private string _tiaType = "";
+        private double _presure = 4.0f;
 
+        public ProcessPara()
+        {
+            ParaType = EnumConfigType.ProcessPara;
+        }
+
+        public EnumConfigType ParaType
+        {
+            get;
+            private set;
+        }
 
         public int CenterLineOffset
         {
@@ -81,10 +92,61 @@ namespace JPT_TosaTest.Config.ProcessParaManager
             }
         }
 
+
+
+        public double Presure
+        {
+            get { return _presure; }
+            set
+            {
+                if (value != _presure)
+                {
+                    _presure = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         private void RaisePropertyChanged([CallerMemberName] string PropertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(PropertyName));
+        }
+
+        public override string ToString()
+        {
+            return $"{ParaType.ToString()}|{CenterLineOffset}&{PadOffset}&{TiaModelName}&{HsgModelName}&{Presure}";
+        }
+        public void FromString(string strPara)
+        {
+            var paraList = strPara.Split('|');
+            if (paraList.Length == 2)
+            {
+                var strType = paraList[0];
+                var L1 = paraList[1].Split('&');
+                if (L1.Length == 5)
+                {
+                    bool bRet = true;
+                    bRet &= Enum.TryParse(strType, out EnumConfigType type);
+                    bRet &= int.TryParse(L1[0], out int centerLineOffset);
+                    bRet &= int.TryParse(L1[1], out int padOffset);
+                    bRet &= double.TryParse(L1[4], out double press);
+                    if (type == EnumConfigType.ProcessPara && bRet)
+                    {
+                        CenterLineOffset = centerLineOffset;
+                        PadOffset = padOffset;
+                        TiaModelName = L1[2];
+                        HsgModelName = L1[3];
+                        Presure = press;
+                    }
+                    else
+                        throw new Exception($"Wrong {ParaType.ToString()}  when parse {strPara}");
+                }
+                else
+                    throw new Exception($"Wrong number {ParaType.ToString()}  when parse {strPara}");
+            }
+
+
         }
     }
 }

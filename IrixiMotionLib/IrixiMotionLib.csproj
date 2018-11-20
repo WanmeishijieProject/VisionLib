@@ -68,6 +68,8 @@
     <Compile Include="IrixiCommand\Irixi_HOST_CMD_SET_ACC.cs" />
     <Compile Include="IrixiCommand\Irixi_HOST_CMD_GET_MCSU_SETTINGS.cs" />
     <Compile Include="IrixiCommand\Irixi_HOST_CMD_SET_MODE.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_SET_CSSTHD.cs" />
+    <Compile Include="IrixiCommand\Irixi_HOST_CMD_EN_CSS.cs" />
     <Compile Include="IrixiCommand\Irixi_HOST_CMD_STOP.cs" />
     <Compile Include="IrixiEE0017.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

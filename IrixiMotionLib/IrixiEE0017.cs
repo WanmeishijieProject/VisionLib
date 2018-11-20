@@ -48,10 +48,14 @@ namespace JPT_TosaTest.MotionCards
         private Irixi_HOST_CMD_GET_ERR CommandGetErr = new Irixi_HOST_CMD_GET_ERR();
         private Irixi_HOST_CMD_SET_MODE CommandSetMode = new Irixi_HOST_CMD_SET_MODE();
         private Irixi_HOST_CMD_GET_MCSU_SETTINGS CommandGetMcsuSetting = new Irixi_HOST_CMD_GET_MCSU_SETTINGS();
-      
+
+        //压力传感器
+        private Irixi_HOST_CMD_EN_CSS CommandEnCss = new Irixi_HOST_CMD_EN_CSS();
+        private Irixi_HOST_CMD_SET_CSSTHD CommandSetCssThreshold = new Irixi_HOST_CMD_SET_CSSTHD();
+
 
         //解析包
-        private AutoResetEvent ParsePackageEvent = new AutoResetEvent(false);
+        private AutoResetEvent ParsePackageEvent = null;
         private Task TaskParsePackage = null;
         private CancellationTokenSource ctsParsePackage = null;
         private object PackageQueueLock = new object();
@@ -661,6 +665,46 @@ namespace JPT_TosaTest.MotionCards
             }
         }
 
+        public bool EnableCss(byte Channel, bool IsEnable)
+        {
+            lock (ComportLock)
+            {
+                try
+                {
+                    CommandEnCss.CssChannel = Channel;
+                    CommandEnCss.IsEnable = IsEnable;
+                    byte[] cmd = CommandReadAd.ToBytes();
+                    this.ExcuteCmd(cmd);
+                    return true;
+
+                }
+                catch (Exception ex)
+                {
+                    return false;
+                }
+            }
+        }
+
+        public bool SetCssThreshold(byte Channel, UInt16 LowThreshold, UInt16 HightThreshold)
+        {
+            lock (ComportLock)
+            {
+                try
+                {
+                    CommandSetCssThreshold.CssChannel = Channel;
+                    CommandSetCssThreshold.LowThreshold = LowThreshold;
+                    CommandSetCssThreshold.HightThreshold = HightThreshold;
+                    byte[] cmd = CommandReadAd.ToBytes();
+                    this.ExcuteCmd(cmd);
+                    return true;
+
+                }
+                catch (Exception ex)
+                {
+                    return false;
+                }
+            }
+        }
         /// <summary>
         /// 没有实现
         /// </summary>

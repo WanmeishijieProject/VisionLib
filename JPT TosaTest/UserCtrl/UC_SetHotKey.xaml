@@ -25,7 +25,7 @@
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Width="100" Margin="2" FontSize="12" VerticalAlignment="Center" Text="{Binding AxisName}"/>
-                        <TextBox Width="95" Margin="2" materialDesign:HintAssist.Hint="Backward" Text="{Binding BackwardKeyValue, Mode=OneWayToSource}" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="2" PreviewKeyDown="TextBox_KeyDown"
+                        <TextBox Width="95" Margin="2" materialDesign:HintAssist.Hint="Backward" Text="{Binding BackwardKeyValue}" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="2" PreviewKeyDown="TextBox_KeyDown"
                                     VerticalAlignment="Center" HorizontalAlignment="Center"  FontSize="12" materialDesign:HintAssist.FloatingOffset="0,-20" materialDesign:HintAssist.FloatingScale="3"/>
                         <TextBox Width="95" Margin="2" materialDesign:HintAssist.Hint="Forward" Text="{Binding ForwardKeyValue}" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="2" PreviewKeyDown="TextBox_KeyDown_1"
                                     VerticalAlignment="Center" HorizontalAlignment="Center"  FontSize="12" materialDesign:HintAssist.FloatingOffset="0,-20" materialDesign:HintAssist.FloatingScale="3"/>

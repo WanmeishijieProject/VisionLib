@@ -130,7 +130,32 @@ namespace JPT_TosaTest.ViewModel
                 }
             }
         }
-        public string TiaName { get; set; }
+        public string TiaName
+        {
+            get { return ConfigMgr.Instance.ProcessData.TiaModelName; }
+            set
+            {
+                if (value != ConfigMgr.Instance.ProcessData.TiaModelName)
+                {
+                    ConfigMgr.Instance.ProcessData.TiaModelName = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+        public double Pressure
+        {
+            get { return ConfigMgr.Instance.ProcessData.Presure; }
+            set
+            {
+                if (value != ConfigMgr.Instance.ProcessData.Presure)
+                {
+                    ConfigMgr.Instance.ProcessData.Presure = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+
         public ObservableCollection<string> TiaColletion { get; set; }
         #endregion
 
@@ -160,6 +185,16 @@ namespace JPT_TosaTest.ViewModel
                     RegisterHotKey(tuple.Item2, tuple.Item1);
                 });
             }
+        }
+
+        /// <summary>
+        /// 将压力传感器里面的值读取出来写入
+        /// </summary>
+        public RelayCommand CalibPressure
+        {
+            get { return new RelayCommand(()=> {
+                Pressure = 3.6;
+            }); }
         }
         #endregion
 

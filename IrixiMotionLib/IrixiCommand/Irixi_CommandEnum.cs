@@ -34,8 +34,8 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
         HOST_CMD_READ_DOUT,
         HOST_CMD_READ_DIN,
         HOST_CMD_READ_AD,
-        HOST_CMD_SET_CSS,
-        HOST_CMD_READ_CSS,
+        HOST_CMD_EN_CSS,            //Enable 
+        HOST_CMD_SET_CSSTHD,        //Set threshold
         HOST_CMD_SET_T_ADC,
         HOST_CMD_SET_T_OUT,
         HOST_CMD_BLINDSEARCH,

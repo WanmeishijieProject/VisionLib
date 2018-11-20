@@ -34,47 +34,60 @@
                         <Grid Grid.Row="0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="115"/>
-                                <ColumnDefinition/>
+                                <ColumnDefinition Width="200"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Len偏移" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
                             <TextBox Grid.Column="1" FontSize="20" Text="{Binding CenterLineOffset, Converter={StaticResource Int2String}}" 
-                                     HorizontalAlignment="Left" VerticalAlignment="Center" MinWidth="150" Margin="10,0"/>
+                                     HorizontalAlignment="Left" VerticalAlignment="Center" MinWidth="200" Margin="10,0"/>
                         </Grid>
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="115"/>
-                                <ColumnDefinition/>
+                                <ColumnDefinition Width="200"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Pad偏移" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
                             <TextBox Grid.Column="1" FontSize="20" Text="{Binding PadOffset, Converter={StaticResource Int2String}}" 
-                                     HorizontalAlignment="Left" VerticalAlignment="Center" MinWidth="150" Margin="10,0"/>
+                                     HorizontalAlignment="Left" VerticalAlignment="Center" MinWidth="200" Margin="10,0"/>
                         </Grid>
                         <Grid Grid.Row="2">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="115"/>
-                                <ColumnDefinition/>
+                                <ColumnDefinition Width="200"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Tia模板" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
-                            <ComboBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Margin="10,0" SelectedIndex="0" FontSize="20"
+                            <ComboBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="200" Margin="10,0" SelectedIndex="0" FontSize="20"
                             ItemsSource="{Binding CamDebugVM.AllModelCollection, Source={StaticResource Locator}, Converter={StaticResource ModelCollect2StringCollect}}" Text="{Binding TiaModelName}"/>
                         </Grid>
                         <Grid Grid.Row="3">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="115"/>
-                                <ColumnDefinition/>
+                                <ColumnDefinition Width="200"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Hsg模板" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
-                            <ComboBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Margin="10,0" SelectedIndex="0" FontSize="20"
+                            <ComboBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="200" Margin="10,0" SelectedIndex="0" FontSize="20"
                             ItemsSource="{Binding CamDebugVM.AllModelCollection, Source={StaticResource Locator}, Converter={StaticResource ModelCollect2StringCollect}}" Text="{Binding HsgModelName}"/>
                         </Grid>
                         <Grid Grid.Row="4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="115"/>
-                                <ColumnDefinition/>
+                                <ColumnDefinition Width="200"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Tia类型" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
-                            <ComboBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="150" Margin="10,0" SelectedIndex="0" FontSize="20"
+                            <ComboBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="200" Margin="10,0" SelectedIndex="0" FontSize="20"
                                 ItemsSource="{Binding TiaColletion}" Text="{Binding TiaName, Mode=OneWayToSource}"/>
+                           
+                        </Grid>
+                        <Grid Grid.Row="5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="115"/>
+                                <ColumnDefinition Width="200"/>
+                                <ColumnDefinition Width="100"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="压力设定" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
+                            <TextBox Grid.Column="1" FontSize="20" Text="{Binding Pressure, Converter={StaticResource Double2Text}}" 
+                                     HorizontalAlignment="Left" VerticalAlignment="Center" MinWidth="200" Margin="10,0"/>
+                            <Button Grid.Column="2" Content="标定压力" Style="{StaticResource RoundButtonStyle1}" Margin="5,7"
+                                    Command="{Binding CalibPressure}"/>
                         </Grid>
                     </Grid>
                 </ScrollViewer>

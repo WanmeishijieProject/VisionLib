@@ -352,17 +352,7 @@ namespace JPT_TosaTest.Config
             #region >>>>ProcessPara
             //从文件中读取参数
             string strPara = File.ReadAllText(File_ProcessPara);
-            if (strPara.Contains("|"))
-            {
-                string[] paraList = strPara.Split('|')[1].Split('&');
-                if (paraList.Count() == 4)
-                {
-                    ProcessData.CenterLineOffset = int.Parse(paraList[0]);
-                    ProcessData.PadOffset = int.Parse(paraList[1]);
-                    ProcessData.TiaModelName = paraList[2];
-                    ProcessData.HsgModelName = paraList[3];
-                }
-            }
+            ProcessData.FromString(strPara);
             #endregion
         }
         public void SaveConfig(EnumConfigType cfgType, object[] listObj)
@@ -393,7 +383,7 @@ namespace JPT_TosaTest.Config
                     (objSaved as UserCfgManager).Users= listObj as UserModel[];
                     break;
                 case EnumConfigType.ProcessPara:
-                    File.WriteAllText(File_ProcessPara, $"ProcessPara|{ProcessData.CenterLineOffset}&{ProcessData.PadOffset}&{ProcessData.TiaModelName}&{ProcessData.HsgModelName}");
+                    File.WriteAllText(File_ProcessPara, ProcessData.ToString());
                     return;
                 default:
                     break;
