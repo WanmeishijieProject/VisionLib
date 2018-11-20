@@ -72,6 +72,10 @@ namespace JPT_TosaTest.Vision.ProcessStep
             if (OldRegion.IsInitialized())
                 OldRegion.Dispose();
             
+            //显示结果
+ 
+           
+
             return true;
             
         }

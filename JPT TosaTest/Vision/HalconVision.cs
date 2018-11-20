@@ -968,14 +968,14 @@ namespace JPT_TosaTest.Vision
             //ReadRectangle
             try
             {
-                //foreach (var it in HwindowDic[0])
-                //{
-                //    HOperatorSet.SetSystem("flush_graphic", "false");
-                //    HOperatorSet.ClearWindow(it.Value);
-                //    HOperatorSet.DispObj(image, it.Value);
-                //    HOperatorSet.SetDraw(it.Value, "margin");
-                //    HOperatorSet.SetSystem("flush_graphic", "true");
-                //}
+                foreach (var it in HwindowDic[0])
+                {
+                    HOperatorSet.SetSystem("flush_graphic", "false");
+                    HOperatorSet.SetDraw(it.Value, "margin");
+                    HOperatorSet.SetColor(it.Value, "green");
+                    HOperatorSet.SetLineWidth(it.Value, 1);
+                    HOperatorSet.SetSystem("flush_graphic", "true");
+                }
                 foreach (var para in LineParaList)
                 {
                    
@@ -996,7 +996,7 @@ namespace JPT_TosaTest.Vision
                         HTuple Phi = double.Parse(RectPara[i++]);
                         HTuple L1 = double.Parse(RectPara[i++]);
                         HTuple L2 = double.Parse(RectPara[i++]);
-                        
+
 
                         HOperatorSet.AffineTransPoint2d(hom_2D, Row, Col, out HTuple outRoiRow, out HTuple outRoiCol);
                         HOperatorSet.GenRectangle2(out HObject rect, outRoiRow, outRoiCol, Phi + ModelPos[2], L1, L2);
@@ -1034,25 +1034,24 @@ namespace JPT_TosaTest.Vision
                             default:
                                 throw new Exception("invalid TOOL");
                         }
-
-                        //Display绿色是原始直线
                         foreach (var it in HwindowDic[0])
                         {
-                            HOperatorSet.SetColor(it.Value, "green");
                             HOperatorSet.DispObj(rect, it.Value);
-                            HOperatorSet.SetLineWidth(it.Value, 1);
-                            foreach (var obj in lineList)
-                            {
-                                Tuple<HTuple, HTuple, HTuple, HTuple> line = obj as Tuple<HTuple, HTuple, HTuple, HTuple>;
-                                if (line != null)
-                                    HOperatorSet.DispLine(it.Value, line.Item1, line.Item2, line.Item3, line.Item4);
-                            }
-
                         }
                     }
                 }
+                //Display绿色是原始直线
+                foreach (var it in HwindowDic[0])
+                {
+                    HOperatorSet.DispObj(image, it.Value);
+                    foreach (var obj in lineList)
+                    {
+                        Tuple<HTuple, HTuple, HTuple, HTuple> line = obj as Tuple<HTuple, HTuple, HTuple, HTuple>;
+                        if (line != null)
+                            HOperatorSet.DispLine(it.Value, line.Item1, line.Item2, line.Item3, line.Item4);
+                    }
+                }
                 return true;
-
 
             }
             catch (Exception ex)
@@ -1077,6 +1076,35 @@ namespace JPT_TosaTest.Vision
                     {
                         HOperatorSet.SetColor(it.Value, Color);
                         foreach (var line in lineList)
+                        {
+                            HOperatorSet.DispLine(it.Value, line.Item1, line.Item2, line.Item3, line.Item4);
+                        }
+                    }
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        public bool DisplayLines(int nCamID, List<object> lineList, string Color = "red")
+        {
+            try
+            {
+                lock (_lockList[nCamID])
+                {
+                    if (lineList == null)
+                        return false;
+                    var TupleLineList = new List<Tuple<HTuple, HTuple, HTuple, HTuple>>();
+                    foreach (var it in lineList as List<object>)
+                    {
+                        TupleLineList.Add(it as Tuple<HTuple, HTuple, HTuple, HTuple>);
+                    }
+                    foreach (var it in HwindowDic[nCamID])
+                    {
+                        HOperatorSet.SetColor(it.Value, Color);
+                        foreach (var line in TupleLineList)
                         {
                             HOperatorSet.DispLine(it.Value, line.Item1, line.Item2, line.Item3, line.Item4);
                         }
@@ -1118,15 +1146,23 @@ namespace JPT_TosaTest.Vision
             factor = 1;
             if (PLineList == null || PLineList.Count < 2 || RealDistance==0.0f)
                 return false;
-            Tuple<HTuple, HTuple, HTuple, HTuple> line1 = PLineList[0] as Tuple<HTuple, HTuple, HTuple, HTuple>;
-            Tuple<HTuple, HTuple, HTuple, HTuple> line2 = PLineList[1] as Tuple<HTuple, HTuple, HTuple, HTuple>;
-            if (line1 == null || line2 == null)
+            var LineList = new List<Tuple<double, double, double, double>>();
+            foreach (object it in PLineList)
+            {
+                LineList.Add(it as Tuple<double, double, double, double>);
+            }
+            
+            if (LineList == null || LineList.Count < 2)
                 return false;
-            HOperatorSet.DistancePl(line1.Item1, line1.Item2, line2.Item1, line2.Item2, line2.Item3, line2.Item4, out HTuple D1);
-            HOperatorSet.DistancePl(line1.Item3, line1.Item4, line2.Item1, line2.Item2, line2.Item3, line2.Item4, out HTuple D2);
+            HOperatorSet.DistancePl(LineList[0].Item1, LineList[0].Item2, LineList[1].Item1, LineList[1].Item2, LineList[1].Item3, LineList[1].Item4, out HTuple D1);
+            HOperatorSet.DistancePl(LineList[0].Item3, LineList[0].Item4, LineList[1].Item1, LineList[1].Item2, LineList[1].Item3, LineList[1].Item4, out HTuple D2);
             KList[nCamID] = (2 * RealDistance) / (D1 + D2);
             factor=KList[nCamID];
             return true;
+        }
+        public void SetRefreshWindow(int nCamID,bool bRefresh)
+        {
+            HOperatorSet.SetSystem("flush_graphic", bRefresh ? "true" : "false");
         }
 #endregion
 

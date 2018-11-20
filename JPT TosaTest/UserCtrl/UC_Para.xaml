@@ -46,7 +46,7 @@
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Pad偏移" FontSize="20" VerticalAlignment="Center" Margin="10,0"/>
-                            <TextBox Grid.Column="1" FontSize="20" Text="{Binding PadOffset, Converter={StaticResource Int2String},Mode=OneWay}" 
+                            <TextBox Grid.Column="1" FontSize="20" Text="{Binding PadOffset, Converter={StaticResource Int2String}}" 
                                      HorizontalAlignment="Left" VerticalAlignment="Center" MinWidth="150" Margin="10,0"/>
                         </Grid>
                         <Grid Grid.Row="2">

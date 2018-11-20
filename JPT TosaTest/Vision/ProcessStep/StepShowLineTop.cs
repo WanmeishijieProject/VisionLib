@@ -8,10 +8,12 @@ namespace JPT_TosaTest.Vision.ProcessStep
 {
     public class StepShowLineTop : VisionProcessStepBase
     {
-        public Tuple<double, double, double, double> Line1 { get; set; }
-        public Tuple<double, double, double, double> Line2 { get; set; }
+        public Tuple<double, double, double, double> In_Line1 { get; set; }
+        public Tuple<double, double, double, double> In_Line2 { get; set; }
         public double In_PixGainFactor { get; set; }
 
+
+        public Tuple<HTuple, HTuple, HTuple, HTuple> Out_Line { get; private set; }
         public override bool Process()
         {
             try
@@ -19,8 +21,8 @@ namespace JPT_TosaTest.Vision.ProcessStep
                 HTuple SelectLineIndex = 0;
                 double CenterOffset = (Config.ConfigMgr.Instance.ProcessData.CenterLineOffset / In_PixGainFactor);
                 List<Tuple<HTuple, HTuple, HTuple, HTuple>> TupleList = new List<Tuple<HTuple, HTuple, HTuple, HTuple>>();
-                TupleList.Add(new Tuple<HTuple, HTuple, HTuple, HTuple>(Line1.Item1, Line1.Item2, Line1.Item3, Line1.Item4));
-                TupleList.Add(new Tuple<HTuple, HTuple, HTuple, HTuple>(Line2.Item1, Line2.Item2, Line2.Item3, Line2.Item4));
+                TupleList.Add(new Tuple<HTuple, HTuple, HTuple, HTuple>(In_Line1.Item1, In_Line1.Item2, In_Line1.Item3, In_Line1.Item4));
+                TupleList.Add(new Tuple<HTuple, HTuple, HTuple, HTuple>(In_Line2.Item1, In_Line2.Item2, In_Line2.Item3, In_Line2.Item4));
                 HalconVision.Instance.DisplayLines(In_CamID, TupleList);
                 if (TupleList.Count >= 2)
                 {
@@ -33,7 +35,8 @@ namespace JPT_TosaTest.Vision.ProcessStep
                     out HTuple hv_k, out HTuple hv_b);
                     if (hv_LineOutRow != null && hv_LineOutRow1 != null)
                     {
-                        HalconVision.Instance.DisplayLines(In_CamID, new List<Tuple<HTuple, HTuple, HTuple, HTuple>>() { new Tuple<HTuple, HTuple, HTuple, HTuple>(hv_LineOutRow, hv_LineOutCol, hv_LineOutRow1, hv_LineOutCol1) });
+                        Out_Line = new Tuple<HTuple, HTuple, HTuple, HTuple>(hv_LineOutRow, hv_LineOutCol, hv_LineOutRow1, hv_LineOutCol1);
+                        HalconVision.Instance.DisplayLines(In_CamID, new List<Tuple<HTuple, HTuple, HTuple, HTuple>>() { Out_Line });
                     }
                     return true;
                 }

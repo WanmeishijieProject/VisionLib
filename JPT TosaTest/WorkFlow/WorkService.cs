@@ -60,7 +60,7 @@ namespace JPT_TosaTest.WorkFlow
         List<double> PtDropDown_Support = null;
         Task GrabTask = null;
         private object MonitorLock = new object();
-
+        private bool bPauseMonitor = true;
 
         //Tool
         private StepFindModel Tool_StepFindHsgModel = null;
@@ -85,65 +85,73 @@ namespace JPT_TosaTest.WorkFlow
         }
         protected override int WorkFlow()
         {
-            ClearAllStep();
-            PushStep(STEP.Init);
-            while (!cts.IsCancellationRequested)
+            try
             {
-                Thread.Sleep(10);
-                Step = PeekStep();
-                if (bPause || Step==null)
-                    continue;             
-             
-                switch (Step)
+                ClearAllStep();
+                PushStep(STEP.Init);
+                while (!cts.IsCancellationRequested)
                 {
-                    case STEP.Init:     //初始化
-                        ShowInfo();
-                        HomeAll();
-                        ClearAllStep();
-                        break;
-                    case STEP.CmdGetProductSupport: //抓取Support
-                        {
-                            Int32 Flag = ((Int32)CmdPara >> 16) & 0xFFFF;
-                            if ((Flag >> (ProductIndex[0]++) & 0x01) != 0)
-                            {
-                                GetProduct(ProductIndex[0], EnumProductType.SUPPORT);
-                                if (ProductIndex[0] >= 6)
-                                    ProductIndex[0] = 0;
-                                ClearAllStep();
-                            }
-                        }
-                        break;
-                    case STEP.CmdGetProductPLC:    //抓取PLC
-                        {
-                            Int32 Flag = (Int32)CmdPara & 0xFFFF;
-                            if (Flag == 0)  
-                                PopAndPushStep(STEP.EXIT);
+                    Thread.Sleep(10);
+                    Step = PeekStep();
+                    if (bPause || Step == null)
+                        continue;
 
-                            if ((Flag >> (ProductIndex[1]++) & 0x01) != 0)
+                    switch (Step)
+                    {
+                        case STEP.Init:     //初始化
+                            ShowInfo();
+                            HomeAll();
+                            ClearAllStep();
+                            break;
+                        case STEP.CmdGetProductSupport: //抓取Support
                             {
-                                GetProduct(ProductIndex[1], EnumProductType.PLC);
-                                if (ProductIndex[1] >= 6)
-                                    ProductIndex[1] = 0;
-                                ClearAllStep();
+                                Int32 Flag = ((Int32)CmdPara >> 16) & 0xFFFF;
+                                if ((Flag >> (ProductIndex[0]++) & 0x01) != 0)
+                                {
+                                    GetProduct(ProductIndex[0], EnumProductType.SUPPORT);
+                                    if (ProductIndex[0] >= 6)
+                                        ProductIndex[0] = 0;
+                                    ClearAllStep();
+                                }
                             }
-                        }
-                        break;
-                    
-                    case STEP.CmdFindLine:  //FindLine
-                        lock (MonitorLock)
-                        {
-                            FindAndGetModelData();
-                            Thread.Sleep(1000);
-                        }
-                        ClearAllStep();
-                        break;
-                   
+                            break;
+                        case STEP.CmdGetProductPLC:    //抓取PLC
+                            {
+                                Int32 Flag = (Int32)CmdPara & 0xFFFF;
+                                if (Flag == 0)
+                                    PopAndPushStep(STEP.EXIT);
 
-                    case STEP.EXIT:
-                        return 0;
+                                if ((Flag >> (ProductIndex[1]++) & 0x01) != 0)
+                                {
+                                    GetProduct(ProductIndex[1], EnumProductType.PLC);
+                                    if (ProductIndex[1] >= 6)
+                                        ProductIndex[1] = 0;
+                                    ClearAllStep();
+                                }
+                            }
+                            break;
+
+                        case STEP.CmdFindLine:  //FindLine
+                            lock (MonitorLock)
+                            {
+                                FindAndGetModelData();
+                                Thread.Sleep(1000);
+                            }
+                            ClearAllStep();
+                            break;
+
+
+                        case STEP.EXIT:
+                            return 0;
+                    }
                 }
+                return 0;
             }
-            return 0;
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return -1;
+            }
         }
 
         #region Private
@@ -376,9 +384,9 @@ namespace JPT_TosaTest.WorkFlow
                             nStep = 3;
                         }
                         break;
-                    case 3: //模板找到以后开始找下表面线
+                    case 3: //模板找到以后开始找上表面线
                         {
-                            FindLineBottom();
+                            //FindLineBottom();
                             MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamTop_PLC[PT_CZ]);       
                             nStep = 4;   
                         }
@@ -396,13 +404,38 @@ namespace JPT_TosaTest.WorkFlow
                     case 5: //升到上表面寻找上表面的线
                         if (MotionCard.IsNormalStop(AXIS_CY))
                         {
-                            Thread.Sleep(200);
+                            Thread.Sleep(300);
                             HalconVision.Instance.GrabImage(0);
                             FindLineTop();
                             nStep = 6;                       
                         }
                         break;
-                    case 6: // 完毕,等待工作
+                    case 6: //移动下来找下表面的线
+                        MotionCard.MoveAbs(AXIS_CY, 1000, 10, PtCamBottom_Support[PT_CY]);
+                        nStep = 7;
+                        break;
+                    case 7:
+                        if (MotionCard.IsNormalStop(AXIS_CY))
+                        {
+                            MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamBottom_Support[PT_CZ]);
+                            nStep = 8;
+                        }
+                        break;
+                    case 8:
+                        {
+                            if (MotionCard.IsNormalStop(AXIS_CZ))
+                            {
+                                Thread.Sleep(200);
+                                HalconVision.Instance.GrabImage(0);
+                                nStep = 9;
+                            }
+                        }
+                        break;
+                    case 9:
+                        FindLineBottom();
+                        nStep = 10;
+                        break;
+                    case 10: // 完毕,等待工作
                         ShowInfo("标记完毕");
                         return;
                     default:
@@ -421,15 +454,16 @@ namespace JPT_TosaTest.WorkFlow
             {
                 switch (nStep)
                 {        
-                    case 0: //CZ到上表面    
+                    case 0: //CZ到下表面  
+                        bPauseMonitor = true;
                         StartMonitor(0);
-                        MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamTop_PLC[PT_CZ]);
+                        MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamBottom_Support[PT_CZ]);
                         nStep = 1;
                         break;
                     case 1: //移动CY
                     if (MotionCard.IsNormalStop(AXIS_CZ))
                         {
-                            MotionCard.MoveAbs(AXIS_CY, 1000, 10, PtCamTop_PLC[PT_CY]);
+                            MotionCard.MoveAbs(AXIS_CY, 1000, 10, PtCamBottom_Support[PT_CY]);
                             nStep = 2;
                         }
                         break;
@@ -441,25 +475,13 @@ namespace JPT_TosaTest.WorkFlow
                         }
                         break;
                     case 3: //开始拍照并显示
-                        StartMonitor(0);
-                        var LineList = new List<Tuple<double, double, double, double>>();
-                        foreach (var it in Tool_StepFindLineTopByModel.Out_Lines)
-                            LineList.Add(new Tuple<double, double, double, double>(it.Item1.D, it.Item2.D, it.Item3.D, it.Item4.D));
-                        Tool_ShowLineTop = new StepShowLineTop()
-                        {
-                            In_CamID = 0,
-                            In_PixGainFactor = Tool_CalibImage.Out_PixGainFactor,
-                            Line1 = LineList[0],
-                            Line2 = LineList[1]
-                        };
-                        HalconVision.Instance.ProcessImage(Tool_ShowLineTop);
-
-                        //同时显示Tia的Region
+                        HalconVision.Instance.GrabImage(0, true, true);
                         HalconVision.Instance.ShowRoi(0, TiaFlag);
-                        if(GetCurStepCount()==0)
+                        if (GetCurStepCount()==0)
                             nStep = 4;
                         break;
                     case 4: // 完毕,等待工作完毕
+                        bPauseMonitor = false;
                         IOCard.WriteIoOutBit(VAC_HSG, false);
                         BackToTempPos();
                         ShowInfo("Lens完毕");
@@ -489,7 +511,7 @@ namespace JPT_TosaTest.WorkFlow
                         if (MotionCard.IsNormalStop(AXIS_CY))
                         {
                             MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamBottom_Support[PT_CZ]);
-                            
+                            bPauseMonitor = true;
                             nStep = 2;
                         }
                         break;
@@ -497,43 +519,45 @@ namespace JPT_TosaTest.WorkFlow
                         if (MotionCard.IsNormalStop(AXIS_CZ))
                         {
                             Thread.Sleep(200);//等待稳定
+                            HalconVision.Instance.GrabImage(0);
                             nStep = 3;
                         }
                         break;
-                    case 3:
-                        //HalconVision.Instance.GrabImage(0, true, true);
-                        StartMonitor(0);
-                        var LineList = new List<Tuple<double, double, double, double>>();
-                        foreach (var it in Tool_StepFindLineBottomByModel.Out_Lines)
-                            LineList.Add(new Tuple<double, double, double, double>(it.Item1.D, it.Item2.D, it.Item3.D, it.Item4.D));
-                        Tool_ShowLineBottom = new StepShowLineBottom()
+                    case 3: //ShowLineBottom 
+                        lock (MonitorLock)
                         {
-                            In_CamID = 0,
-                            In_PixGainFactor = Tool_CalibImage.Out_PixGainFactor,
-                            In_Lines= LineList
-                        };
-                        HalconVision.Instance.ProcessImage(Tool_ShowLineBottom);
+                            HalconVision.Instance.SetRefreshWindow(0, false);
+                            HalconVision.Instance.GrabImage(0, true, true);
+                            HalconVision.Instance.SetRefreshWindow(0, true);
+                            ShowLineBottom();
+                        }
                         if (GetCurStepCount() == 0)
                             nStep = 4;
                         break;
-                    case 4: //去找Tia的Model和基准线，并画出region
-                        if (TiaFlag == null)
-                            FindLineTia();
-                        else
-                            HalconVision.Instance.ShowRoi(0, TiaFlag);
-
-                         nStep = 5;
+                    case 4: 
+                        BackToTempPos();
+                        HalconVision.Instance.GrabImage(0);
+                        nStep = 5;
                         break;
-                    case 5: //
-
+                    case 5: //去找Tia的Model和基准线，并画出region
+                        lock (MonitorLock)
+                        {
+                            if (TiaFlag == null)
+                                FindLineTia();
+                            else
+                                HalconVision.Instance.ShowRoi(0, TiaFlag);
+                        }
+                        Thread.Sleep(1000);
                         nStep = 6;
                         break;
                     case 6:
-
+                        bPauseMonitor = false;
+                        StartMonitor(0);
+                        
                         nStep = 10;
                         break;
                     case 10: // 完毕,等待工作完毕
-                        BackToTempPos();
+                        bPauseMonitor = false;
                         ShowInfo("Pad完毕");
                         return;
                     default:
@@ -566,7 +590,9 @@ namespace JPT_TosaTest.WorkFlow
                         }
                         break;
                     case 2:
-                        return;
+                        if(MotionCard.IsNormalStop(AXIS_X))
+                            return;
+                        break;
                 }
             }
         }
@@ -596,17 +622,34 @@ namespace JPT_TosaTest.WorkFlow
                 In_ModelRow = Tool_StepFindHsgModel.Out_ModelRow,
                 In_ModelCOl = Tool_StepFindHsgModel.Out_ModelCol,
                 In_ModelPhi = Tool_StepFindHsgModel.Out_ModelPhi,
+                In_Hom_mat2D=Tool_StepFindHsgModel.Out_Hom_mat2D,
                 In_LineRoiPara = LineList
             };
             HalconVision.Instance.ProcessImage(Tool_StepFindLineBottomByModel);
-            //BottomLines = new List<object>();
+            BottomLines = new List<object>();
             foreach (var it in Tool_StepFindLineBottomByModel.Out_Lines)
             {
-                BottomLines.Add(it);
+                BottomLines.Add(it);            
             }
+         
             return true;
         }
+        private bool ShowLineBottom()
+        {
+            //显示最终计算的线
+            var LineListForCalc = new List<Tuple<double, double, double, double>>();
+            foreach (var it in Tool_StepFindLineBottomByModel.Out_Lines)
+                LineListForCalc.Add(new Tuple<double, double, double, double>(it.Item1.D, it.Item2.D, it.Item3.D, it.Item4.D));
+            Tool_ShowLineBottom = new StepShowLineBottom()
+            {
+                In_CamID = 0,
+                In_PixGainFactor = Tool_CalibImage.Out_PixGainFactor,
+                In_Lines = LineListForCalc
+            };
 
+            HalconVision.Instance.ProcessImage(Tool_ShowLineBottom);//会自动显示
+            return true;
+        }
         /// <summary>
         /// 找Top的基线
         /// </summary>
@@ -618,16 +661,10 @@ namespace JPT_TosaTest.WorkFlow
             var fileList = FileHelper.GetProfileList(File_ToolParaPath);
             foreach (var file in fileList)
             {
-                if (file.Contains("Bottom"))
+                if (file.Contains("Top"))
                 {
                     string text = File.ReadAllText($"{File_ToolParaPath}{file}.para");
-                    var l1 = text.Split('|');
-                    var l2 = l1[1].Split('&');
-                    string name = l2[l2.Length - 1];
-                    if (!string.IsNullOrEmpty(ModelName) && name == ModelName)
-                    {
-                        LineList.Add(text);
-                    }
+                    LineList.Add(text);
                 }
             }
 
@@ -645,9 +682,11 @@ namespace JPT_TosaTest.WorkFlow
 
             //找线
             var LinesForCalib = new List<Tuple<double, double, double, double>>();
+            TopLines = new List<object>();
             foreach (var it in Tool_StepFindLineTopByModel.Out_Lines)
             {
                 TopLines.Add(it);
+                LinesForCalib.Add(new Tuple<double, double, double, double>(it.Item1.D, it.Item2.D, it.Item3.D, it.Item4.D));
             }
             Tool_CalibImage = new StepCalibImage()
             {
@@ -658,6 +697,19 @@ namespace JPT_TosaTest.WorkFlow
             };
             //顺便将图像尺寸标定了
             HalconVision.Instance.ProcessImage(Tool_CalibImage);
+
+            //显示最终的线
+            Tool_ShowLineTop = new StepShowLineTop()
+            {
+                In_CamID = 0,
+                In_PixGainFactor = Tool_CalibImage.Out_PixGainFactor,
+                In_Line1= LinesForCalib[0],
+                In_Line2= LinesForCalib[1]
+            };
+            HalconVision.Instance.ProcessImage(Tool_ShowLineTop);
+            TopLines.Add(Tool_ShowLineTop.Out_Line);
+
+
             return true;
         }
 
@@ -670,7 +722,7 @@ namespace JPT_TosaTest.WorkFlow
         private bool FindLineTia()
         {
             //找Model
-            string ModelFulllPathFileName = $"{File_ModelFilePath}{Config.ConfigMgr.Instance.ProcessData.HsgModelName}.shm";
+            string ModelFulllPathFileName = $"{File_ModelFilePath}{Config.ConfigMgr.Instance.ProcessData.TiaModelName}.shm";
             StepFindModel FindTiaModelStep = new StepFindModel()
             {
                 In_CamID = 0,
@@ -681,7 +733,7 @@ namespace JPT_TosaTest.WorkFlow
             //准备Tia的FlagData,读取L1与L2
             List<string> LineList = new List<string>();
             FlagToolDaga FlagData = new FlagToolDaga();
-            FlagData.FromString(File.ReadAllText(File_ToolParaPath + "Tia.para"));
+            FlagData.FromString(File.ReadAllText(File_ToolParaPath + "Flag.para"));
             LineList.Add(File.ReadAllText(File_ToolParaPath + FlagData.L1Name + ".para"));
             LineList.Add(File.ReadAllText(File_ToolParaPath + FlagData.L2Name + ".para"));
 
@@ -783,7 +835,11 @@ namespace JPT_TosaTest.WorkFlow
                     {
                         lock (MonitorLock)
                         {
-                            HalconVision.Instance.GrabImage(nCamID,true,true);
+                            if (!bPauseMonitor)
+                                HalconVision.Instance.GrabImage(nCamID, true, true);
+                            else
+                                Thread.Sleep(100);
+                           
                         }
                     }
                 },cts.Token);
