@@ -71,5 +71,22 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
         public byte Error { get; set; }                     ///< The last error of the MCSU
     }
 
+    [Flags]
+    public enum EnumADCChannelFlags
+    {
+        CH1 = (1 << 0),
+        CH2 = (1 << 1),
+        CH3 = (1 << 2),
+        CH4 = (1 << 3),
+        CH5 = (1 << 4),
+        CH6 = (1 << 5),
+        CH7 = (1 << 6),
+        CH8 = (1 << 7)
+    }
+    public enum EnumCssChannel
+    {
+        CSSCH1,
+        CSSCH2
+    }
 
 }

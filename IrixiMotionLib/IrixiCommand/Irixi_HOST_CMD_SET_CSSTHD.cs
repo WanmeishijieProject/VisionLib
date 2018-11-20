@@ -17,12 +17,12 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
         protected override void WriteData()
         {
             writer.Write((byte)Enumcmd.HOST_CMD_SET_CSSTHD);
-            writer.Write(CssChannel);
+            writer.Write((byte)CssChannel);
             writer.Write(LowThreshold);
             writer.Write(HightThreshold);
         }
 
-        public byte CssChannel { get; set; }
+        public EnumCssChannel CssChannel { get; set; }
         public UInt16 LowThreshold { get; set; }
         public UInt16 HightThreshold { get; set; }
 

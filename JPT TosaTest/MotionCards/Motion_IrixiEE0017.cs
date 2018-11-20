@@ -27,11 +27,16 @@ namespace JPT_TosaTest.MotionCards
         ERR_USER_STOPPED,
         ERR_NO_STAGE_DETECTED,
         ERR_UNKNOWN,
-        ERR_SYS_MCSU_ID,
+        ERR_SYS_MCSU_ID = 0x80,
         ERR_SYS_CANBUS_RX,
         ERR_SYS_PARAM,
+        ERR_SYS_CSS1_Triggered,
+        ERR_SYS_CSS2_Triggered,
         ERR_SYS_BLINDSEARCH,
 
+        // NOTE the following errors are only defined in PC side!
+        ERR_TIMEOUT,
+        ERR_OPERATION_CANCELLED,
     }
 
     public class Motion_IrixiEE0017 : IMotion
@@ -263,11 +268,21 @@ namespace JPT_TosaTest.MotionCards
             return _controller.ClearMem();
         }
 
-        public bool ReadAD(byte ChannelFlags)
+        public bool ReadAD(EnumADCChannelFlags ChannelFlags, out List<UInt16> values)
         {
-            return _controller.ReadAD(ChannelFlags);
+            return _controller.ReadAD(ChannelFlags, out values);
         }
- 
+
+        public bool SetCssEnable(EnumCssChannel CssChannel, bool IsEnable)
+        {
+            return _controller.EnableCss(CssChannel, IsEnable);
+        }
+
+        public bool SetCssThreshold(EnumCssChannel CssChannel, UInt16 Low, UInt16 Hight)
+        {
+            return _controller.SetCssThreshold(CssChannel, Low, Hight);
+        }
+
 
         public  bool Stop()
         {
@@ -355,11 +370,9 @@ namespace JPT_TosaTest.MotionCards
 
         private string ParseErrorCode(int error)
         {
-            if ((error >= 0x00 && error <= 0x0A) || (error >= 0x80 && error <= 0x82))
-            {
+            if(Enum.IsDefined(typeof(EnumIrixiMotionError), error))
                 return ((EnumIrixiMotionError)error).ToString();
-            }
-            return "";
+            return "未定义错误类型";
         }
 
         private void OnIrixiAxisStateChanged(object sender, Tuple<byte, AxisArgs> e)

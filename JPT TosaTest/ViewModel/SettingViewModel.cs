@@ -249,6 +249,7 @@ namespace JPT_TosaTest.ViewModel
                         var Model = from models in HotKeyCollect where models.AxisName == it.Key select models;
                         if (Model != null && Model.Count() > 0)
                         {
+                            SetCssThreshold(1000, 4500);
                             HotKeyModel hotkeyModel = Model.First();
                             var motion = MotionMgr.Instance.FindMotionCardByAxisIndex(hotkeyModel.AxisNo);
                             var arg = motion.AxisArgsList[hotkeyModel.AxisNo - motion.MIN_AXIS].MoveArgs;
@@ -275,6 +276,7 @@ namespace JPT_TosaTest.ViewModel
                         var Model = from models in HotKeyCollect where models.AxisName == it.Key select models;
                         if (Model != null && Model.Count() > 0)
                         {
+                            SetCssThreshold(1000, 4500);
                             HotKeyModel hotkeyModel = Model.First();
                             var motion = MotionMgr.Instance.FindMotionCardByAxisIndex(hotkeyModel.AxisNo);
                             var arg = motion.AxisArgsList[hotkeyModel.AxisNo - motion.MIN_AXIS].MoveArgs;
@@ -288,6 +290,19 @@ namespace JPT_TosaTest.ViewModel
             {
                 Messenger.Default.Send<string>(ex.Message, "Error");
             }
+        }
+
+        private bool SetCssThreshold(UInt16 Low, UInt16 High)
+        {
+            //Set sensor threshold
+            Motion_IrixiEE0017 MotionCard = MotionMgr.Instance.FindMotionCardByCardName("Motion_IrixiEE0017[0]") as Motion_IrixiEE0017;
+            if (MotionCard != null)
+            {
+                MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, Low, High);
+                MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
+                return true;
+            }
+            return false;
         }
         #endregion
     }

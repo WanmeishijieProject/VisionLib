@@ -36,9 +36,8 @@ namespace JPT_TosaTest.WorkFlow
         private const int AXIS_X = 3, AXIS_Y1 = 1, AXIS_Y2 = 2, AXIS_Z = 0, AXIS_CY = 5, AXIS_CZ = 4, AXIS_R = 6;
         private const int PT_X = 0, PT_Y1 = 1, PT_Y2 = 2, PT_Z = 3, PT_R = 4, PT_CY = 5, PT_CZ = 6;
         private const int VAC_PLC = 0,VAC_HSG=2,TouchSensor=6;
-        private MotionCards.IMotion  MotionCard=null;
+        private MotionCards.Motion_IrixiEE0017 MotionCard =null;
         private IOCards.IIO IOCard = null;
-        private object Hom_2D_Hsg=null, ModelPos_Hsg=null, Hom_2D_Tia = null, ModelPos_Tia = null;
         private List<object> TopLines = null;
         private List<object> BottomLines = null;
         private object TiaFlag = null;
@@ -74,9 +73,9 @@ namespace JPT_TosaTest.WorkFlow
 
         protected override bool UserInit()
         {
-            MotionCard = MotionCards.MotionMgr.Instance.FindMotionCardByCardName("Motion_IrixiEE0017[0]");
+            MotionCard = MotionCards.MotionMgr.Instance.FindMotionCardByCardName("Motion_IrixiEE0017[0]") as MotionCards.Motion_IrixiEE0017;
             IOCard = IOCards.IOCardMgr.Instance.FindIOCardByCardName("IO_IrixiEE0017[0]");
-           
+            IOCard.WriteIoOutBit(TouchSensor, true);
             return GetAllPoint() && MotionCard !=null  &&  IOCard!=null;
         }
         public WorkService(WorkFlowConfig cfg) : base(cfg)
@@ -165,7 +164,9 @@ namespace JPT_TosaTest.WorkFlow
                     case 0:
                         MotionCard.Home(AXIS_CZ, 0, 500, 5, 10);
                         MotionCard.Home(AXIS_Z, 0, 500, 20, 50);
-                        IOCard.WriteIoOutBit(TouchSensor, true);
+                        
+                       
+                        
                         nStep = 1;
                         break;
                     case 1:
@@ -386,7 +387,6 @@ namespace JPT_TosaTest.WorkFlow
                         break;
                     case 3: //模板找到以后开始找上表面线
                         {
-                            //FindLineBottom();
                             MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamTop_PLC[PT_CZ]);       
                             nStep = 4;   
                         }
@@ -461,7 +461,7 @@ namespace JPT_TosaTest.WorkFlow
                         nStep = 1;
                         break;
                     case 1: //移动CY
-                    if (MotionCard.IsNormalStop(AXIS_CZ))
+                        if (MotionCard.IsNormalStop(AXIS_CZ))
                         {
                             MotionCard.MoveAbs(AXIS_CY, 1000, 10, PtCamBottom_Support[PT_CY]);
                             nStep = 2;
@@ -477,7 +477,7 @@ namespace JPT_TosaTest.WorkFlow
                     case 3: //开始拍照并显示
                         HalconVision.Instance.GrabImage(0, true, true);
                         HalconVision.Instance.ShowRoi(0, TiaFlag);
-                        if (GetCurStepCount()==0)
+                        if (GetCurStepCount()==0)   //要自动下降贴合
                             nStep = 4;
                         break;
                     case 4: // 完毕,等待工作完毕
@@ -531,7 +531,7 @@ namespace JPT_TosaTest.WorkFlow
                             HalconVision.Instance.SetRefreshWindow(0, true);
                             ShowLineBottom();
                         }
-                        if (GetCurStepCount() == 0)
+                        if (GetCurStepCount() == 0)    //要自动下降贴合，然后撤回
                             nStep = 4;
                         break;
                     case 4: 
@@ -772,31 +772,7 @@ namespace JPT_TosaTest.WorkFlow
             return true;
         }
 
-        private List<string> GetToolRoiDataByFileName(string ModelName,string SubString, int[] IndexList=null)
-        {
-            List<string> RoiDataList = new List<string>();
-            var fileList = FileHelper.GetProfileList(File_ToolParaPath);
-            string ExpectedName = "";
-            if (IndexList == null)
-                ExpectedName = SubString;
-            foreach (var file in fileList)
-            {
-                string text = File.ReadAllText($"{File_ToolParaPath}{file}.para");
-                var L1 = text.Split('|');
-                var L2 = L1[1].Split('&');
-                string modelName = L2[L2.Length - 1];
-                if (!string.IsNullOrEmpty(modelName) && modelName == ModelName)
-                {
-                    RoiDataList.Add(text);
-                }
-
-            }
-            return RoiDataList;
-        }
-
-      
-
-
+ 
 
 
         private bool GetAllPoint()

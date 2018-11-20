@@ -646,8 +646,9 @@ namespace JPT_TosaTest.MotionCards
             }
         }
 
-        public bool ReadAD(byte ChannelFlags)
+        public bool ReadAD(EnumADCChannelFlags ChannelFlags,out List<UInt16> values)
         {
+            values = new List<ushort>();
             lock (ComportLock)
             {
                 try
@@ -655,6 +656,8 @@ namespace JPT_TosaTest.MotionCards
                     CommandReadAd.ADChannelFlags = ChannelFlags;
                     byte[] cmd = CommandReadAd.ToBytes();
                     this.ExcuteCmd(cmd);
+                    CommandReadAd.WaitFinish(1000);
+                    values = CommandReadAd.ReturnObject as List<UInt16>;
                     return true;
 
                 }
@@ -665,7 +668,7 @@ namespace JPT_TosaTest.MotionCards
             }
         }
 
-        public bool EnableCss(byte Channel, bool IsEnable)
+        public bool EnableCss(EnumCssChannel Channel, bool IsEnable)
         {
             lock (ComportLock)
             {
@@ -673,7 +676,7 @@ namespace JPT_TosaTest.MotionCards
                 {
                     CommandEnCss.CssChannel = Channel;
                     CommandEnCss.IsEnable = IsEnable;
-                    byte[] cmd = CommandReadAd.ToBytes();
+                    byte[] cmd = CommandEnCss.ToBytes();
                     this.ExcuteCmd(cmd);
                     return true;
 
@@ -685,7 +688,7 @@ namespace JPT_TosaTest.MotionCards
             }
         }
 
-        public bool SetCssThreshold(byte Channel, UInt16 LowThreshold, UInt16 HightThreshold)
+        public bool SetCssThreshold(EnumCssChannel Channel, UInt16 LowThreshold, UInt16 HightThreshold)
         {
             lock (ComportLock)
             {
@@ -694,7 +697,7 @@ namespace JPT_TosaTest.MotionCards
                     CommandSetCssThreshold.CssChannel = Channel;
                     CommandSetCssThreshold.LowThreshold = LowThreshold;
                     CommandSetCssThreshold.HightThreshold = HightThreshold;
-                    byte[] cmd = CommandReadAd.ToBytes();
+                    byte[] cmd = CommandSetCssThreshold.ToBytes();
                     this.ExcuteCmd(cmd);
                     return true;
 
@@ -975,6 +978,10 @@ namespace JPT_TosaTest.MotionCards
                 case (byte)Enumcmd.HOST_CMD_GET_MCSU_SETTINGS:
                     CommandGetMcsuSetting.ByteArrToPackage(data);
                     CommandGetErr.SetSyncFlag();
+                    break;
+                case (byte)Enumcmd.HOST_CMD_READ_AD:
+                    CommandReadAd.ByteArrToPackage(data);
+                    CommandReadAd.SetSyncFlag();
                     break;
             }
 
