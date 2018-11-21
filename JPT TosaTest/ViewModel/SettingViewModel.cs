@@ -169,6 +169,7 @@ namespace JPT_TosaTest.ViewModel
                     try
                     {
                         ConfigMgr.Instance.SaveConfig(EnumConfigType.ProcessPara, new object[] { new object()});
+                        UC_MessageBox.ShowMsgBox("保存成功", "成功", MsgType.Info);
                     }
                     catch (Exception ex)
                     {
@@ -294,6 +295,7 @@ namespace JPT_TosaTest.ViewModel
 
         private bool SetCssThreshold(UInt16 Low, UInt16 High)
         {
+            return true;
             //Set sensor threshold
             Motion_IrixiEE0017 MotionCard = MotionMgr.Instance.FindMotionCardByCardName("Motion_IrixiEE0017[0]") as Motion_IrixiEE0017;
             if (MotionCard != null)

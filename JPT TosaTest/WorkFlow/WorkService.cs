@@ -35,6 +35,12 @@ namespace JPT_TosaTest.WorkFlow
         SUPPORT,
         PLC,
     }
+    public enum EnumRTShowType
+    {
+        Support,
+        Tia,
+        None,
+    }
     public class WorkService : WorkFlowBase
     {
         #region Private
@@ -49,7 +55,7 @@ namespace JPT_TosaTest.WorkFlow
         private object TiaFlag = null;
         private string File_ToolParaPath = $"{FileHelper.GetCurFilePathString()}VisionData\\ToolData\\";
         private string File_ModelFilePath = $"VisionData\\Model\\";    //Model
-       
+        
         private int[] ProductIndex = { 0, 0 };
 
        
@@ -69,8 +75,10 @@ namespace JPT_TosaTest.WorkFlow
       
         Task GrabTask = null;
         private object MonitorLock = new object();
-        private bool bPauseMonitor = true;
-
+        private bool IsPauseMonitor = true;
+        private const int LowPressure = 2000;
+        private const int HightPressure = 3000;
+        private EnumRTShowType ShowType = EnumRTShowType.None;
         //Tool
         private StepFindModel Tool_StepFindHsgModel = null;
         private StepFindeLineByModel Tool_StepFindLineBottomByModel=null;
@@ -86,9 +94,6 @@ namespace JPT_TosaTest.WorkFlow
             MotionCard = MotionCards.MotionMgr.Instance.FindMotionCardByCardName("Motion_IrixiEE0017[0]") as MotionCards.Motion_IrixiEE0017;
             IOCard = IOCards.IOCardMgr.Instance.FindIOCardByCardName("IO_IrixiEE0017[0]");
             IOCard.WriteIoOutBit(TouchSensor, true);
-            Thread.Sleep(3000);
-            MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, 1000, 2000);
-            MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
             return GetAllPoint() && MotionCard !=null  &&  IOCard!=null;
         }
         public WorkService(WorkFlowConfig cfg) : base(cfg)
@@ -113,30 +118,8 @@ namespace JPT_TosaTest.WorkFlow
                         case STEP.Init:     //初始化
                             ShowInfo();
                             HomeAll();
-                            //ClearAllStep();
-                            PopAndPushStep(STEP.TEST1);
-                            break;
-                        case STEP.TEST1:
-                            MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, 1000, 3000);
-                            MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
-                            MotionCard.MoveAbs(AXIS_X, 500, 2, PtDropDown_PLC[PT_X]);
-
-                            PopAndPushStep(STEP.TEST2);
-                            break;
-                        
-                        case STEP.TEST2:
-                            if (MotionCard.IsNormalStop(AXIS_X))
-                            {
-                                MotionCard.MoveAbs(AXIS_X, 500, 10, 0);
-                                PopAndPushStep(STEP.TEST3);
-                            }
-                            break;
-                        case STEP.TEST3:
-                            if (MotionCard.IsNormalStop(AXIS_X))
-                            {
-                                PopAndPushStep(STEP.TEST1);
-                            }
-                            break;
+                            ClearAllStep();
+                            break;     
                         case STEP.CmdGetProductSupport: //抓取Support
                             {
                                 Int32 Flag = ((Int32)CmdPara >> 16) & 0xFFFF;
@@ -380,264 +363,282 @@ namespace JPT_TosaTest.WorkFlow
         /// </summary>
         private void FindAndGetModelData()
         {
-            int nStep = 0;
-            ShowInfo("正在标记......");
-            while (!cts.IsCancellationRequested)
+            try
             {
-                switch (nStep)
+                int nStep = 0;
+                ShowInfo("正在标记......");
+                while (!cts.IsCancellationRequested)
                 {
-                    case 0: //移动CY
-                        IOCard.WriteIoOutBit(VAC_HSG, true);
-                        MotionCard.MoveAbs(AXIS_CY, 1000, 10, PtCamBottom_Support[PT_CY]);
-                        nStep = 1;
-                        break;
-                    case 1: //CZ到下表面
-                        if (MotionCard.IsNormalStop(AXIS_CY))
-                        {
-                            MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamBottom_Support[PT_CZ]);
-                            nStep = 2;
-                           
-                        }
-                        break;
-                   
-                    case 2: //开始寻找模板
-                        if (MotionCard.IsNormalStop(AXIS_CZ))
-                        {
-                            Thread.Sleep(200);
-                            HalconVision.Instance.GrabImage(0);
+                    switch (nStep)
+                    {
+                        case 0: //移动CY
+                            IOCard.WriteIoOutBit(VAC_HSG, true);
+                            MotionCard.MoveAbs(AXIS_CY, 1000, 10, PtCamBottom_Support[PT_CY]);
+                            nStep = 1;
+                            break;
+                        case 1: //CZ到下表面
+                            if (MotionCard.IsNormalStop(AXIS_CY))
+                            {
+                                MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamBottom_Support[PT_CZ]);
+                                nStep = 2;
 
-                            //找Hsg
-                            string ModelFulllPathFileName = $"{File_ModelFilePath}{Config.ConfigMgr.Instance.ProcessData.HsgModelName}.shm";
-                            Tool_StepFindHsgModel = new StepFindModel()
-                            {
-                                In_CamID = 0,
-                                In_ModelNameFullPath = ModelFulllPathFileName
-                            };
-                            HalconVision.Instance.ProcessImage(Tool_StepFindHsgModel);
-                            nStep = 3;
-                        }
-                        break;
-                    case 3: //模板找到以后开始找上表面线
-                        {
-                            MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamTop_PLC[PT_CZ]);       
-                            nStep = 4;   
-                        }
-                        break;
-                    case 4:
-                        if (MotionCard.IsNormalStop(AXIS_CZ))
-                        {
-                            {
-                                MotionCard.MoveAbs(AXIS_CY, 1000, 10, PtCamTop_PLC[PT_CY]);
-                                nStep = 5;
                             }
-                        }
-                        break;
-             
-                    case 5: //升到上表面寻找上表面的线
-                        if (MotionCard.IsNormalStop(AXIS_CY))
-                        {
-                            Thread.Sleep(300);
-                            HalconVision.Instance.GrabImage(0);
-                            FindLineTop();
-                            nStep = 6;                       
-                        }
-                        break;
-                    case 6: //移动下来找下表面的线
-                        MotionCard.MoveAbs(AXIS_CY, 1000, 10, PtCamBottom_Support[PT_CY]);
-                        nStep = 7;
-                        break;
-                    case 7:
-                        if (MotionCard.IsNormalStop(AXIS_CY))
-                        {
-                            MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamBottom_Support[PT_CZ]);
-                            nStep = 8;
-                        }
-                        break;
-                    case 8:
-                        {
+                            break;
+
+                        case 2: //开始寻找模板
                             if (MotionCard.IsNormalStop(AXIS_CZ))
                             {
                                 Thread.Sleep(200);
-                                HalconVision.Instance.GrabImage(0);
-                                nStep = 9;
+                                lock (MonitorLock)
+                                    HalconVision.Instance.GrabImage(0);
+
+                                //找Hsg
+                                string ModelFulllPathFileName = $"{File_ModelFilePath}{Config.ConfigMgr.Instance.ProcessData.HsgModelName}.shm";
+                                Tool_StepFindHsgModel = new StepFindModel()
+                                {
+                                    In_CamID = 0,
+                                    In_ModelNameFullPath = ModelFulllPathFileName
+                                };
+                                HalconVision.Instance.ProcessImage(Tool_StepFindHsgModel);
+                                nStep = 3;
                             }
-                        }
-                        break;
-                    case 9:
-                        FindLineBottom();
-                        nStep = 10;
-                        break;
-                    case 10: // 完毕,等待工作
-                        ShowInfo("标记完毕");
-                        return;
-                    default:
-                        return;
+                            break;
+                        case 3: //模板找到以后开始找上表面线
+                            {
+                                MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamTop_PLC[PT_CZ]);
+                                nStep = 4;
+                            }
+                            break;
+                        case 4:
+                            if (MotionCard.IsNormalStop(AXIS_CZ))
+                            {
+                                {
+                                    MotionCard.MoveAbs(AXIS_CY, 1000, 10, PtCamTop_PLC[PT_CY]);
+                                    nStep = 5;
+                                }
+                            }
+                            break;
+
+                        case 5: //升到上表面寻找上表面的线
+                            if (MotionCard.IsNormalStop(AXIS_CY))
+                            {
+                                Thread.Sleep(300);
+                                lock (MonitorLock)
+                                    HalconVision.Instance.GrabImage(0);
+                                FindLineTop();
+                                nStep = 6;
+                            }
+                            break;
+                        case 6: //移动下来找下表面的线
+                            MotionCard.MoveAbs(AXIS_CY, 1000, 10, PtCamBottom_Support[PT_CY]);
+                            nStep = 7;
+                            break;
+                        case 7:
+                            if (MotionCard.IsNormalStop(AXIS_CY))
+                            {
+                                MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamBottom_Support[PT_CZ]);
+                                nStep = 8;
+                            }
+                            break;
+                        case 8:
+                            {
+                                if (MotionCard.IsNormalStop(AXIS_CZ))
+                                {
+                                    Thread.Sleep(200);
+                                    lock (MonitorLock)
+                                        HalconVision.Instance.GrabImage(0);
+                                    nStep = 9;
+                                }
+                            }
+                            break;
+                        case 9:
+                            FindLineBottom();
+                            nStep = 10;
+                            break;
+                        case 10: // 完毕,等待工作
+                            ShowInfo("标记完毕");
+                            return;
+                        default:
+                            return;
+                    }
                 }
+                ShowInfo("标记被终止");
             }
-            ShowInfo("标记被终止");
+            catch
+            {
+                ShowInfo("找模板时候发生错误");
+            }
         }
 
         //贴PLC
         private void Work_PLC()
         {
-            ShowInfo("正在贴PLC......");
-            int nStep = 0;
-            while (!cts.IsCancellationRequested)
+            try
             {
-                switch (nStep)
-                {        
-                    case 0: //CZ到下表面  
-                        bPauseMonitor = true;
-                        StartMonitor(0);
-                        MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamBottom_Support[PT_CZ]);
-                        nStep = 1;
-                        break;
-                    case 1: //移动CY
-                        if (MotionCard.IsNormalStop(AXIS_CZ))
-                        {
-                            MotionCard.MoveAbs(AXIS_CY, 1000, 10, PtCamBottom_Support[PT_CY]);
-                            nStep = 2;
-                        }
-                        break;
-                    case 2: 
-                        if (MotionCard.IsNormalStop(AXIS_CY))
-                        {
-                            Thread.Sleep(200);
-                            nStep = 3;
-                        }
-                        break;
-                    case 3: //开始拍照并显示
-                        HalconVision.Instance.GrabImage(0, true, true);
-                        HalconVision.Instance.ShowRoi(0, TiaFlag);
-                        if (GetCurStepCount() == 0)   //要自动下降贴合PLC
-                        {
-                            MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, 1000, 2000);
-                            MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
-                            nStep = 4;
-                        }
-                        break;
-
-                    case 4:
-                        MotionCard.MoveAbs(AXIS_Z, 500, 100, PtPreFitPos_PLC[PT_Z]);
-                        nStep = 5;
-                        break;
-                    case 5:
-                        if (MotionCard.IsNormalStop(AXIS_Z))
-                        {
-                            if (GetCurStepCount() == 0)   //要自动下降贴合PLC,直到Sensor停止
+                ShowInfo("正在贴PLC......");
+                int nStep = 0;
+                while (!cts.IsCancellationRequested)
+                {
+                    switch (nStep)
+                    {
+                        case 0: //CZ到下表面  
+                            MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamBottom_Support[PT_CZ]);
+                            nStep = 1;
+                            break;
+                        case 1: //移动CY
+                            if (MotionCard.IsNormalStop(AXIS_CZ))
                             {
-                                MotionCard.MoveAbs(AXIS_Z, 500, 1, PtPreFitPos_PLC[PT_Z] + 3);
-                                nStep = 6;
+                                MotionCard.MoveAbs(AXIS_CY, 1000, 10, PtCamBottom_Support[PT_CY]);
+                                nStep = 2;
                             }
-                        }
-                        break;
-                    case 6: // 完毕,等待工作完毕
-                        bPauseMonitor = false;
-                        IOCard.WriteIoOutBit(VAC_HSG, false);
-                        BackToTempPos();
-                        ShowInfo("PLC贴合完毕");
-                        return;
-                    default:
-                        return;
+                            break;
+                        case 2:
+                            if (MotionCard.IsNormalStop(AXIS_CY))
+                            {
+                                Thread.Sleep(200);
+                                nStep = 3;
+                            }
+                            break;
+                        case 3: //开始拍照并显示
+                            IsPauseMonitor = false;
+                            StartMonitor(0, EnumRTShowType.Tia);
+                            if (GetCurStepCount() == 0)   //要自动下降贴合PLC
+                            {
+                                PushStep(STEP.CmdGetProductPLC);
+                                MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, LowPressure, HightPressure);
+                                MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
+                                MotionCard.MoveAbs(AXIS_Z, 500, 100, PtPreFitPos_PLC[PT_Z]);
+                                nStep = 5;
+                            }
+                            break;
+
+                        case 5:
+                            if (MotionCard.IsNormalStop(AXIS_Z))
+                            {
+                                if (GetCurStepCount() == 0)   //要自动下降贴合PLC,直到Sensor停止
+                                {
+                                    MotionCard.MoveAbs(AXIS_Z, 500, 1, PtPreFitPos_PLC[PT_Z] + 3);
+                                    nStep = 6;
+                                }
+                            }
+                            break;
+                        case 6: // 完毕,等待工作完毕
+                            if (MotionCard.IsNormalStop(AXIS_Z))
+                            {
+                                IOCard.WriteIoOutBit(VAC_HSG, false);
+                                BackToTempPos();
+                                ShowInfo("PLC贴合完毕");
+                                return;
+                            }
+                            break;
+                        default:
+                            return;
+                    }
                 }
+                ShowInfo("PLC贴合被终止");
             }
-            ShowInfo("PLC贴合被终止");
+            catch
+            {
+                ShowInfo("贴合PLC的时候发生错误");
+            }
         }
 
         //贴Support
         private void Work_Support()
         {
-            int nStep = 0;
-            ShowInfo("正在贴合Support......");
-            while (!cts.IsCancellationRequested)
+            try
             {
-                switch (nStep)
+                int nStep = 0;
+                ShowInfo("正在贴合Support......");
+                while (!cts.IsCancellationRequested)
                 {
-                    case 0: //移动CY
-                        TiaFlag = null;
-                        MotionCard.MoveAbs(AXIS_CY, 1000, 10, PtCamBottom_Support[PT_CY]);
-                        nStep = 1;
-                        break;
-                    case 1: //CZ到下表面
-                        if (MotionCard.IsNormalStop(AXIS_CY))
-                        {
-                            MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamBottom_Support[PT_CZ]);
-                            bPauseMonitor = true;
-                            nStep = 2;
-                        }
-                        break;
-                    case 2: //开始拍照
-                        if (MotionCard.IsNormalStop(AXIS_CZ))
-                        {
-                            Thread.Sleep(200);//等待稳定
-                            HalconVision.Instance.GrabImage(0);
-                            nStep = 3;
-                        }
-                        break;
-                    case 3: //ShowLineBottom 
-                        lock (MonitorLock)
-                        {
-                            HalconVision.Instance.SetRefreshWindow(0, false);
-                            HalconVision.Instance.GrabImage(0, true, true);
-                            HalconVision.Instance.SetRefreshWindow(0, true);
-                            ShowLineBottom();
-                        }
-                        if (GetCurStepCount() == 0)    //要自动下降到预贴合位置，同时打开下压检测使能
-                        {
-                            MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, 1000, 2000);
-                            MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
-                            nStep = 4;
-                        }
-                        break;
-
-                    case 4:
-                        MotionCard.MoveAbs(AXIS_Z, 500, 100, PtPreFitPos_Support[PT_Z]);
-                        nStep = 5;
-                        break;
-                    case 5: //等待最后确认
-                        if (MotionCard.IsNormalStop(AXIS_Z))
-                        {
-                            if (GetCurStepCount() == 0)    //要自动下降到贴合位置
+                    switch (nStep)
+                    {
+                        case 0: //移动CY
+                            MotionCard.MoveAbs(AXIS_CY, 1000, 10, PtCamBottom_Support[PT_CY]);
+                            nStep = 1;
+                            break;
+                        case 1: //CZ到下表面
+                            if (MotionCard.IsNormalStop(AXIS_CY))
                             {
-                                MotionCard.MoveAbs(AXIS_Z, 500, 1, PtPreFitPos_Support[AXIS_Z] + 3);
-                                nStep = 6;
+                                MotionCard.MoveAbs(AXIS_CZ, 1000, 10, PtCamBottom_Support[PT_CZ]);
+                                IsPauseMonitor = false;//停止监视
+                                StartMonitor(0,EnumRTShowType.Support);
+                                nStep = 2;
                             }
-                        }
-                        break;
-                    case 6: //下压完成
-                        if (MotionCard.IsNormalStop(AXIS_Z))
-                        {
-                            BackToTempPos();
-                            HalconVision.Instance.GrabImage(0);
-                            nStep = 7;
-                        }
-                        
-                        break;
-   
-                    case 7: //去找Tia的Model和基准线，并画出region
-                        lock (MonitorLock)
-                        {
-                            if (TiaFlag == null)
-                                FindLineTia();
-                            else
-                                HalconVision.Instance.ShowRoi(0, TiaFlag);
-                        }
-                        Thread.Sleep(1000);
-                        nStep = 8;
-                        break;
-                    case 8:
-                        bPauseMonitor = false;
-                        StartMonitor(0);                        
-                        nStep = 10;
-                        break;
-                    case 10: // 完毕,等待工作完毕
-                        ShowInfo("Support完毕");
-                        return;
-                    default:
-                        return;
+                            break;
+                        case 2: //开始拍照
+                            if (MotionCard.IsNormalStop(AXIS_CZ))
+                            {
+                             
+                                nStep = 3;
+                            }
+                            break;
+                        case 3: //ShowLineBottom 
+                            if (GetCurStepCount() == 0)    //调整完毕，要自动下降到预贴合位置，同时打开下压检测使能
+                            {
+                                PushStep(STEP.CmdGetProductSupport);
+                                MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, LowPressure, HightPressure);
+                                MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
+                                MotionCard.MoveAbs(AXIS_Z, 500, 20, PtPreFitPos_Support[PT_Z]);
+                                Thread.Sleep(200);
+                                TiaFlag = null; //清空上次的Tia线条
+                                nStep = 5;
+                            }
+                            break;
+
+                       
+                        case 5: //等待最后确认
+                            if (MotionCard.IsNormalStop(AXIS_Z))
+                            {
+                                if (GetCurStepCount() == 0)    //要自动下降到贴合位置
+                                {
+                                    MotionCard.MoveAbs(AXIS_Z, 500, 1, PtPreFitPos_Support[AXIS_Z] + 3);
+                                    nStep = 6;
+                                }
+                            }
+                            break;
+                        case 6: //下压完成
+                            if (MotionCard.IsNormalStop(AXIS_Z))
+                            {
+                                StartMonitor(0, EnumRTShowType.None);
+                                BackToTempPos();
+                                nStep = 7;
+                            }
+
+                            break;
+
+                        case 7: //去找Tia的Model和基准线，并画出region
+                            lock (MonitorLock)
+                            {
+                                if (TiaFlag == null)
+                                {
+                                    Thread.Sleep(200);
+                                    lock (MonitorLock)
+                                    {
+                                        HalconVision.Instance.GrabImage(0);
+                                        FindLineTia();
+                                        Thread.Sleep(1000);
+                                    }
+                                }
+                                else
+                                    HalconVision.Instance.ShowRoi(0, TiaFlag);
+                            }              
+                            nStep = 10;
+                            break;
+                        case 10: // 完毕,等待工作完毕
+                            ShowInfo("Support完毕");
+                            return;
+                        default:
+                            return;
+                    }
                 }
+                ShowInfo("Support贴合被终止");
             }
-            ShowInfo("Pad被终止");
+            catch(Exception ex)
+            {
+                ShowInfo("贴合Support时候发生错误");
+            }
         }
         #endregion
 
@@ -879,8 +880,10 @@ namespace JPT_TosaTest.WorkFlow
                     PtPreFitPos_Support!=null &&
                     PtRightDown_PLC!=null;
         }
-        private void StartMonitor(int nCamID)
+
+        private void StartMonitor(int nCamID, EnumRTShowType type)
         {
+            ShowType = type;
             if (GrabTask == null || GrabTask.IsCanceled || GrabTask.IsCompleted)
             {
                 GrabTask = new Task(()=> {
@@ -888,10 +891,31 @@ namespace JPT_TosaTest.WorkFlow
                     {
                         lock (MonitorLock)
                         {
-                            if (!bPauseMonitor)
-                                HalconVision.Instance.GrabImage(nCamID, true, true);
+                            if (!IsPauseMonitor)
+                            {
+                                switch (ShowType)
+                                {
+                                    case EnumRTShowType.Support:
+                                        HalconVision.Instance.SetRefreshWindow(0, false);
+                                        HalconVision.Instance.GrabImage(nCamID, true, true);
+                                        HalconVision.Instance.SetRefreshWindow(0, true);
+                                        ShowLineBottom();
+                                        break;
+                                    case EnumRTShowType.Tia:
+                                        HalconVision.Instance.SetRefreshWindow(0, false);
+                                        HalconVision.Instance.GrabImage(nCamID, true, true);
+                                        HalconVision.Instance.SetRefreshWindow(0, true);
+                                        HalconVision.Instance.ShowRoi(0, TiaFlag);
+                                        break;
+                                    case EnumRTShowType.None:
+                                        HalconVision.Instance.GrabImage(nCamID, true, true);
+                                        break;
+
+                                }
+                              
+                            }
                             else
-                                Thread.Sleep(100);
+                                Thread.Sleep(10);
                            
                         }
                     }
