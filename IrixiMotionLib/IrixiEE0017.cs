@@ -232,9 +232,14 @@ namespace JPT_TosaTest.MotionCards
             }
             if (GetMcsuState(AxisNo, out AxisArgs axisArgs))
             {
-                if (axisArgs != null && axisArgs.ErrorCode == 0)
+                if (axisArgs != null)
                 {
-                    return axisArgs.IsBusy == false;
+                    if (axisArgs.IsBusy)
+                        return false;
+                    else 
+                    {
+                        return true;
+                    }
                 }
             }
             return false;
@@ -264,7 +269,7 @@ namespace JPT_TosaTest.MotionCards
                     {
                         lock (axisArgs.AxisLock)
                         {
-                            if (axisArgs.ErrorCode == 0)
+                            if (axisArgs.ErrorCode == 0 || axisArgs.ErrorCode==0x83 || axisArgs.ErrorCode==0x84)
                             {
                                 RelPos = Pos - axisArgs.CurAbsPos/axisArgs.Unit.Factor;
                             }
@@ -276,7 +281,8 @@ namespace JPT_TosaTest.MotionCards
                     return false;
                 }
 
-                return MoveRel(AxisNo, Acc, Speed, RelPos);
+               return  MoveRel(AxisNo, Acc, Speed, RelPos);
+               
             }
             catch (Exception ex)
             {
@@ -295,7 +301,6 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public bool MoveAbs(int AxisNo, double Acc, double Speed, double Pos, EnumTriggerType TriggerType, double Interval)
         {
-
             try
             {
                 if (AxisNo > 12 || AxisNo < 1)
@@ -309,7 +314,7 @@ namespace JPT_TosaTest.MotionCards
                     {
                         lock (axisArgs.AxisLock)
                         {
-                            if (axisArgs.ErrorCode == 0)
+                            if (axisArgs.ErrorCode == 0 || axisArgs.ErrorCode == 0x83 || axisArgs.ErrorCode == 0x84)
                             {
                                 RelPos = Pos - axisArgs.CurAbsPos / axisArgs.Unit.Factor;
                             }
@@ -320,7 +325,9 @@ namespace JPT_TosaTest.MotionCards
                 {
                     return false;
                 }
+                
                 return MoveRel(AxisNo, Acc, Speed, RelPos, TriggerType, Interval);
+                //return WaitLongChenck(AxisNo);
             }
             catch (Exception ex)
             {
@@ -349,8 +356,6 @@ namespace JPT_TosaTest.MotionCards
                         return false;
                     }
                     SetMoveAcc(AxisNo, Acc);    //设置加速度
-                    //var speedPuse = Speed * AxisStateList[AxisNo - 1].GainFactor;
-                    //byte speedPer = Convert.ToByte(Math.Floor(speedPuse / 100));
                     int distancePuse = Convert.ToInt32(Distance * AxisStateList[AxisNo - 1].GainFactor);
                     CommandMove.FrameLength = 0x0C;
                     CommandMove.AxisNo = (byte)AxisNo;
@@ -387,8 +392,6 @@ namespace JPT_TosaTest.MotionCards
                         return false;
                     }
                     SetMoveAcc(AxisNo, Acc);    //设置加速度
-                    //var speedPuse = Speed * AxisStateList[AxisNo - 1].GainFactor;
-                    //byte speedPer = Convert.ToByte(Math.Floor(speedPuse / 100));    //
                     int distancePuse = Convert.ToInt32(Distance * AxisStateList[AxisNo - 1].GainFactor);
                     CommandMoveTrigger.TriggerType = TriggerType == EnumTriggerType.ADC ? Enumcmd.HOST_CMD_MOVE_T_ADC : Enumcmd.HOST_CMD_MOVE_T_OUT;
                     CommandMoveTrigger.AxisNo = (byte)AxisNo;
@@ -798,7 +801,18 @@ namespace JPT_TosaTest.MotionCards
                     byte[] cmd = CommandGetMcsuSta.ToBytes();
                     this.ExcuteCmd(cmd);
                     if (CommandGetMcsuSta.WaitFinish(1000))
-                        axisargs = AxisStateList[AxisNo - 1];
+                    {
+                        var state = CommandGetMcsuSta.ReturnObject as MCSUS_STATE;
+                        int axisIndex = state.AxisIndex;
+                        lock (AxisStateList[axisIndex - 1].AxisLock)
+                        {
+                            AxisStateList[axisIndex - 1].IsHomed = state.IsHomed;
+                            AxisStateList[axisIndex - 1].IsBusy = state.IsBusy;
+                            AxisStateList[axisIndex - 1].ErrorCode = state.Error;
+                            AxisStateList[axisIndex - 1].CurAbsPos = (double)state.AbsPosition / (double)AxisStateList[axisIndex - 1].GainFactor;
+                        }
+                        axisargs = AxisStateList[axisIndex - 1];
+                    }
 
                     else
                         return false;
@@ -939,48 +953,48 @@ namespace JPT_TosaTest.MotionCards
             switch (Cmd)
             {
                 case (byte)Enumcmd.HOST_CMD_GET_MCSU_STA:      //读取状态值
-                    CommandGetMcsuSta.ByteArrToPackage(data);
-                    MCSUS_STATE returnValue = CommandGetMcsuSta.ReturnObject as MCSUS_STATE;
-                    int axisIndex = returnValue.AxisIndex;
-                    lock (AxisStateList[axisIndex - 1].AxisLock)
-                    {
-                        AxisStateList[axisIndex - 1].IsHomed = returnValue.IsHomed;
-                        AxisStateList[axisIndex - 1].IsBusy = returnValue.IsBusy;
-                        AxisStateList[axisIndex - 1].ErrorCode = returnValue.Error;
-                        AxisStateList[axisIndex - 1].CurAbsPos = (double)returnValue.AbsPosition / (double)AxisStateList[axisIndex - 1].GainFactor;
-                    }
+                    CommandGetMcsuSta.GetDataFromRowByteArr(data);
+                    MCSUS_STATE state = CommandGetMcsuSta.ReturnObject as MCSUS_STATE;
+                    //int axisIndex = state.AxisIndex;
+                    //lock (AxisStateList[axisIndex - 1].AxisLock)
+                    //{
+                    //    AxisStateList[axisIndex - 1].IsHomed = state.IsHomed;
+                    //    AxisStateList[axisIndex - 1].IsBusy = state.IsBusy;
+                    //    AxisStateList[axisIndex - 1].ErrorCode = state.Error;
+                    //    AxisStateList[axisIndex - 1].CurAbsPos = (double)state.AbsPosition / (double)AxisStateList[axisIndex - 1].GainFactor;
+                    //}
                     CommandGetMcsuSta.SetSyncFlag();
                     break;
                 case (byte)Enumcmd.HOST_CMD_GET_MEM_LEN:
-                    CommandGetMemLen.ByteArrToPackage(data);
+                    CommandGetMemLen.GetDataFromRowByteArr(data);
                     CommandGetMemLen.SetSyncFlag();
                     break;
                 case (byte)Enumcmd.HOST_CMD_READ_MEM:
-                    CommandReadMem.ByteArrToPackage(data);
+                    CommandReadMem.GetDataFromRowByteArr(data);
                     CommandReadMem.SetSyncFlag();
 
                     break;
                 case (byte)Enumcmd.HOST_CMD_READ_DIN:
-                    CommandReadDin.ByteArrToPackage(data);  //解析包
+                    CommandReadDin.GetDataFromRowByteArr(data);  //解析包
                     CommandReadDin.SetSyncFlag();   //通知读取完毕
                     Console.WriteLine("---------ReadInOver-----------");
                     break;
                 case (byte)Enumcmd.HOST_CMD_READ_DOUT:
-                    CommandReadDout.ByteArrToPackage(data);
+                    CommandReadDout.GetDataFromRowByteArr(data);
                     CommandReadDout.SetSyncFlag();
 
                     Console.WriteLine("---------ReadOutSetOver-----------");
                     break;
                 case (byte)Enumcmd.HOST_CMD_GET_ERR:
-                    CommandGetErr.ByteArrToPackage(data);
+                    CommandGetErr.GetDataFromRowByteArr(data);
                     CommandGetErr.SetSyncFlag();
                     break;
                 case (byte)Enumcmd.HOST_CMD_GET_MCSU_SETTINGS:
-                    CommandGetMcsuSetting.ByteArrToPackage(data);
+                    CommandGetMcsuSetting.GetDataFromRowByteArr(data);
                     CommandGetErr.SetSyncFlag();
                     break;
                 case (byte)Enumcmd.HOST_CMD_READ_AD:
-                    CommandReadAd.ByteArrToPackage(data);
+                    CommandReadAd.GetDataFromRowByteArr(data);
                     CommandReadAd.SetSyncFlag();
                     break;
             }
@@ -1007,17 +1021,13 @@ namespace JPT_TosaTest.MotionCards
                         if (this.GetMcsuState(Index, out AxisArgs state))   //更新状态
                         {
                             OnAxisStateChanged?.Invoke(this, new Tuple<byte, AxisArgs>((byte)(Index), state));
-                            //Console.WriteLine($"Pos：{state.CurAbsPos}, ErrorCode: {state.ErrorCode}");
-                            //if (AxisStateList[IndexBase0].ErrorCode == 0)
-                            //{
-                            if (AxisStateList[IndexBase0].IsBusy)
+                            if (AxisStateList[IndexBase0].IsBusy)   //如果电机在忙就一直查询
                                 AxisStateList[IndexBase0].ReqStartTime = DateTime.Now.Ticks;
-                            //}
                         }
                         Thread.Sleep(10);
                         if (TimeSpan.FromTicks(DateTime.Now.Ticks - AxisStateList[IndexBase0].ReqStartTime).TotalSeconds > 1)
                         {
-                            break; ;
+                            break;
                         }
                     }
                     AxisStateList[IndexBase0].IsInRequest = false;
@@ -1025,6 +1035,29 @@ namespace JPT_TosaTest.MotionCards
                 AxisStateCheckTaskList[IndexBase0].Start();
             }
         }
+
+        //private bool WaitLongChenck(int Index)
+        //{
+        //    int IndexBase0 = Index - 1;
+        //    while (true)
+        //    {
+        //        Thread.Sleep(100);
+        //        if (this.GetMcsuState(Index, out AxisArgs state))   //更新状态
+        //        {
+        //            OnAxisStateChanged?.Invoke(this, new Tuple<byte, AxisArgs>((byte)(Index), state));
+        //            if (state.IsBusy)   //如果电机在忙就一直查询
+        //                AxisStateList[IndexBase0].ReqStartTime = DateTime.Now.Ticks;
+        //            else
+        //                break;
+                   
+        //            if (TimeSpan.FromTicks(DateTime.Now.Ticks - AxisStateList[IndexBase0].ReqStartTime).TotalSeconds > 1)
+        //            {
+        //               throw new Exception($"Timeout when check axis {IndexBase0}") ;
+        //            }
+        //        }
+        //    }
+        //    return true;
+        //}
 
         /// <summary>
         /// 设置电机的控制方式，D+P， CW-CCW，回原点方向等

@@ -21,8 +21,9 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
             writer.Write(MemLength);
         }
 
-        public override ZigBeePackage ByteArrToPackage(byte[] RawData)
+        public override ZigBeePackage GetDataFromRowByteArr(byte[] RawData)
         {
+            base.GetDataFromRowByteArr(RawData);
             List<short> ADCRawDataList = new List<short>();
             int PackageID = RawData[7] + (RawData[8] << 8);
             int DataLength = RawData[9] + (RawData[10] << 8);
@@ -34,7 +35,7 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
             }
 
             ReturnObject = ADCRawDataList;
-            return base.ByteArrToPackage(RawData);
+            return this;
         }
 
         public UInt32 MemOffset { get; set; }

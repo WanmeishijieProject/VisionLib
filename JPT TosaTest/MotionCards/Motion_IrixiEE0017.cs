@@ -158,6 +158,7 @@ namespace JPT_TosaTest.MotionCards
                 return false;
             }
             int axisIndex = AxisNo + MIN_AXIS;
+            Thread.Sleep(100);
             return _controller.IsNormalStop(axisIndex);
 
         }

@@ -18,8 +18,9 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
             writer.Write((byte)Enumcmd.HOST_CMD_READ_AD);
             writer.Write((byte)ADChannelFlags);
         }
-        public override ZigBeePackage ByteArrToPackage(byte[] RawData)
+        public override ZigBeePackage GetDataFromRowByteArr(byte[] RawData)
         {
+            base.GetDataFromRowByteArr(RawData);
             List<UInt16> ADValues = new List<UInt16>();
             if (RawData != null && RawData.Length >= 7) //固定结构
             {

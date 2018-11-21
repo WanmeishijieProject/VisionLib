@@ -22,9 +22,9 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
             writer.Write(SpeedPercent);
             writer.Write(TriggerInterval);
         }
-        public override ZigBeePackage ByteArrToPackage(byte[] RawData)
+        public override ZigBeePackage GetDataFromRowByteArr(byte[] RawData)
         {
-            return base.ByteArrToPackage(RawData);
+            return base.GetDataFromRowByteArr(RawData);
         }
         public Enumcmd TriggerType { get; set; }
         public byte AxisNo { get; set; }

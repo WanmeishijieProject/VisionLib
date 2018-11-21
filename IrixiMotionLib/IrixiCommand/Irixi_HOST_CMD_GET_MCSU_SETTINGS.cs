@@ -21,10 +21,11 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
         }
 
         public byte AxisNo { get; set; }
-        public override ZigBeePackage ByteArrToPackage(byte[] RawData)
+        public override ZigBeePackage GetDataFromRowByteArr(byte[] RawData)
         {
+            base.GetDataFromRowByteArr(RawData);
             ReturnObject = new Tuple<byte, UInt16>(RawData[7], (UInt16)(RawData[8]<<8+ RawData[9]));
-            return base.ByteArrToPackage(RawData);
+            return this;
         }
     }
 }

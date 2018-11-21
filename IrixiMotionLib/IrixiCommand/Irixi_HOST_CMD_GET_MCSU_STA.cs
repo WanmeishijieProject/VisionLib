@@ -19,16 +19,17 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
             writer.Write((byte)Enumcmd.HOST_CMD_GET_MCSU_STA);
             writer.Write(AxisNo);
         }
-        public override ZigBeePackage ByteArrToPackage(byte[] RawData)
+        public override ZigBeePackage GetDataFromRowByteArr(byte[] RawData)
         {
             int RealLen = RawData.Length;
-            base.ByteArrToPackage(RawData);
+            base.GetDataFromRowByteArr(RawData);
 
             byte axisIndex = RawData[7];    //AxisNo
             byte AxisState = RawData[8];  //AxisState
             byte Error = RawData[9];
             Int32 AbsPos = (Int32)((RawData[10]) + (RawData[11] << 8) + (RawData[12] << 16) + (RawData[13] << 24));
 
+            base.GetDataFromRowByteArr(RawData);
             this.ReturnObject = new MCSUS_STATE()
             {
                 AxisIndex = axisIndex,
@@ -39,7 +40,7 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
                 AbsPosition = AbsPos,
                 Error = Error
             };
-            return base.ByteArrToPackage(RawData);
+            return this;
         }
         public byte AxisNo { get; set; }
 

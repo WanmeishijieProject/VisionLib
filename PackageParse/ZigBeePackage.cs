@@ -60,7 +60,7 @@ namespace Package
         }
         protected abstract void WriteData();
 
-        public virtual ZigBeePackage ByteArrToPackage(byte[] RawData)
+        public virtual ZigBeePackage GetDataFromRowByteArr(byte[] RawData)
         {
             if (RawData != null && RawData.Length >= 7) //固定结构
             {
@@ -94,7 +94,7 @@ namespace Package
 
         public IPackage GetPackage(byte[] RawData)
         {
-            return ByteArrToPackage(RawData);
+            return GetDataFromRowByteArr(RawData);
         }
     }
 }

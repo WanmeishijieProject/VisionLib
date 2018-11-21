@@ -22,6 +22,12 @@ namespace JPT_TosaTest.WorkFlow
         CmdFindLine,
         DO_NOTHING,
        
+
+
+        TEST1=99,
+        TEST2,
+        TEST3,
+        TEST4,
         EXIT,
     }
     public enum EnumProductType
@@ -46,17 +52,21 @@ namespace JPT_TosaTest.WorkFlow
        
         private int[] ProductIndex = { 0, 0 };
 
-        private List<double> PTCamTop_Support = null;
-        List<double> PtCamBottom_Support = null;
+       
         List<double> PtCamTop_PLC = null;
         List<double> PtCamBottom_PLC = null;
         List<double> PtLeftTop_PLC = null;
         List<double> PtRightDown_PLC = null;
         List<double> PtDropDown_PLC = null;
+        List<double> PtPreFitPos_PLC = null;
 
+        List<double> PTCamTop_Support = null;
+        List<double> PtCamBottom_Support = null;
         List<double> PtLeftTop_Support = null;
         List<double> PtRightDown_Support = null;
         List<double> PtDropDown_Support = null;
+        List<double> PtPreFitPos_Support = null;
+      
         Task GrabTask = null;
         private object MonitorLock = new object();
         private bool bPauseMonitor = true;
@@ -76,6 +86,9 @@ namespace JPT_TosaTest.WorkFlow
             MotionCard = MotionCards.MotionMgr.Instance.FindMotionCardByCardName("Motion_IrixiEE0017[0]") as MotionCards.Motion_IrixiEE0017;
             IOCard = IOCards.IOCardMgr.Instance.FindIOCardByCardName("IO_IrixiEE0017[0]");
             IOCard.WriteIoOutBit(TouchSensor, true);
+            Thread.Sleep(3000);
+            MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, 1000, 2000);
+            MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
             return GetAllPoint() && MotionCard !=null  &&  IOCard!=null;
         }
         public WorkService(WorkFlowConfig cfg) : base(cfg)
@@ -100,7 +113,29 @@ namespace JPT_TosaTest.WorkFlow
                         case STEP.Init:     //初始化
                             ShowInfo();
                             HomeAll();
-                            ClearAllStep();
+                            //ClearAllStep();
+                            PopAndPushStep(STEP.TEST1);
+                            break;
+                        case STEP.TEST1:
+                            MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, 1000, 3000);
+                            MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
+                            MotionCard.MoveAbs(AXIS_X, 500, 2, PtDropDown_PLC[PT_X]);
+
+                            PopAndPushStep(STEP.TEST2);
+                            break;
+                        
+                        case STEP.TEST2:
+                            if (MotionCard.IsNormalStop(AXIS_X))
+                            {
+                                MotionCard.MoveAbs(AXIS_X, 500, 10, 0);
+                                PopAndPushStep(STEP.TEST3);
+                            }
+                            break;
+                        case STEP.TEST3:
+                            if (MotionCard.IsNormalStop(AXIS_X))
+                            {
+                                PopAndPushStep(STEP.TEST1);
+                            }
                             break;
                         case STEP.CmdGetProductSupport: //抓取Support
                             {
@@ -139,7 +174,6 @@ namespace JPT_TosaTest.WorkFlow
                             ClearAllStep();
                             break;
 
-
                         case STEP.EXIT:
                             return 0;
                     }
@@ -164,8 +198,6 @@ namespace JPT_TosaTest.WorkFlow
                     case 0:
                         MotionCard.Home(AXIS_CZ, 0, 500, 5, 10);
                         MotionCard.Home(AXIS_Z, 0, 500, 20, 50);
-                        
-                       
                         
                         nStep = 1;
                         break;
@@ -445,10 +477,10 @@ namespace JPT_TosaTest.WorkFlow
             ShowInfo("标记被终止");
         }
 
-        //顶部监视
+        //贴PLC
         private void Work_PLC()
         {
-            ShowInfo("Lens......");
+            ShowInfo("正在贴PLC......");
             int nStep = 0;
             while (!cts.IsCancellationRequested)
             {
@@ -477,27 +509,46 @@ namespace JPT_TosaTest.WorkFlow
                     case 3: //开始拍照并显示
                         HalconVision.Instance.GrabImage(0, true, true);
                         HalconVision.Instance.ShowRoi(0, TiaFlag);
-                        if (GetCurStepCount()==0)   //要自动下降贴合
+                        if (GetCurStepCount() == 0)   //要自动下降贴合PLC
+                        {
+                            MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, 1000, 2000);
+                            MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
                             nStep = 4;
+                        }
                         break;
-                    case 4: // 完毕,等待工作完毕
+
+                    case 4:
+                        MotionCard.MoveAbs(AXIS_Z, 500, 100, PtPreFitPos_PLC[PT_Z]);
+                        nStep = 5;
+                        break;
+                    case 5:
+                        if (MotionCard.IsNormalStop(AXIS_Z))
+                        {
+                            if (GetCurStepCount() == 0)   //要自动下降贴合PLC,直到Sensor停止
+                            {
+                                MotionCard.MoveAbs(AXIS_Z, 500, 1, PtPreFitPos_PLC[PT_Z] + 3);
+                                nStep = 6;
+                            }
+                        }
+                        break;
+                    case 6: // 完毕,等待工作完毕
                         bPauseMonitor = false;
                         IOCard.WriteIoOutBit(VAC_HSG, false);
                         BackToTempPos();
-                        ShowInfo("Lens完毕");
+                        ShowInfo("PLC贴合完毕");
                         return;
                     default:
                         return;
                 }
             }
-            ShowInfo("Lens被终止");
+            ShowInfo("PLC贴合被终止");
         }
 
-        //底部
+        //贴Support
         private void Work_Support()
         {
             int nStep = 0;
-            ShowInfo("Pad......");
+            ShowInfo("正在贴合Support......");
             while (!cts.IsCancellationRequested)
             {
                 switch (nStep)
@@ -531,15 +582,39 @@ namespace JPT_TosaTest.WorkFlow
                             HalconVision.Instance.SetRefreshWindow(0, true);
                             ShowLineBottom();
                         }
-                        if (GetCurStepCount() == 0)    //要自动下降贴合，然后撤回
+                        if (GetCurStepCount() == 0)    //要自动下降到预贴合位置，同时打开下压检测使能
+                        {
+                            MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, 1000, 2000);
+                            MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
                             nStep = 4;
+                        }
                         break;
-                    case 4: 
-                        BackToTempPos();
-                        HalconVision.Instance.GrabImage(0);
+
+                    case 4:
+                        MotionCard.MoveAbs(AXIS_Z, 500, 100, PtPreFitPos_Support[PT_Z]);
                         nStep = 5;
                         break;
-                    case 5: //去找Tia的Model和基准线，并画出region
+                    case 5: //等待最后确认
+                        if (MotionCard.IsNormalStop(AXIS_Z))
+                        {
+                            if (GetCurStepCount() == 0)    //要自动下降到贴合位置
+                            {
+                                MotionCard.MoveAbs(AXIS_Z, 500, 1, PtPreFitPos_Support[AXIS_Z] + 3);
+                                nStep = 6;
+                            }
+                        }
+                        break;
+                    case 6: //下压完成
+                        if (MotionCard.IsNormalStop(AXIS_Z))
+                        {
+                            BackToTempPos();
+                            HalconVision.Instance.GrabImage(0);
+                            nStep = 7;
+                        }
+                        
+                        break;
+   
+                    case 7: //去找Tia的Model和基准线，并画出region
                         lock (MonitorLock)
                         {
                             if (TiaFlag == null)
@@ -548,17 +623,15 @@ namespace JPT_TosaTest.WorkFlow
                                 HalconVision.Instance.ShowRoi(0, TiaFlag);
                         }
                         Thread.Sleep(1000);
-                        nStep = 6;
+                        nStep = 8;
                         break;
-                    case 6:
+                    case 8:
                         bPauseMonitor = false;
-                        StartMonitor(0);
-                        
+                        StartMonitor(0);                        
                         nStep = 10;
                         break;
                     case 10: // 完毕,等待工作完毕
-                        bPauseMonitor = false;
-                        ShowInfo("Pad完毕");
+                        ShowInfo("Support完毕");
                         return;
                     default:
                         return;
@@ -772,7 +845,7 @@ namespace JPT_TosaTest.WorkFlow
             return true;
         }
 
- 
+
 
 
         private bool GetAllPoint()
@@ -790,6 +863,8 @@ namespace JPT_TosaTest.WorkFlow
             PtRightDown_Support = WorkFlowMgr.Instance.GetPoint("Support右下吸取点");
             PtDropDown_Support = WorkFlowMgr.Instance.GetPoint("Support放置点");
 
+            PtPreFitPos_Support= WorkFlowMgr.Instance.GetPoint("Support预贴合位置");
+            PtPreFitPos_PLC = WorkFlowMgr.Instance.GetPoint("PLC预贴合位置");
 
             return  PTCamTop_Support != null &&
                     PtCamBottom_Support != null &&
@@ -800,7 +875,9 @@ namespace JPT_TosaTest.WorkFlow
                     PtDropDown_PLC != null &&
                     PtLeftTop_Support!=null &&
                     PtRightDown_Support!=null &&
-                    PtDropDown_Support!=null;
+                    PtDropDown_Support!=null &&
+                    PtPreFitPos_Support!=null &&
+                    PtRightDown_PLC!=null;
         }
         private void StartMonitor(int nCamID)
         {

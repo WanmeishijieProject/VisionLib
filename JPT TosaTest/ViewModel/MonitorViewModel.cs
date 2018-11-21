@@ -233,7 +233,8 @@ namespace JPT_TosaTest.ViewModel
 
         private void Value_OnErrorOccured(IMotion sender, int ErrorCode, string ErrorMsg)
         {
-            Messenger.Default.Send<string>($"Motion{sender.motionCfg.Name} error occured:{ErrorMsg}", "Error");
+            if(ErrorCode!=0x83 && ErrorCode!=0x84)
+                Messenger.Default.Send<string>($"Motion{sender.motionCfg.Name} error occured:{ErrorMsg}", "Error");
         }
 
         private void Value_OnAxisStateChanged(IMotion sender, int AxisNo, AxisArgs args)
