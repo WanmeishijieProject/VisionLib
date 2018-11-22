@@ -132,12 +132,12 @@ namespace JPT_TosaTest.ViewModel
         }
         public string TiaName
         {
-            get { return ConfigMgr.Instance.ProcessData.TiaModelName; }
+            get { return ConfigMgr.Instance.ProcessData.TiaType; }
             set
             {
-                if (value != ConfigMgr.Instance.ProcessData.TiaModelName)
+                if (value != ConfigMgr.Instance.ProcessData.TiaType)
                 {
-                    ConfigMgr.Instance.ProcessData.TiaModelName = value;
+                    ConfigMgr.Instance.ProcessData.TiaType = value;
                     RaisePropertyChanged();
                 }
             }

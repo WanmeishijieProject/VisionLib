@@ -115,7 +115,7 @@ namespace JPT_TosaTest.Config.ProcessParaManager
 
         public override string ToString()
         {
-            return $"{ParaType.ToString()}|{CenterLineOffset}&{PadOffset}&{TiaModelName}&{HsgModelName}&{Presure}";
+            return $"{ParaType.ToString()}|{CenterLineOffset}&{PadOffset}&{TiaModelName}&{HsgModelName}&{TiaType}&{Presure}";
         }
         public void FromString(string strPara)
         {
@@ -124,19 +124,23 @@ namespace JPT_TosaTest.Config.ProcessParaManager
             {
                 var strType = paraList[0];
                 var L1 = paraList[1].Split('&');
-                if (L1.Length == 5)
+                if (L1.Length == 6)
                 {
                     bool bRet = true;
                     bRet &= Enum.TryParse(strType, out EnumConfigType type);
-                    bRet &= int.TryParse(L1[0], out int centerLineOffset);
+                    bRet &= int.TryParse(L1[0], out int centerLineOffset);       
                     bRet &= int.TryParse(L1[1], out int padOffset);
-                    bRet &= double.TryParse(L1[4], out double press);
+                    //2
+                    //3
+                    //4
+                    bRet &= double.TryParse(L1[5], out double press);
                     if (type == EnumConfigType.ProcessPara && bRet)
                     {
                         CenterLineOffset = centerLineOffset;
                         PadOffset = padOffset;
                         TiaModelName = L1[2];
                         HsgModelName = L1[3];
+                        TiaType = L1[4];
                         Presure = press;
                     }
                     else

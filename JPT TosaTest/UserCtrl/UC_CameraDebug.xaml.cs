@@ -144,5 +144,9 @@ namespace JPT_TosaTest.UserCtrl
 
         }
 
+        private void CamDebug_HMouseWheel(object sender, HalconDotNet.HMouseEventArgsWPF e)
+        {
+            Console.WriteLine(e.Delta);
+        }
     }
 }

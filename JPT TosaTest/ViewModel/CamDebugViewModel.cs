@@ -197,19 +197,6 @@ namespace JPT_TosaTest.ViewModel
                     case EnumToolType.FlagTool:
                         {
                             FlagToolDaga data = para as FlagToolDaga;
-                            //int nCamID = 0;
-                            //var L1Data = File.ReadAllText($"{PATH_TOOLPATH}{data.L1Name}.para");
-                            //var L2Data = File.ReadAllText($"{PATH_TOOLPATH}{data.L2Name}.para");
-                            //string ModelName = L1Data.Split('|')[1].Split('&')[4];
-
-                            ////先找模板
-                            //string ModelFullPathName = $"{PATH_MODELPATH}Cam{nCamID}_{ModelName}.shm";
-                            //string paraIn = $"{ModelFullPathName},{L1Data},{L2Data},{data.GeometryType.ToString()}";
-                            //HalconVision.Instance.ProcessImage(IMAGEPROCESS_STEP.T6, nCamID, paraIn, out object Hom2DAndModelPos);
-                            ////有了垂线才能画点，同时存储角度与位置关系
-
-                           
-
                             AddFlag(data);
                         }
                         break;
@@ -275,6 +262,60 @@ namespace JPT_TosaTest.ViewModel
                 };
 
                 HalconVision.Instance.ProcessImage(DrawFlagTool);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        private void DebugShowFlagTia(ToolDataBase para)
+        {
+            try
+            {
+                int nCamID = 0;
+                FlagToolDaga data = para as FlagToolDaga;
+                var L1Data = File.ReadAllText($"{PATH_TOOLPATH}{data.L1Name}.para");
+                var L2Data = File.ReadAllText($"{PATH_TOOLPATH}{data.L2Name}.para");
+                List<string> LineListString = new List<string>() { L1Data, L2Data };
+                string ModelName = L1Data.Split('|')[1].Split('&')[4];
+
+                StepFindModel FindModelTool = new StepFindModel()
+                {
+                    In_CamID = nCamID,
+                    In_ModelNameFullPath = $"{PATH_MODELPATH}Cam0_{ModelName}.shm"
+                };
+                HalconVision.Instance.ProcessImage(FindModelTool);
+
+                //FindLine
+                StepFindeLineByModel FindLineTool = new StepFindeLineByModel()
+                {
+                    In_CamID = nCamID,
+                    In_Hom_mat2D = FindModelTool.Out_Hom_mat2D,
+                    In_ModelRow = FindModelTool.Out_ModelRow,
+                    In_ModelCOl = FindModelTool.Out_ModelCol,
+                    In_ModelPhi = FindModelTool.Out_ModelPhi,
+                    In_LineRoiPara = LineListString
+                };
+                HalconVision.Instance.ProcessImage(FindLineTool);
+
+
+                //ShowFlag
+                var LineListForDraw = new List<Tuple<double, double, double, double>>();
+                foreach (var it in FindLineTool.Out_Lines)
+                    LineListForDraw.Add(new Tuple<double, double, double, double>(it.Item1.D, it.Item2.D, it.Item3.D, it.Item4.D));
+                StepShowFlag ShowFlagTool = new StepShowFlag()
+                {
+                    In_CamID = nCamID,
+                    In_CenterRow = data.Halcon_Row,
+                    In_CenterCol = data.Halcon_Col,
+                    In_Phi = data.Halcon_Phi,
+                    In_HLine = LineListForDraw[0],
+                    In_VLine = LineListForDraw[1],
+                    In_RegionFullPathFileName = $"{PATH_TOOLPATH}Flag.reg}}"
+                };
+                HalconVision.Instance.ProcessImage(ShowFlagTool);
+
             }
             catch (Exception ex)
             {
@@ -1045,59 +1086,35 @@ namespace JPT_TosaTest.ViewModel
 
             }); }
         }
-        private void DebugShowFlagTia(ToolDataBase para)
+
+        /// <summary>
+        /// 对图像进行缩放
+        /// </summary>
+        public RelayCommand ZoomCommand
         {
-            try
+            get
             {
-                int nCamID = 0;
-                FlagToolDaga data = para as FlagToolDaga;
-                var L1Data = File.ReadAllText($"{PATH_TOOLPATH}{data.L1Name}.para");
-                var L2Data = File.ReadAllText($"{PATH_TOOLPATH}{data.L2Name}.para");
-                List<string> LineListString = new List<string>() { L1Data, L2Data };
-                string ModelName = L1Data.Split('|')[1].Split('&')[4];
-
-                StepFindModel FindModelTool = new StepFindModel()
-                {
-                    In_CamID = nCamID,
-                    In_ModelNameFullPath = $"{PATH_MODELPATH}Cam0_{ModelName}.shm"
-                };
-                HalconVision.Instance.ProcessImage(FindModelTool);
-
-                //FindLine
-                StepFindeLineByModel FindLineTool = new StepFindeLineByModel()
-                {
-                    In_CamID = nCamID,
-                    In_Hom_mat2D = FindModelTool.Out_Hom_mat2D,
-                    In_ModelRow = FindModelTool.Out_ModelRow,
-                    In_ModelCOl = FindModelTool.Out_ModelCol,
-                    In_ModelPhi = FindModelTool.Out_ModelPhi,
-                    In_LineRoiPara = LineListString
-                };
-                HalconVision.Instance.ProcessImage(FindLineTool);
-
-
-                //ShowFlag
-                var LineListForDraw = new List<Tuple<double, double, double, double>>();
-                foreach (var it in FindLineTool.Out_Lines)
-                    LineListForDraw.Add(new Tuple<double, double, double, double>(it.Item1.D, it.Item2.D, it.Item3.D, it.Item4.D));
-                StepShowFlag ShowFlagTool = new StepShowFlag()
-                {
-                    In_CamID = nCamID,
-                    In_CenterRow = data.Halcon_Row,
-                    In_CenterCol = data.Halcon_Col,
-                    In_Phi = data.Halcon_Phi,
-                    In_HLine = LineListForDraw[0],
-                    In_VLine = LineListForDraw[1],
-                    In_RegionFullPathFileName = $"{PATH_TOOLPATH}Flag.reg}}"
-                };
-                HalconVision.Instance.ProcessImage(ShowFlagTool);
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
+                return new RelayCommand(() => {
+                    //CurrentSelectedCamera
+                    HalconVision.Instance.ZoomImage(CurrentSelectedCamera);
+                });
             }
         }
+
+        //停止缩放
+        public RelayCommand ResetZoomCommand
+        {
+            get
+            {
+                return new RelayCommand(() => {
+                    HalconVision.Instance.ResetZoomImage(CurrentSelectedCamera);
+                });
+            }
+        }
+        
+
+      
+
 
     }
     #endregion

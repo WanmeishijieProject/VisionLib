@@ -26,8 +26,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-       
-            <Grid DataContext="{Binding CamDebugVM, Source={StaticResource Locator}}">
+        <Grid DataContext="{Binding CamDebugVM, Source={StaticResource Locator}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
@@ -35,7 +34,7 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="500"/>
                 </Grid.ColumnDefinitions>
-                <halcon:HWindowControlWPF Grid.Row="0" Grid.Column="0" Margin="1" x:Name="CamDebug"/>
+                <halcon:HWindowControlWPF Grid.Row="0" Grid.Column="0" Margin="1" x:Name="CamDebug" HMouseWheel="CamDebug_HMouseWheel"/>
             <Grid Grid.Column="1">
                 <Grid Grid.Row="0" Grid.Column="4" Grid.RowSpan="2">
                     <Grid.RowDefinitions>
@@ -135,15 +134,36 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <Button Name="BtnCalibImage" Grid.Row="3" Grid.Column="1" Style="{StaticResource RoundButtonStyle1}"  Background="{StaticResource ThemColor}" ToolTip="距离标定" Margin="5" Height="40"
+                    <Grid Grid.Row="3" Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <!--<ColumnDefinition/>-->
+                        </Grid.ColumnDefinitions>
+                        <Button Name="BtnCalibImage" Grid.Column="0" Style="{StaticResource RoundButtonStyle1}"  Background="{StaticResource ThemColor}" ToolTip="距离标定" Margin="5" Height="40"
                         IsEnabled="{Binding CamSnapState,ConverterParameter=SnapOnce,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}"
                         Command="{Binding DistanceCalibCommand}">
-                        <Button.Content>
-                            <Grid>
-                                <TextBlock Grid.Column="1" Text="DistanceCalib" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
-                            </Grid>
-                        </Button.Content>
-                    </Button>
+                            <Button.Content>
+                                <Grid>
+                                    <TextBlock Grid.Column="1" Text="CalibK" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
+                                </Grid>
+                            </Button.Content>
+                        </Button>
+                        <!--<Button Name="BtnZoom" Grid.Row="3" Grid.Column="1" Style="{StaticResource RoundButtonStyle1}"  Background="{StaticResource ThemColor}" ToolTip="缩放" Margin="5" Height="40"
+                        IsEnabled="{Binding CamSnapState,ConverterParameter=SnapOnce,Converter={StaticResource EnumCamSnapState2SnapButtonEnable}}"
+                        Command="{Binding ZoomCommand}">
+                            <Button.Content>
+                                <Grid>
+                                    <TextBlock Grid.Column="1" Text="Zoom" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="13,0,0,0"/>
+                                </Grid>
+                            </Button.Content>
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Reset" Command="{Binding ResetZoomCommand}"/>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>-->
+                    </Grid>
+
                     <TabControl Grid.Row="4" Grid.ColumnSpan="2">
                         <TabItem Header="ModelTool" FontSize="15" Height="30">
                             <Grid>
