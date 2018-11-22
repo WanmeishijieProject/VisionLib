@@ -194,7 +194,12 @@ namespace JPT_TosaTest.ViewModel
         public RelayCommand CalibPressure
         {
             get { return new RelayCommand(()=> {
-                Pressure = 3.6;
+                Motion_IrixiEE0017 MotionCard = MotionMgr.Instance.FindMotionCardByCardName("Motion_IrixiEE0017[0]") as Motion_IrixiEE0017;
+                MotionCard.ReadAD(MotionCards.IrixiCommand.EnumADCChannelFlags.CH1, out List<UInt16> values);
+                UInt16 Low = (UInt16)((values[0] / 2)-100);
+                UInt16 Hight= (UInt16)(values[0] / 2);
+                MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1,Low , Hight);
+                Pressure = Hight;
             }); }
         }
         #endregion
@@ -250,7 +255,6 @@ namespace JPT_TosaTest.ViewModel
                         var Model = from models in HotKeyCollect where models.AxisName == it.Key select models;
                         if (Model != null && Model.Count() > 0)
                         {
-                            SetCssThreshold(1000, 4500);
                             HotKeyModel hotkeyModel = Model.First();
                             var motion = MotionMgr.Instance.FindMotionCardByAxisIndex(hotkeyModel.AxisNo);
                             var arg = motion.AxisArgsList[hotkeyModel.AxisNo - motion.MIN_AXIS].MoveArgs;
@@ -277,7 +281,6 @@ namespace JPT_TosaTest.ViewModel
                         var Model = from models in HotKeyCollect where models.AxisName == it.Key select models;
                         if (Model != null && Model.Count() > 0)
                         {
-                            SetCssThreshold(1000, 4500);
                             HotKeyModel hotkeyModel = Model.First();
                             var motion = MotionMgr.Instance.FindMotionCardByAxisIndex(hotkeyModel.AxisNo);
                             var arg = motion.AxisArgsList[hotkeyModel.AxisNo - motion.MIN_AXIS].MoveArgs;
@@ -293,19 +296,6 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
-        private bool SetCssThreshold(UInt16 Low, UInt16 High)
-        {
-            return true;
-            //Set sensor threshold
-            Motion_IrixiEE0017 MotionCard = MotionMgr.Instance.FindMotionCardByCardName("Motion_IrixiEE0017[0]") as Motion_IrixiEE0017;
-            if (MotionCard != null)
-            {
-                MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, Low, High);
-                MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
-                return true;
-            }
-            return false;
-        }
         #endregion
     }
 

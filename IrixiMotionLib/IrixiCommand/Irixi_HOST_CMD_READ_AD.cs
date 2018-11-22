@@ -31,7 +31,9 @@ namespace JPT_TosaTest.MotionCards.IrixiCommand
             }
             for (int i = 0; i < (FrameLength - 4) / 2; i++)
             {
-                ADValues.Add((UInt16)(RawData[6 + 2 * i]  + RawData[6 + 2 * i + 1]<<256));
+                UInt16 value = (UInt16)(RawData[6 + 2 * i + 1] + (RawData[6 + 2 * i + 2] << 8));
+                value = (UInt16)(((double)value / 32768.0) * 5000);
+                ADValues.Add(value);
             }
             this.ReturnObject = ADValues;
             return this;

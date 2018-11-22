@@ -726,13 +726,13 @@ namespace JPT_TosaTest.MotionCards
             return false;
         }
 
-        public bool Stop()
+        public bool Stop(int AxisNo)
         {
             lock (ComportLock)
             {
                 try
                 {
-                    CommandStop.AxisNo = (byte)0x00;
+                    CommandStop.AxisNo = (byte)AxisNo;
                     byte[] cmd = CommandStop.ToBytes();
                     this.ExcuteCmd(cmd);
                     return true;

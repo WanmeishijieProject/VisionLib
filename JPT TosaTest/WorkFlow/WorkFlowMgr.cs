@@ -107,6 +107,7 @@ namespace JPT_TosaTest.WorkFlow
         public bool StopAllStation()
         {
             bool bRet = true;
+            MotionCards.MotionMgr.Instance.StopAll();
             foreach (var it in stationDic)
                 bRet &= it.Value.Stop();
             foreach (var it in stationDic)

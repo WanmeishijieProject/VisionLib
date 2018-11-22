@@ -23,8 +23,6 @@ namespace JPT_TosaTest.ViewModel
 
         private Dictionary<string,Tuple<HotKey,HotKey>> HotKeyDic = new Dictionary<string, Tuple<HotKey, HotKey>>();
         private UnitBase _currentLengthUint, _currentAngleUint;
-        private const int MIN_PRESS = 900, MAX_PRESS = 1000;
-
         //是否需要这样做
         private MonitorViewModel monitorVM= ServiceLocator.Current.GetInstance<MonitorViewModel>();
 
@@ -118,12 +116,9 @@ namespace JPT_TosaTest.ViewModel
                     {
                         if (args == null)
                             return;
-
-                        //SetCssThreshold(MIN_PRESS, MAX_PRESS);
                         int Speed = (int)(args.MoveArgs.Speed * ((double)args.MaxSpeed / 100.0f));
                         if (args.MoveArgs.MoveMode == 0)
                         {
-                            SetCssThreshold(MIN_PRESS, MAX_PRESS);
                             MotionMgr.Instance.MoveAbs(args.AxisNo, 200, Speed, args.MoveArgs.Distance/args.Unit.Factor);
                         }
                         else
@@ -146,7 +141,6 @@ namespace JPT_TosaTest.ViewModel
                     {
                         if (args == null)
                             return;
-                        SetCssThreshold(MIN_PRESS, MAX_PRESS);
                         int Speed = (int)(args.MoveArgs.Speed * ((double)args.MaxSpeed / 100.0f));
                         if (args.MoveArgs.MoveMode == 0)
                             MotionMgr.Instance.MoveAbs(args.AxisNo, 100, Speed, args.MoveArgs.Distance/args.Unit.Factor);
@@ -193,19 +187,6 @@ namespace JPT_TosaTest.ViewModel
         private void ShowError(string msg)
         {
             Messenger.Default.Send<string>(msg, "Error");
-        }
-        private bool SetCssThreshold(UInt16 Low, UInt16 High)
-        {
-            return true;
-            //Set sensor threshold
-            Motion_IrixiEE0017 MotionCard = MotionMgr.Instance.FindMotionCardByCardName("Motion_IrixiEE0017[0]") as Motion_IrixiEE0017;
-            if (MotionCard != null)
-            {
-                MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, Low, High);
-                MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
-                return true;
-            }
-            return false;
         }
         #endregion
     }

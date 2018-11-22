@@ -452,7 +452,7 @@ namespace JPT_TosaTest.ViewModel
                         DataGridTextColumn dgc = drv.Column as DataGridTextColumn;
                         int index = dgc.DisplayIndex;
              
-                        if (index >= 0)
+                        if (index > 0)
                         {
                             var data = item[index];
                             int AxisNo = Config.ConfigMgr.Instance.HardwareCfgMgr.AxisSettings[index - 1].AxisNo;

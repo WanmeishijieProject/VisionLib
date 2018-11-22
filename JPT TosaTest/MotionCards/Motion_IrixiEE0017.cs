@@ -135,7 +135,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            int axisIndex = AxisNo + MIN_AXIS;
+            int axisIndex = AxisNo +1;
             return _controller.Home(axisIndex, Dir, Acc, Speed1, Speed2);
 
         }
@@ -146,7 +146,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            int axisIndex = AxisNo + MIN_AXIS;
+            int axisIndex = AxisNo  + 1;
             return _controller.IsHomeStop(axisIndex);
 
         }
@@ -157,7 +157,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            int axisIndex = AxisNo + MIN_AXIS;
+            int axisIndex = AxisNo  + 1;
             Thread.Sleep(100);
             return _controller.IsNormalStop(axisIndex);
 
@@ -177,7 +177,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            int axisIndex = AxisNo + MIN_AXIS;
+            int axisIndex = AxisNo  + 1;
             return _controller.MoveAbs(axisIndex, Acc, Speed, Pos);
 
         }
@@ -196,7 +196,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            int axisIndex = AxisNo + MIN_AXIS;
+            int axisIndex = AxisNo  + 1;
             return _controller.MoveAbs(axisIndex, Acc, Speed, Pos, TriggerType, Interval);
 
         }
@@ -214,8 +214,8 @@ namespace JPT_TosaTest.MotionCards
             if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
             {
                 return false;
-            }  
-            int axisIndex = AxisNo + MIN_AXIS;
+            }
+            int axisIndex = AxisNo  + 1;
             if (!IsPosValid(AxisNo, Distance))
                 throw new Exception($"Axis{AxisNo} can't reach the specified location");
             return _controller.MoveRel(axisIndex, Acc, Speed, Distance);
@@ -236,7 +236,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            int axisIndex = AxisNo + MIN_AXIS;
+            int axisIndex = AxisNo  + 1;
             if (!IsPosValid(AxisNo, Distance))
                 throw new Exception($"Axis{AxisNo} can't reach the specified location");
             return _controller.MoveRel(axisIndex, Acc, Speed, Distance, TriggerType, Interval);
@@ -287,12 +287,14 @@ namespace JPT_TosaTest.MotionCards
 
         public  bool Stop()
         {
-            return _controller.Stop();
+            for(int i=0; i<MAX_AXIS-MIN_AXIS+1; i++)
+                _controller.Stop(i+1);
+            return true;
         }
 
         public bool IsAxisInRange(int AxisNo)   //给Mgr用来查询板卡使用的，别的函数都是从0开始
         {
-            return AxisNo >= MIN_AXIS && AxisNo <= MAX_AXIS;
+            return AxisNo >= 0 && AxisNo <= MAX_AXIS-MIN_AXIS;
         }
 
         public bool DoBlindSearch(int XAxisNo, int YAxisNo, double Range, double Gap, double Speed, double Interval)
@@ -301,8 +303,8 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            int XaxisIndex = XAxisNo  + MIN_AXIS;
-            int YaxisIndex = YAxisNo  + MIN_AXIS;
+            int XaxisIndex = XAxisNo  +1;
+            int YaxisIndex = YAxisNo  +1;
             return _controller.DoBindSearch(XaxisIndex, YaxisIndex, Range, Gap, Speed, Interval);
         }
 
@@ -343,7 +345,7 @@ namespace JPT_TosaTest.MotionCards
             AxisArgsList[AxisNo].ForwardCaption = Setting.ForwardCaption;
             AxisArgsList[AxisNo].MaxSpeed = Setting.MaxSpeed;
 
-            _controller.SetAxisPara(AxisNo + MIN_AXIS, Setting.GainFactor, Setting.LimitP, Setting.LimitN, Setting.HomeOffset, (int)Setting.HomeMode, Setting.AxisName);
+            _controller.SetAxisPara(AxisNo +1, Setting.GainFactor, Setting.LimitP, Setting.LimitN, Setting.HomeOffset, (int)Setting.HomeMode, Setting.AxisName);
         }
 
 
@@ -353,7 +355,7 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            return _controller.SetMode(AxisNo + MIN_AXIS,(byte)mode);
+            return _controller.SetMode(AxisNo + 1,(byte)mode);
         }
 
         private bool IsPosValid(int AxisNo, double TargetPosRelative)

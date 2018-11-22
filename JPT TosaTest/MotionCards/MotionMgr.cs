@@ -54,7 +54,7 @@ namespace JPT_TosaTest.MotionCards
         {
             foreach (var it in MotionDic)
             {
-                if (it.Value.IsAxisInRange(AxisNo))
+                if (it.Value.IsAxisInRange(AxisNo-it.Value.MIN_AXIS))
                     return it.Value;
             }
             return null;         
@@ -240,7 +240,7 @@ namespace JPT_TosaTest.MotionCards
             var MotionCard = FindMotionCardByAxisIndex(AxisNo);
             if (MotionCard != null)
             {
-                //int AxisIndex = AxisNo - MotionCard.MIN_AXIS;
+                int AxisIndex = AxisNo - MotionCard.MIN_AXIS;
                 return MotionCard.Reset();
             }
             return false;

@@ -76,8 +76,8 @@ namespace JPT_TosaTest.WorkFlow
         Task GrabTask = null;
         private object MonitorLock = new object();
         private bool IsPauseMonitor = true;
-        private const int LowPressure = 2000;
-        private const int HightPressure = 3000;
+        private UInt16 LowPressure = 1500;
+        private UInt16 HightPressure = 2000;
         private EnumRTShowType ShowType = EnumRTShowType.None;
         //Tool
         private StepFindModel Tool_StepFindHsgModel = null;
@@ -94,12 +94,15 @@ namespace JPT_TosaTest.WorkFlow
             MotionCard = MotionCards.MotionMgr.Instance.FindMotionCardByCardName("Motion_IrixiEE0017[0]") as MotionCards.Motion_IrixiEE0017;
             IOCard = IOCards.IOCardMgr.Instance.FindIOCardByCardName("IO_IrixiEE0017[0]");
             IOCard.WriteIoOutBit(TouchSensor, true);
+            //LowPressure = (UInt16)(Config.ConfigMgr.Instance.ProcessData.Presure);
+            //HightPressure = (UInt16)(Config.ConfigMgr.Instance.ProcessData.Presure+1);
             return GetAllPoint() && MotionCard !=null  &&  IOCard!=null;
         }
         public WorkService(WorkFlowConfig cfg) : base(cfg)
         {
 
         }
+
         protected override int WorkFlow()
         {
             try
@@ -223,7 +226,7 @@ namespace JPT_TosaTest.WorkFlow
             if (Index < 1 || Index > 6)
                 return;
 
-            double DeltaX = 0.0f;  //DeltaX
+            double DeltaX = 0.0f, DeltaY=0.0f;  //DeltaX
             double TargetX = 0; //每次的吸取位置X
             double TargetY1 = 0;    //每次的吸取位置Y
             List<double> PtLeftTop = null;
@@ -236,29 +239,30 @@ namespace JPT_TosaTest.WorkFlow
                 PtLeftTop = PtLeftTop_PLC;
                 PtRightDown = PtRightDown_PLC;
                 PtDropDown = PtDropDown_PLC;
-               
+                //2行3列
+                DeltaX = (PtRightDown[PT_X] - PtLeftTop[PT_X]) / 2;
+                DeltaY= (PtRightDown[PT_Y1] - PtLeftTop[PT_Y1]) / 1;
+
+                int Row = (Index - 1) / 3 + 1;
+                int Col = (Index-1) % 3 +1;
+
+                TargetX = PtLeftTop[PT_X] + DeltaX * (Col - 1);
+                TargetY1 = PtLeftTop[PT_Y1] + DeltaY * (Row-1);    
             }
-            else
+            else  //Support
             {
                 PtLeftTop = PtLeftTop_Support;
                 PtRightDown = PtRightDown_Support;
                 PtDropDown = PtDropDown_Support;
+                //3行2列
+                DeltaX = (PtRightDown[PT_X] - PtLeftTop[PT_X]) / 1;
+                DeltaY= (PtRightDown[PT_Y1] - PtLeftTop[PT_Y1]) / 2;
+                int Row = (Index-1) / 2 + 1;
+                int Col = (Index-1) % 2 +1;
+                TargetX = PtLeftTop[PT_X] + DeltaX * (Col - 1);
+                TargetY1 = PtLeftTop[PT_Y1]+ DeltaY*(Row-1);
             }
 
-            //2行3列
-
-            DeltaX = (PtRightDown[PT_X] - PtLeftTop[PT_X]) / 2;
-            if (Index >= 1 && Index <= 3)
-            {
-                TargetX= PtLeftTop[PT_X] + DeltaX * (Index - 1);
-                TargetY1 =  PtLeftTop[PT_Y1] ;
-            }
-            else
-            {
-                TargetX = PtLeftTop[PT_X] + DeltaX * (Index - 4);
-                TargetY1 = PtRightDown[PT_Y1];
-            }
-            
             int nStep = 0;
             while (!cts.IsCancellationRequested)
             {
@@ -469,7 +473,6 @@ namespace JPT_TosaTest.WorkFlow
                 ShowInfo("找模板时候发生错误");
             }
         }
-
         //贴PLC
         private void Work_PLC()
         {
@@ -496,6 +499,7 @@ namespace JPT_TosaTest.WorkFlow
                             if (MotionCard.IsNormalStop(AXIS_CY))
                             {
                                 Thread.Sleep(200);
+                                ShowInfo("请调整PLC的位置，完毕后点击【PLC按键】");
                                 nStep = 3;
                             }
                             break;
@@ -504,6 +508,7 @@ namespace JPT_TosaTest.WorkFlow
                             StartMonitor(0, EnumRTShowType.Tia);
                             if (GetCurStepCount() == 0)   //要自动下降贴合PLC
                             {
+                                ShowInfo("请先调整PLC的位置，完毕后点击【PLC按键】自动贴合");
                                 PushStep(STEP.CmdGetProductPLC);
                                 MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, LowPressure, HightPressure);
                                 MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
@@ -570,13 +575,14 @@ namespace JPT_TosaTest.WorkFlow
                         case 2: //开始拍照
                             if (MotionCard.IsNormalStop(AXIS_CZ))
                             {
-                             
+                                ShowInfo("(1/3)请调整Support的位置，完毕后点击【Support按键】");
                                 nStep = 3;
                             }
                             break;
                         case 3: //ShowLineBottom 
                             if (GetCurStepCount() == 0)    //调整完毕，要自动下降到预贴合位置，同时打开下压检测使能
                             {
+                                ShowInfo("(2/3)请再次调整Support的位置，然后点击【Support按键】完成自动贴合");
                                 PushStep(STEP.CmdGetProductSupport);
                                 MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, LowPressure, HightPressure);
                                 MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
@@ -593,6 +599,7 @@ namespace JPT_TosaTest.WorkFlow
                             {
                                 if (GetCurStepCount() == 0)    //要自动下降到贴合位置
                                 {
+                                    ShowInfo("(3/3)正在贴合Support，请稍后......");
                                     MotionCard.MoveAbs(AXIS_Z, 500, 1, PtPreFitPos_Support[AXIS_Z] + 3);
                                     nStep = 6;
                                 }
@@ -640,9 +647,8 @@ namespace JPT_TosaTest.WorkFlow
                 ShowInfo("贴合Support时候发生错误");
             }
         }
-        #endregion
+        #endregion    
 
-       
         private void BackToTempPos()
         {
             int nStep = 0;
@@ -670,8 +676,7 @@ namespace JPT_TosaTest.WorkFlow
                 }
             }
         }
-         
-   
+           
         /// <summary>
         /// 找Bottom的基线
         /// </summary>
@@ -708,6 +713,7 @@ namespace JPT_TosaTest.WorkFlow
          
             return true;
         }
+
         private bool ShowLineBottom()
         {
             //显示最终计算的线
@@ -724,6 +730,7 @@ namespace JPT_TosaTest.WorkFlow
             HalconVision.Instance.ProcessImage(Tool_ShowLineBottom);//会自动显示
             return true;
         }
+
         /// <summary>
         /// 找Top的基线
         /// </summary>
@@ -845,9 +852,6 @@ namespace JPT_TosaTest.WorkFlow
             TiaFlag = ShowFlagStep.Out_Region;
             return true;
         }
-
-
-
 
         private bool GetAllPoint()
         {
