@@ -499,7 +499,7 @@ namespace JPT_TosaTest.WorkFlow
                             if (MotionCard.IsNormalStop(AXIS_CY))
                             {
                                 Thread.Sleep(200);
-                                ShowInfo("请调整PLC的位置，完毕后点击【PLC按键】");
+                                ShowInfo("(1/3)请调整PLC的位置，完毕后点击【PLC按键】");
                                 nStep = 3;
                             }
                             break;
@@ -508,7 +508,7 @@ namespace JPT_TosaTest.WorkFlow
                             StartMonitor(0, EnumRTShowType.Tia);
                             if (GetCurStepCount() == 0)   //要自动下降贴合PLC
                             {
-                                ShowInfo("请先调整PLC的位置，完毕后点击【PLC按键】自动贴合");
+                                ShowInfo("(2/3)请先调整PLC的位置，完毕后点击【PLC按键】自动贴合");
                                 PushStep(STEP.CmdGetProductPLC);
                                 MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, LowPressure, HightPressure);
                                 MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
@@ -522,6 +522,7 @@ namespace JPT_TosaTest.WorkFlow
                             {
                                 if (GetCurStepCount() == 0)   //要自动下降贴合PLC,直到Sensor停止
                                 {
+                                    ShowInfo("(3/3)正在完成PLC贴合......");
                                     MotionCard.MoveAbs(AXIS_Z, 500, 1, PtPreFitPos_PLC[PT_Z] + 3);
                                     nStep = 6;
                                 }
