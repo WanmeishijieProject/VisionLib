@@ -7,9 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using JPT_TosaTest.Communication;
 using JPT_TosaTest.Config.HardwareManager;
-using JPT_TosaTest.MotionCards.IrixiCommand;
 using AxisParaLib;
-
+using M12;
+using M12.Definitions;
+using M12.Base;
 
 
 namespace JPT_TosaTest.MotionCards
@@ -39,11 +40,17 @@ namespace JPT_TosaTest.MotionCards
         ERR_OPERATION_CANCELLED,
     }
 
+    public enum EnumTriggerType
+    {
+        TrigAdc,
+        TrigOut
+    }
+
     public class Motion_IrixiEE0017 : IMotion
     {
         Comport comport = null;
-        private IrixiEE0017 _controller=null;
-      
+        //private IrixiEE0017 _controller=null;
+        private M12.Controller _controller = null;
 
         public event AxisStateChange OnAxisStateChanged;
         public event ErrorOccur OnErrorOccured;
@@ -52,6 +59,8 @@ namespace JPT_TosaTest.MotionCards
         public int MAX_AXIS { get; set; }
         public int MIN_AXIS { get; set; }
         public AxisArgs[] AxisArgsList { get; }
+
+   
 
         public Motion_IrixiEE0017()
         {
@@ -65,24 +74,11 @@ namespace JPT_TosaTest.MotionCards
             this.motionCfg = motionCfg;
             MAX_AXIS = motionCfg.MaxAxisNo;
             MIN_AXIS = motionCfg.MinAxisNo;
+            ComportCfg portCfg = communicationPortCfg as ComportCfg;
             comport = CommunicationMgr.Instance.FindPortByPortName(motionCfg.PortName) as Comport;
-            _controller = IrixiEE0017.CreateInstance(motionCfg.PortName);
-            if (comport == null)
-                return false;
-            _controller = IrixiEE0017.CreateInstance(motionCfg.PortName);
-            if (_controller != null)
-            {
-                _controller.OnAxisStateChanged += OnIrixiAxisStateChanged;
-                if (motionCfg.NeedInit)
-                {
-                    return _controller.Init(Int32.Parse(comport.ToString().ToLower().Replace("com", "")));
-                }
-                else
-                {
-                    return true;
-                }
-            }
-            return false;
+            _controller = new M12.Controller(portCfg.Port, portCfg.BaudRate);
+            _controller.Open();
+            return true;
         }
 
         public  bool Deinit()
@@ -136,8 +132,14 @@ namespace JPT_TosaTest.MotionCards
                 return false;
             }
             int axisIndex = AxisNo +1;
-            return _controller.Home(axisIndex, Dir, Acc, Speed1, Speed2);
-
+            if (Enum.IsDefined(typeof(M12.Definitions.UnitID), axisIndex))
+            {
+                _controller.Home((M12.Definitions.UnitID)axisIndex,(ushort)Acc,(byte)Speed1,(byte)Speed2);
+                return true;
+            }
+            {
+                return false; 
+            }
         }
 
         public  bool IsHomeStop(int AxisNo)
@@ -147,7 +149,12 @@ namespace JPT_TosaTest.MotionCards
                 return false;
             }
             int axisIndex = AxisNo  + 1;
-            return _controller.IsHomeStop(axisIndex);
+            if (Enum.IsDefined(typeof(M12.Definitions.UnitID), axisIndex))
+            {
+               var state= _controller.GetUnitState((M12.Definitions.UnitID)axisIndex);
+               return state.IsHomed;
+            }
+            return false;
 
         }
 
@@ -159,8 +166,12 @@ namespace JPT_TosaTest.MotionCards
             }
             int axisIndex = AxisNo  + 1;
             Thread.Sleep(100);
-            return _controller.IsNormalStop(axisIndex);
-
+            if (Enum.IsDefined(typeof(M12.Definitions.UnitID), axisIndex))
+            {
+                var state = _controller.GetUnitState((M12.Definitions.UnitID)axisIndex);
+                return !state.IsBusy;
+            }
+            return false;
         }
 
         /// <summary>
@@ -178,8 +189,15 @@ namespace JPT_TosaTest.MotionCards
                 return false;
             }
             int axisIndex = AxisNo  + 1;
-            return _controller.MoveAbs(axisIndex, Acc, Speed, Pos);
-
+            if (Enum.IsDefined(typeof(M12.Definitions.UnitID), axisIndex))
+            {
+                var state = _controller.GetUnitState((M12.Definitions.UnitID)axisIndex);
+                int CurPos = state.AbsPosition;
+                int TargetPos = (int)(AxisArgsList[AxisNo].GainFactor * Pos);
+                int StepsInt = TargetPos - CurPos;
+                _controller.Move((M12.Definitions.UnitID)(axisIndex), StepsInt, (byte)Speed, CancellationToken.None);
+            }
+            return true;
         }
 
         /// <summary>
@@ -196,8 +214,17 @@ namespace JPT_TosaTest.MotionCards
             {
                 return false;
             }
-            int axisIndex = AxisNo  + 1;
-            return _controller.MoveAbs(axisIndex, Acc, Speed, Pos, TriggerType, Interval);
+            int axisIndex = AxisNo + 1;
+            if (Enum.IsDefined(typeof(M12.Definitions.UnitID), axisIndex))
+            {
+                var state = _controller.GetUnitState((M12.Definitions.UnitID)axisIndex);
+                int CurPos = state.AbsPosition;
+                int TargetPos = (int)(AxisArgsList[AxisNo].GainFactor * Pos);
+                int StepsInt = TargetPos - CurPos;
+                UInt16 IntervalPause = (UInt16)(Interval * AxisArgsList[AxisNo].GainFactor);
+                _controller.MoveTriggerADC((M12.Definitions.UnitID)(axisIndex), StepsInt, (byte)Speed, IntervalPause, CancellationToken.None);
+            }
+            return true;
 
         }
 
@@ -218,19 +245,28 @@ namespace JPT_TosaTest.MotionCards
             int axisIndex = AxisNo  + 1;
             if (!IsPosValid(AxisNo, Distance))
                 throw new Exception($"Axis{AxisNo} can't reach the specified location");
-            return _controller.MoveRel(axisIndex, Acc, Speed, Distance);
+            if (Enum.IsDefined(typeof(M12.Definitions.UnitID),axisIndex))
+            {
+                int StepsInt = (int)(Distance * AxisArgsList[AxisNo].GainFactor);
+                byte SpeedInt = (byte)Speed;
+                _controller.Move((M12.Definitions.UnitID)axisIndex, StepsInt, SpeedInt, CancellationToken.None);
+                return true;
+            }
+            return false;
 
         }
 
         /// <summary>
-        /// 相对运动 Trigger
+        /// MoveRel With trigger
         /// </summary>
-        /// <param name="AxisNo">映射到实际的轴</param>
-        /// <param name="Acc">加速度</param>
-        /// <param name="Speed">速度</param>
-        /// <param name="Distance">相对距离</param>
+        /// <param name="AxisNo"></param>
+        /// <param name="Acc"></param>
+        /// <param name="Speed"></param>
+        /// <param name="Distance"></param>
+        /// <param name="TriggerType">目前只支持一种Trig，就是ADCTrigger</param>
+        /// <param name="Interval"></param>
         /// <returns></returns>
-        public bool MoveRel(int AxisNo, double Acc, double Speed, double Distance, EnumTriggerType TriggerType, UInt16 Interval)
+        public bool MoveRel(int AxisNo, double Acc, double Speed, double Distance, EnumTriggerType TriggerType, double Interval)
         {
             if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
             {
@@ -239,7 +275,16 @@ namespace JPT_TosaTest.MotionCards
             int axisIndex = AxisNo  + 1;
             if (!IsPosValid(AxisNo, Distance))
                 throw new Exception($"Axis{AxisNo} can't reach the specified location");
-            return _controller.MoveRel(axisIndex, Acc, Speed, Distance, TriggerType, Interval);
+            if (Enum.IsDefined(typeof(M12.Definitions.UnitID), axisIndex))
+            {
+                int StepsInt = (int)(Distance * AxisArgsList[AxisNo].GainFactor);
+                byte SpeedInt = (byte)Speed;
+                UInt16 IntervalUInt = (UInt16)(Interval * AxisArgsList[AxisNo].GainFactor);
+                _controller.MoveTriggerADC((M12.Definitions.UnitID)axisIndex, StepsInt, SpeedInt, IntervalUInt, CancellationToken.None);
+                return true;
+            }
+            else
+                return false;
         }
        
         /// <summary>
@@ -247,49 +292,69 @@ namespace JPT_TosaTest.MotionCards
         /// </summary>
         /// <param name="ChannelFlags"></param>
         /// <returns></returns>
-        public bool SetTrigConfig(byte ChannelFlags)
+        public bool SetTrigConfig(M12.Definitions.ADCChannels ChannelFlags)
         {
-            return _controller.SetTrigConfig(ChannelFlags);
+
+            _controller.ConfigADCTrigger(ChannelFlags);
+            return true;
         }
 
         public bool GetMemLength(out UInt32 Length)
         {
-            Length = 0;
-            return _controller.GetMemLength(out Length);
+            Length = _controller.GetMemoryLength();
+            return true;
         }
 
-        public bool ReadMem(UInt32 Offset, UInt32 Length, out List<Int16> RawDataList)
+        public bool ReadMem(UInt32 Offset, UInt32 Length, out List<double> RawDataList)
         {
-            RawDataList = null;
-            return _controller.ReadMem(Offset, Length, out RawDataList);
+            RawDataList = _controller.ReadMemory(Offset, Length);
+            return true;
         }
 
         public bool ClearMem()
         {
-            return _controller.ClearMem();
-        }
-
-        public bool ReadAD(EnumADCChannelFlags ChannelFlags, out List<UInt16> values)
-        {
-            return _controller.ReadAD(ChannelFlags, out values);
-        }
-
-        public bool SetCssEnable(EnumCssChannel CssChannel, bool IsEnable)
-        {
-            return _controller.EnableCss(CssChannel, IsEnable);
-        }
-
-        public bool SetCssThreshold(EnumCssChannel CssChannel, UInt16 Low, UInt16 Hight)
-        {
-            return _controller.SetCssThreshold(CssChannel, Low, Hight);
-        }
-
-
-        public  bool Stop()
-        {
-            for(int i=0; i<MAX_AXIS-MIN_AXIS+1; i++)
-                _controller.Stop(i+1);
+            _controller.ClearMemory();
             return true;
+        }
+
+        public bool ReadAD(ADCChannels ChannelFlags, out double[] values)
+        {
+            values = _controller.ReadADC(ChannelFlags);
+            return true;
+        }
+        public void SaveUnitENV(UnitID UnitID)
+        {
+            _controller.SaveUnitENV(UnitID);
+        }
+        public bool SetCssEnable(CSSCH CssChannel, bool IsEnable)
+        {
+            _controller.SetCSSEnable(CssChannel, IsEnable);
+            return true;
+        }
+
+        public bool SetCssThreshold(CSSCH CssChannel, UInt16 Low, UInt16 Hight)
+        {
+
+            _controller.SetCSSThreshold(CssChannel, Low, Hight);
+            return true;
+        }
+
+
+
+
+        public  bool Stop(int AxisNo)
+        {
+           if(Enum.IsDefined(typeof(UnitID),AxisNo+1))
+            {
+                UnitID Axis= (UnitID)Enum.Parse(typeof(UnitID), (AxisNo + 1).ToString());
+                _controller.Stop(Axis);
+            }
+            return false;
+        }
+        public bool StopAll()
+        {
+            _controller.Stop(UnitID.ALL);
+            return false;
         }
 
         public bool IsAxisInRange(int AxisNo)   //给Mgr用来查询板卡使用的，别的函数都是从0开始
@@ -297,15 +362,24 @@ namespace JPT_TosaTest.MotionCards
             return AxisNo >= 0 && AxisNo <= MAX_AXIS-MIN_AXIS;
         }
 
-        public bool DoBlindSearch(int XAxisNo, int YAxisNo, double Range, double Gap, double Speed, double Interval)
+        public bool DoBlindSearch(UnitID XAxis, UnitID YAxis, double Range, double Gap, double Speed, double Interval, ADCChannels AdcUsed, out List<Point3D> ScanResults)
         {
+            ScanResults = new List<Point3D>();
+            int XAxisNo = (int)XAxis - 1;
+            int YAxisNo = (int)YAxis - 1;
             if (XAxisNo > MAX_AXIS- MIN_AXIS || XAxisNo < 0 || YAxisNo>MAX_AXIS-MIN_AXIS || YAxisNo<0)
             {
                 return false;
             }
             int XaxisIndex = XAxisNo  +1;
             int YaxisIndex = YAxisNo  +1;
-            return _controller.DoBindSearch(XaxisIndex, YaxisIndex, Range, Gap, Speed, Interval);
+            UInt16 RangePause = (UInt16)AxisArgsList[XAxisNo].GainFactor;
+            UInt16 GapPause = (UInt16)(AxisArgsList[XAxisNo].GainFactor*Gap);
+            byte SpeedPause = (byte)Speed;
+            UInt16 IntervalPause = (UInt16)(AxisArgsList[XAxisNo].GainFactor*Interval);
+
+            _controller.StartBlindSearch(XAxis, YAxis, RangePause, GapPause, IntervalPause, SpeedPause, AdcUsed, out ScanResults);
+            return true;
         }
 
         
@@ -345,30 +419,38 @@ namespace JPT_TosaTest.MotionCards
             AxisArgsList[AxisNo].ForwardCaption = Setting.ForwardCaption;
             AxisArgsList[AxisNo].MaxSpeed = Setting.MaxSpeed;
 
-            _controller.SetAxisPara(AxisNo +1, Setting.GainFactor, Setting.LimitP, Setting.LimitN, Setting.HomeOffset, (int)Setting.HomeMode, Setting.AxisName);
+            //_controller.SetAxisPara(AxisNo +1, Setting.GainFactor, Setting.LimitP, Setting.LimitN, Setting.HomeOffset, (int)Setting.HomeMode, Setting.AxisName);
+
         }
 
 
-        public bool SetMode(int AxisNo, int mode)
+        public bool SetMode(UnitID Axis, UnitSettings mode)
+        {
+            int AxisNo = (int)(Axis - 1);
+            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
+            {
+                return false;
+            }
+            _controller.SetMode(Axis, mode);
+            return true;
+        }
+
+        private bool IsPosValid(int AxisNo, double TargetPosRelative)
         {
             if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
             {
                 return false;
             }
-            return _controller.SetMode(AxisNo + 1,(byte)mode);
-        }
+            int axisIndex = AxisNo + 1;
+            var state=_controller.GetUnitState((M12.Definitions.UnitID)axisIndex);
+            int TargetPosInt =(int)(TargetPosRelative * AxisArgsList[AxisNo].GainFactor)+state.AbsPosition;
+            int LimtP = (int)(AxisArgsList[AxisNo].LimitP * AxisArgsList[AxisNo].GainFactor);
+            int LimtN = (int)(AxisArgsList[AxisNo].LimitN * AxisArgsList[AxisNo].GainFactor);
 
-        private bool IsPosValid(int AxisNo, double TargetPosRelative)
-        {
-            if (GetCurrentPos(AxisNo, out double CurPos))
-            {
-                if (TargetPosRelative + CurPos > AxisArgsList[AxisNo].LimitP || TargetPosRelative + CurPos < AxisArgsList[AxisNo].LimitN)
-                {
-                    return false;
-                }
+            if (TargetPosInt > LimtP || TargetPosInt < LimtN)
+                return false;
+            else
                 return true;
-            }
-            return false;
         }
 
         private string ParseErrorCode(int error)

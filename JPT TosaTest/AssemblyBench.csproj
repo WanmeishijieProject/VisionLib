@@ -536,12 +536,16 @@
     <Resource Include="Images\Monitor.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\M12Lib\M12\M12.csproj">
+      <Project>{0d53d43a-73de-4ab8-9549-e9c06675928f}</Project>
+      <Name>M12</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AxisParaLib\AxisParaLib.csproj">
       <Project>{550d7643-117d-4b91-8da7-56a138558edb}</Project>
       <Name>AxisParaLib</Name>
     </ProjectReference>
     <ProjectReference Include="..\IrixiMotionLib\IrixiMotionLib.csproj">
-      <Project>{d58caf83-e372-4051-9819-d2752aac3e41}</Project>
+      <Project>{D58CAF83-E372-4051-9819-D2752AAC3E41}</Project>
       <Name>IrixiMotionLib</Name>
     </ProjectReference>
     <ProjectReference Include="..\PackageParse\PackageParse.csproj">

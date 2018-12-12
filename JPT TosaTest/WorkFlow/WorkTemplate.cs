@@ -3,6 +3,7 @@ using JPT_TosaTest.Config.SoftwareManager;
 using JPT_TosaTest.IOCards;
 using JPT_TosaTest.MotionCards;
 using JPT_TosaTest.MotionCards.IrixiCommand;
+using M12.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -150,7 +151,7 @@ namespace JPT_TosaTest.WorkFlow
                             }
                             break;
                         case STEP.StartAlignment:
-                            if (motion.DoBlindSearch(2, 3, 1000, 10, 10000, 5))
+                            if (motion.DoBlindSearch(M12.Definitions.UnitID.U1, M12.Definitions.UnitID.U2, 1000, 10, 10000, 5,M12.Definitions.ADCChannels.CH1,out List<Point3D> ScanResults))
                                 PopAndPushStep(STEP.DO_NOTHING);
                             break;
                         case STEP.DO_NOTHING:

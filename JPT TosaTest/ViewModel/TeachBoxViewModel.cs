@@ -177,7 +177,7 @@ namespace JPT_TosaTest.ViewModel
         public RelayCommand StopAllAxisCommand { get; } = new RelayCommand(()=> {
             foreach (var it in MotionMgr.Instance.MotionDic)
             {
-                it.Value.Stop();
+                it.Value.StopAll();
             }
         });
    

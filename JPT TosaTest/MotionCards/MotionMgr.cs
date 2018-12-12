@@ -252,7 +252,7 @@ namespace JPT_TosaTest.MotionCards
             if (MotionCard != null)
             {
                 int AxisIndex = AxisNo - MotionCard.MIN_AXIS;
-                return MotionCard.Stop();
+                return MotionCard.Stop(AxisIndex);
             }
             return false;
         }
@@ -261,7 +261,8 @@ namespace JPT_TosaTest.MotionCards
         {
             foreach (var motion in MotionDic)
             {
-                motion.Value.Stop();
+                for(int i=0;i<=motion.Value.MAX_AXIS-motion.Value.MIN_AXIS;i++)
+                    motion.Value.Stop(i);
             }
             return true;
         }

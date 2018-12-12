@@ -6,6 +6,7 @@ using JPT_TosaTest.Config;
 using JPT_TosaTest.Model;
 using JPT_TosaTest.MotionCards;
 using JPT_TosaTest.UserCtrl;
+using M12.Definitions;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using System;
@@ -195,11 +196,12 @@ namespace JPT_TosaTest.ViewModel
         {
             get { return new RelayCommand(()=> {
                 Motion_IrixiEE0017 MotionCard = MotionMgr.Instance.FindMotionCardByCardName("Motion_IrixiEE0017[0]") as Motion_IrixiEE0017;
-                MotionCard.ReadAD(MotionCards.IrixiCommand.EnumADCChannelFlags.CH1, out List<UInt16> values);
-                UInt16 Low = (UInt16)((values[0] / 2)-100);
-                UInt16 Hight= (UInt16)(values[0] / 2);
-                MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1,Low , Hight);
-                Pressure = Hight;
+                MotionCard.ReadAD(ADCChannels.CH1, out double[] values);
+                if (values != null && values.Length > 0)
+                {
+                    //MotionCard.SetCssThreshold(CSSCH.CH1, (ushort)values[0], (ushort)values[0]);
+                    Pressure = values[0];
+                }
             }); }
         }
         #endregion

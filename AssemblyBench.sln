@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyBenchTests", "Assem
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AxisParaLib", "AxisParaLib\AxisParaLib.csproj", "{550D7643-117D-4B91-8DA7-56A138558EDB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "M12", "..\..\M12Lib\M12\M12.csproj", "{0D53D43A-73DE-4AB8-9549-E9C06675928F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{550D7643-117D-4B91-8DA7-56A138558EDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{550D7643-117D-4B91-8DA7-56A138558EDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{550D7643-117D-4B91-8DA7-56A138558EDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D53D43A-73DE-4AB8-9549-E9C06675928F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D53D43A-73DE-4AB8-9549-E9C06675928F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D53D43A-73DE-4AB8-9549-E9C06675928F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D53D43A-73DE-4AB8-9549-E9C06675928F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

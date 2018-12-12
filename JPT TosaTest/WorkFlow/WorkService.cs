@@ -4,6 +4,7 @@ using JPT_TosaTest.Config.SoftwareManager;
 using JPT_TosaTest.Model.ToolData;
 using JPT_TosaTest.Vision;
 using JPT_TosaTest.Vision.ProcessStep;
+using M12.Definitions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -510,8 +511,8 @@ namespace JPT_TosaTest.WorkFlow
                             {
                                 ShowInfo("(2/3)请先调整PLC的位置，完毕后点击【PLC按键】自动贴合");
                                 PushStep(STEP.CmdGetProductPLC);
-                                MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, LowPressure, HightPressure);
-                                MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
+                                MotionCard.SetCssThreshold(CSSCH.CH1, LowPressure, HightPressure);
+                                MotionCard.SetCssEnable(CSSCH.CH1, true);
                                 MotionCard.MoveAbs(AXIS_Z, 500, 100, PtPreFitPos_PLC[PT_Z]);
                                 nStep = 5;
                             }
@@ -585,8 +586,8 @@ namespace JPT_TosaTest.WorkFlow
                             {
                                 ShowInfo("(2/3)请再次调整Support的位置，然后点击【Support按键】完成自动贴合");
                                 PushStep(STEP.CmdGetProductSupport);
-                                MotionCard.SetCssThreshold(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, LowPressure, HightPressure);
-                                MotionCard.SetCssEnable(MotionCards.IrixiCommand.EnumCssChannel.CSSCH1, true);
+                                MotionCard.SetCssThreshold(CSSCH.CH1, LowPressure, HightPressure);
+                                MotionCard.SetCssEnable(CSSCH.CH1, true);
                                 MotionCard.MoveAbs(AXIS_Z, 500, 20, PtPreFitPos_Support[PT_Z]);
                                 Thread.Sleep(200);
                                 TiaFlag = null; //清空上次的Tia线条
