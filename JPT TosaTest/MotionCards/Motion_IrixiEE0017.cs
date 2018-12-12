@@ -71,14 +71,22 @@ namespace JPT_TosaTest.MotionCards
 
         public  bool Init(MotionCardCfg motionCfg, ICommunicationPortCfg communicationPortCfg)
         {
-            this.motionCfg = motionCfg;
-            MAX_AXIS = motionCfg.MaxAxisNo;
-            MIN_AXIS = motionCfg.MinAxisNo;
-            ComportCfg portCfg = communicationPortCfg as ComportCfg;
-            comport = CommunicationMgr.Instance.FindPortByPortName(motionCfg.PortName) as Comport;
-            _controller = new M12.Controller(portCfg.Port, portCfg.BaudRate);
-            _controller.Open();
-            return true;
+            try
+            {
+                this.motionCfg = motionCfg;
+                MAX_AXIS = motionCfg.MaxAxisNo;
+                MIN_AXIS = motionCfg.MinAxisNo;
+                ComportCfg portCfg = communicationPortCfg as ComportCfg;
+                comport = CommunicationMgr.Instance.FindPortByPortName(motionCfg.PortName) as Comport;
+                _controller = new M12.Controller(portCfg.Port, portCfg.BaudRate);
+                _controller.Open();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+            
         }
 
         public  bool Deinit()
