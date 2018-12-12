@@ -64,8 +64,8 @@ namespace JPT_TosaTest.WorkFlow
                 //io.ReadIoInWord(0, out int inValue);
                 //io.WriteIoOutBit(0, false);
                 //io.WriteIoOutBit(1, false);
-                io.ReadIoInWord(0, out int value);
-                io.ReadIoOutWord(0, out value);
+                io.ReadIoInWord(out int value);
+                io.ReadIoOutWord(out value);
                 //motion.DoBlindSearch(3, 4, 500, 10, 5000, 2);
                 //motion.Stop();
 

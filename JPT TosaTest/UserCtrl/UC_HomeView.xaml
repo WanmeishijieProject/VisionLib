@@ -26,7 +26,8 @@
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <halcon:HWindowControlWPF Name="Cam1" Grid.Row="0" Grid.RowSpan="2" Margin="1" SizeChanged="Cam1_SizeChanged"/>
+            <halcon:HWindowControlWPF Name="Cam1" Grid.Row="0"  Margin="1" SizeChanged="Cam1_SizeChanged"/>
+            <halcon:HWindowControlWPF Name="Cam2" Grid.Row="1"  Margin="1"/>
         </Grid>
         <Grid Grid.Row="0" Grid.Column="1" Grid.RowSpan="2">
             <Grid.RowDefinitions>
@@ -78,12 +79,12 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-                
-                
-                <Button Grid.Column="4" Height="40" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="找线" Command="{Binding CommandFindLine}"/>
-                <Button Grid.Column="6" Height="40" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="PLC" Command="{Binding CommandWorkPLC}"/>
-                <Button Grid.Column="5" Height="40" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="Support" Command="{Binding CommandWorkSupport}"/>
-                <Button Grid.Column="7" Height="40" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="回机械原点" Command="{Binding CommandHome}"/>
+
+
+                <Button Grid.Column="4" Height="40" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="FA" Command="{Binding CommandGrabFA}"/>
+                <Button Grid.Column="5" Height="40" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="PLC" Command="{Binding CommandGrabPLC}"/>
+                <Button Grid.Column="6" Height="40" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="PD" Command="{Binding CommandExtendPD}"/>
+                <Button Grid.Column="7" Height="40" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="Home" Command="{Binding CommandHome}"/>
                
                 <Grid Grid.ColumnSpan="7" VerticalAlignment="Bottom" Margin="5">
                     <Line X1="3" Y1="1" X2="1500" Y2="1" Stroke="{StaticResource ThemColor}" StrokeThickness="2"/>

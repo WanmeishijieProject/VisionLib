@@ -10,6 +10,27 @@ using JPT_TosaTest.Config.SystemCfgManager;
 
 namespace JPT_TosaTest.WorkFlow
 {
+    public enum STEP : int
+    {
+        Init,
+        CmdGetProductPLC,
+        CmdGetProductSupport,
+        CmdFindLine,
+        DO_NOTHING,
+        EMG,
+        EXIT,
+    }
+    public enum EnumProductType
+    {
+        SUPPORT,
+        PLC,
+    }
+    public enum EnumRTShowType
+    {
+        Support,
+        Tia,
+        None,
+    }
     public delegate void StationInfoHandler(int Index, string StationName, string Msg);
     public class WorkFlowBase
     {

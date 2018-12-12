@@ -588,68 +588,39 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
-        public RelayCommand CommandFindLine
+        /// <summary>
+        /// 加紧松开FA
+        /// </summary>
+        public RelayCommand CommandGrabFA
         {
             get { return new RelayCommand(()=> {
-                var station = WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService");
-                if (station != null)
-                {
-                    object curCmd = station.GetCurCmd();
-                    if (curCmd == null)                  
-                        station.SetCmd(WorkFlow.STEP.CmdFindLine);
-                    else
-                    {
-                        if ((WorkFlow.STEP)curCmd == WorkFlow.STEP.CmdFindLine)
-                            station.ClearAllStep();
-                    }
-                }
+                
             }); }
         }
 
-      
-        public RelayCommand CommandWorkPLC  //PLC Top
+        /// <summary>
+        /// 加紧松开PLC
+        /// </summary>
+        public RelayCommand CommandGrabPLC  //PLC Top
         {
             get
             {
                 return new RelayCommand(() => {
-                    var station = WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService");
-                    if (station != null)
-                    {
-                        object curCmd = station.GetCurCmd();
-                        if (curCmd == null)
-                        {
-                            station.SetCmd(WorkFlow.STEP.CmdGetProductPLC, ProductStateFlag);
-                        }
-                        else
-                        {
-                            if ((WorkFlow.STEP)curCmd == WorkFlow.STEP.CmdGetProductPLC)
-                                station.ClearAllStep();
-                        }
-                    }
+                    
                 });
             }
         }
 
-        public RelayCommand CommandWorkSupport   //Support Bottom
+        /// <summary>
+        /// 伸出缩回PD
+        /// </summary>
+        public RelayCommand CommandExtendPD   //Support Bottom
         {
             get
             {
                 return new RelayCommand(() => {
 
-                    var station = WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService");
-                    if (station != null)
-                    {
-                        object curCmd = station.GetCurCmd();
-                        if (curCmd == null)
-                        {
-                            station.SetCmd(WorkFlow.STEP.CmdGetProductSupport, ProductStateFlag);
-                        }
-                        else
-                        {
-                            if ((WorkFlow.STEP)curCmd == WorkFlow.STEP.CmdGetProductSupport)
-                                station.ClearAllStep();
-                        }
-                    }
+                   
                 });
             }
         }

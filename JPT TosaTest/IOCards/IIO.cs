@@ -60,14 +60,14 @@ namespace JPT_TosaTest.IOCards
         /// </summary>
         /// <param name="StartIndex">起始位</param>
         /// <returns></returns>
-        bool ReadIoInWord(int StartIndex, out int value);
+        bool ReadIoInWord( out int value);
 
         /// <summary>
         /// 读取输出字的值
         /// </summary>
         /// <param name="StartIndex">其实位的，默认从0开始</param>
         /// <returns></returns>
-        bool ReadIoOutWord(int StartIndex, out int value);
+        bool ReadIoOutWord(out int value);
 
         /// <summary>
         /// 一次写16位的状态值
@@ -75,6 +75,6 @@ namespace JPT_TosaTest.IOCards
         /// <param name="StartIndex">起始位</param>
         /// <param name="value">写入的状态字的值</param>
         /// <returns></returns>
-        bool WriteIoOutWord(int StartIndex, UInt16 value);
+        bool WriteIoOutWord(int value);
     }
 }

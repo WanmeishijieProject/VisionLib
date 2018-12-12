@@ -311,7 +311,6 @@
     <Compile Include="WorkFlow\WorkTemplate2.cs" />
     <Compile Include="WorkFlow\WorkTemplate1.cs" />
     <Compile Include="WorkFlow\WorkTemplate.cs" />
-    <Compile Include="WorkFlow\WorkService.cs" />
     <Compile Include="WorkFlow\WorkFlowBase.cs" />
     <Compile Include="WorkFlow\WorkFlowMgr.cs" />
     <Page Include="MainWindow.xaml">

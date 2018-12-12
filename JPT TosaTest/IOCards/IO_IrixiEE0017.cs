@@ -3,18 +3,21 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using JPT_TosaTest.Communication;
 using JPT_TosaTest.Config.HardwareManager;
-using JPT_TosaTest.MotionCards;
+using M12;
+using M12.Definitions;
 
 namespace JPT_TosaTest.IOCards
 {
     public class IO_IrixiEE0017 : IIO
     {
         private Comport comport = null;
-        private IrixiEE0017 _controller = null;
+        private Controller _controller = null;
         private UInt16? OutputValue=0;
         public IOCardCfg ioCfg { get; set; }
 
         public event IOStateChange OnIOStateChanged;
+        private const int MIN_CHANNEL = 0, MAX_CHANNEL = 7;
+
 
         public bool Deinit()
         {
@@ -26,26 +29,15 @@ namespace JPT_TosaTest.IOCards
         public bool Init(IOCardCfg ioCfg, ICommunicationPortCfg communicationPortCfg)
         {
             this.ioCfg = ioCfg;
+            ComportCfg portCfg = communicationPortCfg as ComportCfg;
             comport = CommunicationMgr.Instance.FindPortByPortName(ioCfg.PortName) as Comport;
             if (comport == null)
                 return false;
             else
             {
-                _controller = IrixiEE0017.CreateInstance(ioCfg.PortName);
-                if (_controller != null)
-                {
-                    _controller.OnOutputStateChanged += _controller_OnOutputStateChanged;
-                    _controller.OnInputStateChanged+= _controller_OnInputStateChanged;
-                    if (ioCfg.NeedInit)
-                    {
-                        return _controller.Init(Int32.Parse(comport.ToString().ToLower().Replace("com", "")));
-                    }
-                    else
-                    {
-                        return true;
-                    }
-                }
-                return false;
+                _controller = new M12.Controller(portCfg.Port, portCfg.BaudRate);
+                _controller.Open();
+                return true;
             }
         }
 
@@ -69,13 +61,23 @@ namespace JPT_TosaTest.IOCards
         public  bool ReadIoInBit(int Index, out bool value)
         {
             value = false;
-            return _controller.ReadIoInBit(Index+1, out value);
+            var ret = _controller.ReadDIN();
+            return true;
         }
 
-        public  bool ReadIoInWord(int StartIndex, out int value)
+        public  bool ReadIoInWord(out int value)
         {
             value = 0;
-            return _controller.ReadIoInWord(StartIndex+1, out value);
+            var ret=_controller.ReadDIN();
+            value += (ret.DIN1 == DigitalIOStatus.ON ? (1<<0) : 0);
+            value += (ret.DIN2 == DigitalIOStatus.ON ? (1<<1) : 0);
+            value += (ret.DIN3 == DigitalIOStatus.ON ? (1<<2) : 0);
+            value += (ret.DIN4 == DigitalIOStatus.ON ? (1<<3) : 0);
+            value += (ret.DIN5 == DigitalIOStatus.ON ? (1<<4) : 0);
+            value += (ret.DIN6 == DigitalIOStatus.ON ? (1<<5) : 0);
+            value += (ret.DIN7 == DigitalIOStatus.ON ? (1<<6) : 0);
+            value += (ret.DIN8 == DigitalIOStatus.ON ? (1<<7) : 0);
+            return true;
         }
 
 
@@ -83,35 +85,55 @@ namespace JPT_TosaTest.IOCards
         public  bool ReadIoOutBit(int Index, out bool value)
         {
             value = false;
-            if (OutputValue.HasValue)
+            if (Index < MIN_CHANNEL || Index > MAX_CHANNEL)
+                return false;
+            int RealIndex = Index + (int)DigitalOutput.DOUT1;
+            if (Enum.IsDefined(typeof(DigitalOutput), RealIndex))
             {
-                value = ((OutputValue >> Index) & 0x01) == 1;
-                return true;
-            }
-            return false ;
-            
-        }
-
-        public  bool ReadIoOutWord(int StartIndex, out int value)
-        {
-            value = 0;
-            if (OutputValue.HasValue)
-            {
-                value = (int)OutputValue;
-                return true;
+                ReadIoOutWord(out int Data);
+                return ((Data >> Index) & 0x01) == 1;
             }
             return false;
         }
 
-        public  bool WriteIoOutBit(int Index, bool value)
+        public  bool ReadIoOutWord(out int value)
         {
-            return  _controller.WriteIoOutBit(Index + 1, value); ;
+            value = 0;
+            var ret = _controller.ReadDOUT();
+            value += (ret.DIN1 == DigitalIOStatus.ON ? (1 << 0) : 0);
+            value += (ret.DIN2 == DigitalIOStatus.ON ? (1 << 1) : 0);
+            value += (ret.DIN3 == DigitalIOStatus.ON ? (1 << 2) : 0);
+            value += (ret.DIN4 == DigitalIOStatus.ON ? (1 << 3) : 0);
+            value += (ret.DIN5 == DigitalIOStatus.ON ? (1 << 4) : 0);
+            value += (ret.DIN6 == DigitalIOStatus.ON ? (1 << 5) : 0);
+            value += (ret.DIN7 == DigitalIOStatus.ON ? (1 << 6) : 0);
+            value += (ret.DIN8 == DigitalIOStatus.ON ? (1 << 7) : 0);
+            return true;
         }
 
-        public  bool WriteIoOutWord(int StartIndex, ushort value)
+        public  bool WriteIoOutBit(int Index, bool value)
         {
-            return _controller.WriteIoOutWord(StartIndex+1, value);
-           
+            if (Index < MIN_CHANNEL || Index > MAX_CHANNEL)
+                return false;
+            int RealIndex = Index + (int)DigitalOutput.DOUT1;
+            if (Enum.IsDefined(typeof(DigitalOutput), RealIndex))
+            {
+                _controller.SetDOUT((DigitalOutput)RealIndex, value ? DigitalIOStatus.ON : DigitalIOStatus.OFF);
+                return true;
+            }
+
+            return false ;
+        }
+
+        public  bool WriteIoOutWord(int value)
+        {
+            bool bRet = true;
+            for (int i = 0; i < 8; i++)
+            {
+                bRet &= WriteIoOutBit(i, ((value >> i) & 0x01) == 1);
+            }
+            return bRet;
+
         }
     }
 }

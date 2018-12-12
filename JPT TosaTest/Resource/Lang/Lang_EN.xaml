@@ -11,6 +11,7 @@
     <system:String x:Key="Menu_Pause">Pause</system:String>
     <system:String x:Key="Menu_Stop">Stop</system:String>
     <system:String x:Key="Menu_Home">Home</system:String>
+    <system:String x:Key="Menu_Motion">Motion</system:String>
     <system:String x:Key="Menu_Setting">Setting</system:String>
     <system:String x:Key="Menu_Camera">Camera</system:String>
     <system:String x:Key="Menu_Monitor">Monitor</system:String>
