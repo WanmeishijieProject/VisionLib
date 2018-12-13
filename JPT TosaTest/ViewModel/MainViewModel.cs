@@ -54,7 +54,7 @@ namespace JPT_TosaTest.ViewModel
                 Application.Current.Dispatcher.Invoke(()=>ShowErrorinfo(msg));
             });
 
-            SupportIsSelected = true;
+           
 
             ResultCollection = new ObservableCollection<ResultItem>()
             {
@@ -107,14 +107,7 @@ namespace JPT_TosaTest.ViewModel
             DataForPreSetPosition = dtPoint;
             UpdateWorkFlowData(DataForPreSetPosition);
 
-            //初始化产品状态
-            SupportStateCollect = new ObservableCollection<ProductStateModel>();
-            PLCStateCollect = new ObservableCollection<ProductStateModel>();
-            for (int i = 0; i < 6; i++)
-            {
-                SupportStateCollect.Add(new ProductStateModel() { ProductIndex = i + 1, ProductName=$"Spt{i+1}" });
-                PLCStateCollect.Add(new ProductStateModel() { ProductIndex = i + 1, ProductName = $"PLC{i + 1}" });
-            }
+           
         }
 
         ~MainViewModel()
@@ -253,36 +246,7 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
-        public bool SupportIsSelected { get; set; }
-        public ObservableCollection<ProductStateModel> SupportStateCollect { get; set; }
-        public ObservableCollection<ProductStateModel> PLCStateCollect { get; set; }
-        /// <summary>
-        /// Support高16位， PLC低16位
-        /// </summary>
-        public Int32 ProductStateFlag
-        {
-            get
-            {
-                Int16 H = 0, L = 0;
-                Int32  State=0;
-                for (int i = 0; i < 6; i++)
-                {
-                    if (SupportStateCollect[i].IsChecked)
-                    {
-                        H += (Int16)(1 << i);
-                    
-                    }
-                    if (PLCStateCollect[i].IsChecked)
-                    {
-                        L += (Int16)(1 << i);
-                    }
-                    State = L + (H << 16);
-                  
-                }
-                return State;
-            }
-            set { }
-        }
+       
         public EnumSystemState SystemState
         {
             set {

@@ -117,11 +117,8 @@ namespace JPT_TosaTest.MotionCards
 
         public bool GetAxisState(int AxisNo, out AxisArgs state)
         {
-            state = null;
-            if (!IsAxisInRange(AxisNo))
-            {
-                return false;
-            }
+            var s = _controller.GetUnitState((UnitID)(AxisNo + (int)UnitID.U1));
+            OnIrixiAxisStateChanged(this, s);
             state = AxisArgsList[AxisNo];
             return true;
         }
@@ -546,6 +543,7 @@ namespace JPT_TosaTest.MotionCards
             AxisArgsList[AxisNo].IsBusy = e.IsBusy;
             AxisArgsList[AxisNo].IsHomed = e.IsHomed;
             AxisArgsList[AxisNo].IsHomedAndNotBusy = e.IsHomed && (!e.IsBusy);
+            AxisArgsList[AxisNo].CurAbsPosPuse = e.AbsPosition;
             OnAxisStateChanged?.Invoke(this, AxisNo, AxisArgsList[AxisNo]);
             if (AxisArgsList[AxisNo].ErrorCode != (byte)e.Error)
             {

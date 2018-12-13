@@ -120,11 +120,35 @@ namespace JPT_TosaTest.ViewModel
             #region 订阅事件
             foreach (var motionDic in MotionMgr.Instance.MotionDic)
             {
+                //第一次主动查询
+                if (motionDic.Key.Equals("Motion_IrixiEE0017[0]"))
+                {
+                    for (int i = 0; i < motionDic.Value.MAX_AXIS - motionDic.Value.MIN_AXIS + 1; i++)
+                    {
+                        motionDic.Value.GetAxisState(i, out AxisArgs args);
+                        Value_OnAxisStateChanged(motionDic.Value, i, args);
+                    }
+                }
+
+                //订阅
                 motionDic.Value.OnAxisStateChanged += Value_OnAxisStateChanged; ;
-                motionDic.Value.OnErrorOccured += Value_OnErrorOccured; ;
+                motionDic.Value.OnErrorOccured += Value_OnErrorOccured;
+
+
             }
             foreach (var iocardDic in IOCardMgr.Instance.IOCardDic)
             {
+
+                //第一次主动查询
+                if (iocardDic.Key.Equals("IO_IrixiEE0017[0]"))
+                {
+                    iocardDic.Value.ReadIoInWord(out int IoInWord);
+                    iocardDic.Value.ReadIoOutWord(out int IoOutWord);
+                    Value_OnIOStateChanged(iocardDic.Value, EnumIOType.INPUT, 0, (ushort)IoInWord);
+                    Value_OnIOStateChanged(iocardDic.Value, EnumIOType.OUTPUT, 0, (ushort)IoOutWord);
+                }
+
+                //订阅
                 iocardDic.Value.OnIOStateChanged += Value_OnIOStateChanged;
             }
             #endregion
