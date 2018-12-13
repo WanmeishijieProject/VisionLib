@@ -122,7 +122,7 @@ namespace JPT_TosaTest.Config
                                             if (motionBase.Init(motionCfg, ports.ElementAt(0)))
                                             {
                                                 //设置单位，轴类型， 软限位等
-                                                for (int i = 0; i < motionBase.MAX_AXIS - motionBase.MIN_AXIS; i++)
+                                                for (int i = 0; i < motionBase.MAX_AXIS - motionBase.MIN_AXIS+1; i++)
                                                 {
                                                     var settings = HardwareCfgMgr.AxisSettings.Where(a => a.AxisNo == i + motionBase.MIN_AXIS);
                                                     try

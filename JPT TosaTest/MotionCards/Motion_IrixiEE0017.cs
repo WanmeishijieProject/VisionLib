@@ -60,7 +60,7 @@ namespace JPT_TosaTest.MotionCards
         public int MIN_AXIS { get; set; }
         public AxisArgs[] AxisArgsList { get; }
 
-   
+
 
         public Motion_IrixiEE0017()
         {
@@ -69,7 +69,7 @@ namespace JPT_TosaTest.MotionCards
                 AxisArgsList[i] = new AxisArgs();
         }
 
-        public  bool Init(MotionCardCfg motionCfg, ICommunicationPortCfg communicationPortCfg)
+        public bool Init(MotionCardCfg motionCfg, ICommunicationPortCfg communicationPortCfg)
         {
             try
             {
@@ -81,17 +81,17 @@ namespace JPT_TosaTest.MotionCards
                 _controller = M12Wrapper.CreateInstance(portCfg.Port, portCfg.BaudRate);
                 _controller.OnAxisStateChanged += OnIrixiAxisStateChanged;
                 _controller.Open();
-               
+
                 return true;
             }
             catch
             {
                 return false;
             }
-            
+
         }
 
-        public  bool Deinit()
+        public bool Deinit()
         {
             try
             {
@@ -104,7 +104,7 @@ namespace JPT_TosaTest.MotionCards
             }
         }
 
-        public  bool GetCurrentPos(int AxisNo, out double Pos)
+        public bool GetCurrentPos(int AxisNo, out double Pos)
         {
             Pos = 0;
             if (!IsAxisInRange(AxisNo))
@@ -135,46 +135,62 @@ namespace JPT_TosaTest.MotionCards
         /// <param name="Speed1"></param>
         /// <param name="Speed2"></param>
         /// <returns></returns>
-        public  bool Home(int AxisNo, int Dir, double Acc, double Speed1, double Speed2)    //
+        public bool Home(int AxisNo, int Dir, double Acc, double Speed1, double Speed2)    //
         {
-            if (!IsAxisInRange(AxisNo))
+            HomeAsync(AxisNo, Dir, Acc, Speed1, Speed2);
+            return true;
+        }
+        private async Task<bool> HomeAsync(int AxisNo, int Dir, double Acc, double Speed1, double Speed2)
+        {
+            return await Task.Run(() =>
             {
-                return false;
-            }
-            int axisIndex = AxisNo +1;
-            if (Enum.IsDefined(typeof(M12.Definitions.UnitID), axisIndex))
-            {
-                _controller.Home((M12.Definitions.UnitID)axisIndex,(ushort)Acc,(byte)Speed1,(byte)Speed2);
-                return true;
-            }
-            {
-                return false; 
-            }
+                if (!IsAxisInRange(AxisNo))
+                {
+                    return false;
+                }
+                int axisIndex = AxisNo + 1;
+                if (Enum.IsDefined(typeof(M12.Definitions.UnitID), axisIndex))
+                {
+                    try
+                    {
+                        _controller.Home((M12.Definitions.UnitID)axisIndex, (ushort)Acc, (byte)Speed1, (byte)Speed2);
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                    return true;
+                }
+                {
+                    return false;
+                }
+            });
         }
 
-        public  bool IsHomeStop(int AxisNo)
+
+        public bool IsHomeStop(int AxisNo)
         {
             if (!IsAxisInRange(AxisNo))
             {
                 return false;
             }
-            int axisIndex = AxisNo  + 1;
+            int axisIndex = AxisNo + 1;
             if (Enum.IsDefined(typeof(M12.Definitions.UnitID), axisIndex))
             {
-               var state= _controller.GetUnitState((M12.Definitions.UnitID)axisIndex);
-               return state.IsHomed;
+                var state = _controller.GetUnitState((M12.Definitions.UnitID)axisIndex);
+                return state.IsHomed;
             }
             return false;
 
         }
 
-        public  bool IsNormalStop(int AxisNo)
+        public bool IsNormalStop(int AxisNo)
         {
             if (!IsAxisInRange(AxisNo))
             {
                 return false;
             }
-            int axisIndex = AxisNo  + 1;
+            int axisIndex = AxisNo + 1;
             Thread.Sleep(100);
             if (Enum.IsDefined(typeof(M12.Definitions.UnitID), axisIndex))
             {
@@ -192,22 +208,38 @@ namespace JPT_TosaTest.MotionCards
         /// <param name="Speed">速度</param>
         /// <param name="Pos">绝对位置</param>
         /// <returns></returns>
-        public  bool MoveAbs(int AxisNo, double Acc, double Speed, double Pos)
+        public bool MoveAbs(int AxisNo, double Acc, double Speed, double Pos)
         {
-            if (!IsAxisInRange(AxisNo))
-            {
-                return false;
-            }
-            int axisIndex = AxisNo  + 1;
-            if (Enum.IsDefined(typeof(M12.Definitions.UnitID), axisIndex))
-            {
-                var state = _controller.GetUnitState((M12.Definitions.UnitID)axisIndex);
-                int CurPos = state.AbsPosition;
-                int TargetPos = (int)(AxisArgsList[AxisNo].GainFactor * Pos);
-                int StepsInt = TargetPos - CurPos;
-                _controller.Move((M12.Definitions.UnitID)(axisIndex), StepsInt, (byte)Speed, CancellationToken.None);
-            }
+            MoveAbsAsync(AxisNo, Acc, Speed, Pos);
             return true;
+        }
+
+        public async Task<bool> MoveAbsAsync(int AxisNo, double Acc, double Speed, double Pos)
+        {
+            return await Task.Run(() =>
+            {
+                if (!IsAxisInRange(AxisNo))
+                {
+                    return false;
+                }
+                int axisIndex = AxisNo + 1;
+                if (Enum.IsDefined(typeof(M12.Definitions.UnitID), axisIndex))
+                {
+                    var state = _controller.GetUnitState((M12.Definitions.UnitID)axisIndex);
+                    int CurPos = state.AbsPosition;
+                    int TargetPos = (int)(AxisArgsList[AxisNo].GainFactor * Pos);
+                    int StepsInt = TargetPos - CurPos;
+                    try
+                    {
+                        _controller.Move((M12.Definitions.UnitID)(axisIndex), StepsInt, (byte)Speed, CancellationToken.None);
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            });
         }
 
         /// <summary>
@@ -218,24 +250,33 @@ namespace JPT_TosaTest.MotionCards
         /// <param name="Speed">速度</param>
         /// <param name="Pos">绝对位置</param>
         /// <returns></returns>
-        public bool MoveAbs(int AxisNo, double Acc, double Speed, double Pos, EnumTriggerType TriggerType, UInt16 Interval)
+        public async Task<bool> MoveAbs(int AxisNo, double Acc, double Speed, double Pos, EnumTriggerType TriggerType, UInt16 Interval)
         {
-            if (!IsAxisInRange(AxisNo))
+            return await Task.Run(() =>
             {
-                return false;
-            }
-            int axisIndex = AxisNo + 1;
-            if (Enum.IsDefined(typeof(M12.Definitions.UnitID), axisIndex))
-            {
-                var state = _controller.GetUnitState((M12.Definitions.UnitID)axisIndex);
-                int CurPos = state.AbsPosition;
-                int TargetPos = (int)(AxisArgsList[AxisNo].GainFactor * Pos);
-                int StepsInt = TargetPos - CurPos;
-                UInt16 IntervalPause = (UInt16)(Interval * AxisArgsList[AxisNo].GainFactor);
-                _controller.MoveTriggerADC((M12.Definitions.UnitID)(axisIndex), StepsInt, (byte)Speed, IntervalPause, CancellationToken.None);
-            }
-            return true;
-
+                if (!IsAxisInRange(AxisNo))
+                {
+                    return false;
+                }
+                int axisIndex = AxisNo + 1;
+                if (Enum.IsDefined(typeof(M12.Definitions.UnitID), axisIndex))
+                {
+                    var state = _controller.GetUnitState((M12.Definitions.UnitID)axisIndex);
+                    int CurPos = state.AbsPosition;
+                    int TargetPos = (int)(AxisArgsList[AxisNo].GainFactor * Pos);
+                    int StepsInt = TargetPos - CurPos;
+                    UInt16 IntervalPause = (UInt16)(Interval * AxisArgsList[AxisNo].GainFactor);
+                    try
+                    {
+                        _controller.MoveTriggerADC((M12.Definitions.UnitID)(axisIndex), StepsInt, (byte)Speed, IntervalPause, CancellationToken.None);
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            });
         }
 
         /// <summary>
@@ -246,25 +287,40 @@ namespace JPT_TosaTest.MotionCards
         /// <param name="Speed">速度</param>
         /// <param name="Distance">相对距离</param>
         /// <returns></returns>
-        public  bool MoveRel(int AxisNo, double Acc, double Speed, double Distance)
+        public bool MoveRel(int AxisNo, double Acc, double Speed, double Distance)
         {
-            if (!IsAxisInRange(AxisNo))
-            {
-                return false;
-            }
-            int axisIndex = AxisNo  + 1;
-            if (!IsPosValid(AxisNo, Distance))
-                throw new Exception($"Axis{AxisNo} can't reach the specified location");
-            if (Enum.IsDefined(typeof(M12.Definitions.UnitID),axisIndex))
-            {
-                int StepsInt = (int)(Distance * AxisArgsList[AxisNo].GainFactor);
-                byte SpeedInt = (byte)Speed;
-                _controller.Move((M12.Definitions.UnitID)axisIndex, StepsInt, SpeedInt, CancellationToken.None);
-                return true;
-            }
-            return false;
-
+            MoveRelAsync(AxisNo, Acc, Speed, Distance);
+            return true;
         }
+        private async Task<bool> MoveRelAsync(int AxisNo, double Acc, double Speed, double Distance)
+        {
+            return await Task.Run(() =>
+            {
+                if (!IsAxisInRange(AxisNo))
+                {
+                    return false;
+                }
+                int axisIndex = AxisNo + 1;
+                if (!IsPosValid(AxisNo, Distance))
+                    throw new Exception($"Axis{AxisNo} can't reach the specified location");
+                if (Enum.IsDefined(typeof(M12.Definitions.UnitID), axisIndex))
+                {
+                    int StepsInt = (int)(Distance * AxisArgsList[AxisNo].GainFactor);
+                    byte SpeedInt = (byte)Speed;
+                    try
+                    {
+                        _controller.Move((M12.Definitions.UnitID)axisIndex, StepsInt, SpeedInt, CancellationToken.None);
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                    return true;
+                }
+                return false;
+            });
+        }
+
 
         /// <summary>
         /// MoveRel With trigger
@@ -276,13 +332,13 @@ namespace JPT_TosaTest.MotionCards
         /// <param name="TriggerType">目前只支持一种Trig，就是ADCTrigger</param>
         /// <param name="Interval"></param>
         /// <returns></returns>
-        public bool MoveRel(int AxisNo, double Acc, double Speed, double Distance, EnumTriggerType TriggerType, double Interval)
+        public async Task<bool> MoveRel(int AxisNo, double Acc, double Speed, double Distance, EnumTriggerType TriggerType, double Interval)
         {
             if (!IsAxisInRange(AxisNo))
             {
                 return false;
             }
-            int axisIndex = AxisNo  + 1;
+            int axisIndex = AxisNo + 1;
             if (!IsPosValid(AxisNo, Distance))
                 throw new Exception($"Axis{AxisNo} can't reach the specified location");
             if (Enum.IsDefined(typeof(M12.Definitions.UnitID), axisIndex))
@@ -290,13 +346,20 @@ namespace JPT_TosaTest.MotionCards
                 int StepsInt = (int)(Distance * AxisArgsList[AxisNo].GainFactor);
                 byte SpeedInt = (byte)Speed;
                 UInt16 IntervalUInt = (UInt16)(Interval * AxisArgsList[AxisNo].GainFactor);
-                _controller.MoveTriggerADC((M12.Definitions.UnitID)axisIndex, StepsInt, SpeedInt, IntervalUInt, CancellationToken.None);
+                try
+                {
+                    _controller.MoveTriggerADC((M12.Definitions.UnitID)axisIndex, StepsInt, SpeedInt, IntervalUInt, CancellationToken.None);
+                }
+                catch
+                {
+                    return false;
+                }
                 return true;
             }
             else
                 return false;
         }
-       
+
         /// <summary>
         /// 配置Trigger
         /// </summary>
@@ -352,24 +415,28 @@ namespace JPT_TosaTest.MotionCards
 
 
 
-        public  bool Stop(int AxisNo)
+        public bool Stop(int AxisNo)
         {
-           if(Enum.IsDefined(typeof(UnitID),AxisNo+1))
+            if (Enum.IsDefined(typeof(UnitID), AxisNo + 1))
             {
-                UnitID Axis= (UnitID)Enum.Parse(typeof(UnitID), (AxisNo + 1).ToString());
+                UnitID Axis = (UnitID)Enum.Parse(typeof(UnitID), (AxisNo + 1).ToString());
                 _controller.Stop(Axis);
             }
             return false;
         }
         public bool StopAll()
         {
-            _controller.Stop(UnitID.ALL);
+            // _controller.Stop(UnitID.ALL); 不起作用
+            for (int i = 0; i < MAX_AXIS - MIN_AXIS + 1; i++)
+            {
+                _controller.Stop((UnitID)(i + (int)UnitID.U1));
+            }
             return false;
         }
 
         public bool IsAxisInRange(int AxisNo)
         {
-            return AxisNo >= 0 && AxisNo <= MAX_AXIS-MIN_AXIS;
+            return AxisNo >= 0 && AxisNo <= MAX_AXIS - MIN_AXIS;
         }
 
         public bool DoBlindSearch(UnitID XAxis, UnitID YAxis, double Range, double Gap, double Speed, double Interval, ADCChannels AdcUsed, out List<Point3D> ScanResults)
@@ -377,22 +444,22 @@ namespace JPT_TosaTest.MotionCards
             ScanResults = new List<Point3D>();
             int XAxisNo = (int)XAxis - 1;
             int YAxisNo = (int)YAxis - 1;
-            if (XAxisNo > MAX_AXIS- MIN_AXIS || XAxisNo < 0 || YAxisNo>MAX_AXIS-MIN_AXIS || YAxisNo<0)
+            if (XAxisNo > MAX_AXIS - MIN_AXIS || XAxisNo < 0 || YAxisNo > MAX_AXIS - MIN_AXIS || YAxisNo < 0)
             {
                 return false;
             }
-            int XaxisIndex = XAxisNo  +1;
-            int YaxisIndex = YAxisNo  +1;
+            int XaxisIndex = XAxisNo + 1;
+            int YaxisIndex = YAxisNo + 1;
             UInt16 RangePause = (UInt16)AxisArgsList[XAxisNo].GainFactor;
-            UInt16 GapPause = (UInt16)(AxisArgsList[XAxisNo].GainFactor*Gap);
+            UInt16 GapPause = (UInt16)(AxisArgsList[XAxisNo].GainFactor * Gap);
             byte SpeedPause = (byte)Speed;
-            UInt16 IntervalPause = (UInt16)(AxisArgsList[XAxisNo].GainFactor*Interval);
+            UInt16 IntervalPause = (UInt16)(AxisArgsList[XAxisNo].GainFactor * Interval);
 
             _controller.StartBlindSearch(XAxis, YAxis, RangePause, GapPause, IntervalPause, SpeedPause, AdcUsed, out ScanResults);
             return true;
         }
 
-        
+
         public bool SetCurrentPos(int AxisNo, double Pos)
         {
             throw new NotImplementedException();
@@ -428,6 +495,7 @@ namespace JPT_TosaTest.MotionCards
             AxisArgsList[AxisNo].BackwardCaption = Setting.BackwardCaption;
             AxisArgsList[AxisNo].ForwardCaption = Setting.ForwardCaption;
             AxisArgsList[AxisNo].MaxSpeed = Setting.MaxSpeed;
+            AxisArgsList[AxisNo].GainFactor = (int)Setting.GainFactor;
 
             //_controller.SetAxisPara(AxisNo +1, Setting.GainFactor, Setting.LimitP, Setting.LimitN, Setting.HomeOffset, (int)Setting.HomeMode, Setting.AxisName);
 
@@ -453,8 +521,8 @@ namespace JPT_TosaTest.MotionCards
                 return false;
             }
             int axisIndex = AxisNo + 1;
-            var state=_controller.GetUnitState((M12.Definitions.UnitID)axisIndex);
-            int TargetPosInt =(int)(TargetPosRelative * AxisArgsList[AxisNo].GainFactor)+state.AbsPosition;
+            var state = _controller.GetUnitState((M12.Definitions.UnitID)axisIndex);
+            int TargetPosInt = (int)(TargetPosRelative * AxisArgsList[AxisNo].GainFactor) + state.AbsPosition;
             int LimtP = (int)(AxisArgsList[AxisNo].LimitP * AxisArgsList[AxisNo].GainFactor);
             int LimtN = (int)(AxisArgsList[AxisNo].LimitN * AxisArgsList[AxisNo].GainFactor);
 
@@ -466,7 +534,7 @@ namespace JPT_TosaTest.MotionCards
 
         private string ParseErrorCode(int error)
         {
-            if(Enum.IsDefined(typeof(EnumIrixiMotionError), error))
+            if (Enum.IsDefined(typeof(EnumIrixiMotionError), error))
                 return ((EnumIrixiMotionError)error).ToString();
             return "未定义错误类型";
         }
@@ -474,9 +542,10 @@ namespace JPT_TosaTest.MotionCards
         private void OnIrixiAxisStateChanged(object sender, UnitState e)
         {
             int AxisNo = e.UnitID - (int)UnitID.U1;
-            AxisArgsList[AxisNo].CurAbsPos = (double)e.AbsPosition/ AxisArgsList[AxisNo].GainFactor;
+            AxisArgsList[AxisNo].CurAbsPos = (double)e.AbsPosition / AxisArgsList[AxisNo].GainFactor;
             AxisArgsList[AxisNo].IsBusy = e.IsBusy;
             AxisArgsList[AxisNo].IsHomed = e.IsHomed;
+            AxisArgsList[AxisNo].IsHomedAndNotBusy = e.IsHomed && (!e.IsBusy);
             OnAxisStateChanged?.Invoke(this, AxisNo, AxisArgsList[AxisNo]);
             if (AxisArgsList[AxisNo].ErrorCode != (byte)e.Error)
             {
@@ -488,7 +557,7 @@ namespace JPT_TosaTest.MotionCards
             }
         }
 
-       
+
 
     }
 

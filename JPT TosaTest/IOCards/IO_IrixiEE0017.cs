@@ -112,6 +112,12 @@ namespace JPT_TosaTest.IOCards
             return true;
         }
 
+        /// <summary>
+        /// 写IO的时候需要更新Output状态
+        /// </summary>
+        /// <param name="Index"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public  bool WriteIoOutBit(int Index, bool value)
         {
             if (Index < MIN_CHANNEL || Index > MAX_CHANNEL)

@@ -630,8 +630,8 @@ namespace JPT_TosaTest.ViewModel
             get
             {
                 return new RelayCommand(() => {
-                    WorkFlow.WorkFlowMgr.Instance.FindStationByName("WorkService").SetCmd(WorkFlow.STEP.Init);
-                    ;
+                    
+                    
                 });
             }
         }

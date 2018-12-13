@@ -169,6 +169,7 @@
     <Compile Include="Config\SystemCfgManager\SystemParaModel.cs" />
     <Compile Include="Config\UserManager\UserCfgManager.cs" />
     <Compile Include="Config\UserManager\UserModel.cs" />
+    <Compile Include="Converter\AxisType2Text.cs" />
     <Compile Include="Converter\ContrastValue2Text.cs" />
     <Compile Include="Converter\double2CurPosString.cs" />
     <Compile Include="Converter\Bool2Image.cs" />
@@ -180,6 +181,7 @@
     <Compile Include="Converter\EnumCamSnapState2SnapButtonEnable.cs" />
     <Compile Include="Converter\Int2BackgroundBrush.cs" />
     <Compile Include="Converter\Int2String.cs" />
+    <Compile Include="Converter\IsBusy2HomeEnable.cs" />
     <Compile Include="Converter\Level2Boolean.cs" />
     <Compile Include="Converter\int2Visibility.cs" />
     <Compile Include="Converter\IsChecked2RegionOperator.cs" />

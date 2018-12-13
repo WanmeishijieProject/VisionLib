@@ -229,10 +229,11 @@ namespace JPT_TosaTest.ViewModel
         }
         #endregion
 
-        #region Private
+        #region Private  事件
 
         private void Value_OnErrorOccured(IMotion sender, int ErrorCode, string ErrorMsg)
         {
+            //过滤掉因为ADC引发的停止
             if(ErrorCode!=0x83 && ErrorCode!=0x84)
                 Messenger.Default.Send<string>($"Motion{sender.motionCfg.Name} error occured:{ErrorMsg}", "Error");
         }

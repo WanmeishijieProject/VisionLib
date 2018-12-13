@@ -95,9 +95,9 @@ namespace JPT_TosaTest.ViewModel
                     try
                     {
                         if(args.AxisNo>=1 && args.AxisNo<=4)
-                            MotionMgr.Instance.Home(args.AxisNo,500, 500,20,50);
+                            MotionMgr.Instance.Home(args.AxisNo,0, 500,20,50);
                         else
-                            MotionMgr.Instance.Home(args.AxisNo, 500, 500, 5, 10);
+                            MotionMgr.Instance.Home(args.AxisNo, 0, 500, 5, 10);
                     }
                     catch (Exception ex)
                     {
