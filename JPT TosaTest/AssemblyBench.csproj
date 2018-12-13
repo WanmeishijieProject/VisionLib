@@ -220,6 +220,7 @@
     <Compile Include="Model\ToolData\FlagToolData.cs" />
     <Compile Include="Model\ToolData\ToolDataBase.cs" />
     <Compile Include="MotionCards\IMotion.cs" />
+    <Compile Include="MotionCards\M12Wrapper.cs" />
     <Compile Include="MotionCards\MotionMgr.cs" />
     <Compile Include="MotionCards\Motion_IrixiEE0017.cs" />
     <Compile Include="Rules\NotEmptyValidationRule.cs" />

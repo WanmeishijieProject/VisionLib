@@ -5,6 +5,7 @@ using JPT_TosaTest.Communication;
 using JPT_TosaTest.Config.HardwareManager;
 using M12;
 using M12.Definitions;
+using JPT_TosaTest.MotionCards;
 
 namespace JPT_TosaTest.IOCards
 {
@@ -35,7 +36,7 @@ namespace JPT_TosaTest.IOCards
                 return false;
             else
             {
-                _controller = new M12.Controller(portCfg.Port, portCfg.BaudRate);
+                _controller = M12Wrapper.CreateInstance(portCfg.Port, portCfg.BaudRate);
                 _controller.Open();
                 return true;
             }
@@ -119,6 +120,9 @@ namespace JPT_TosaTest.IOCards
             if (Enum.IsDefined(typeof(DigitalOutput), RealIndex))
             {
                 _controller.SetDOUT((DigitalOutput)RealIndex, value ? DigitalIOStatus.ON : DigitalIOStatus.OFF);
+
+                ReadIoOutWord(out int IoOutData);
+                _controller_OnOutputStateChanged(this, (UInt16?)IoOutData);
                 return true;
             }
 

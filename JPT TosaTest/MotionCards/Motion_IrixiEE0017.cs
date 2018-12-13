@@ -50,7 +50,7 @@ namespace JPT_TosaTest.MotionCards
     {
         Comport comport = null;
         //private IrixiEE0017 _controller=null;
-        private M12.Controller _controller = null;
+        private M12Wrapper _controller = null;
 
         public event AxisStateChange OnAxisStateChanged;
         public event ErrorOccur OnErrorOccured;
@@ -78,8 +78,10 @@ namespace JPT_TosaTest.MotionCards
                 MIN_AXIS = motionCfg.MinAxisNo;
                 ComportCfg portCfg = communicationPortCfg as ComportCfg;
                 comport = CommunicationMgr.Instance.FindPortByPortName(motionCfg.PortName) as Comport;
-                _controller = new M12.Controller(portCfg.Port, portCfg.BaudRate);
+                _controller = M12Wrapper.CreateInstance(portCfg.Port, portCfg.BaudRate);
+                _controller.OnAxisStateChanged += OnIrixiAxisStateChanged;
                 _controller.Open();
+               
                 return true;
             }
             catch
@@ -105,7 +107,7 @@ namespace JPT_TosaTest.MotionCards
         public  bool GetCurrentPos(int AxisNo, out double Pos)
         {
             Pos = 0;
-            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
+            if (!IsAxisInRange(AxisNo))
             {
                 return false;
             }
@@ -116,7 +118,7 @@ namespace JPT_TosaTest.MotionCards
         public bool GetAxisState(int AxisNo, out AxisArgs state)
         {
             state = null;
-            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
+            if (!IsAxisInRange(AxisNo))
             {
                 return false;
             }
@@ -135,7 +137,7 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public  bool Home(int AxisNo, int Dir, double Acc, double Speed1, double Speed2)    //
         {
-            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
+            if (!IsAxisInRange(AxisNo))
             {
                 return false;
             }
@@ -152,7 +154,7 @@ namespace JPT_TosaTest.MotionCards
 
         public  bool IsHomeStop(int AxisNo)
         {
-            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
+            if (!IsAxisInRange(AxisNo))
             {
                 return false;
             }
@@ -168,7 +170,7 @@ namespace JPT_TosaTest.MotionCards
 
         public  bool IsNormalStop(int AxisNo)
         {
-            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
+            if (!IsAxisInRange(AxisNo))
             {
                 return false;
             }
@@ -192,7 +194,7 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public  bool MoveAbs(int AxisNo, double Acc, double Speed, double Pos)
         {
-            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
+            if (!IsAxisInRange(AxisNo))
             {
                 return false;
             }
@@ -218,7 +220,7 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public bool MoveAbs(int AxisNo, double Acc, double Speed, double Pos, EnumTriggerType TriggerType, UInt16 Interval)
         {
-            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
+            if (!IsAxisInRange(AxisNo))
             {
                 return false;
             }
@@ -246,7 +248,7 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public  bool MoveRel(int AxisNo, double Acc, double Speed, double Distance)
         {
-            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
+            if (!IsAxisInRange(AxisNo))
             {
                 return false;
             }
@@ -276,7 +278,7 @@ namespace JPT_TosaTest.MotionCards
         /// <returns></returns>
         public bool MoveRel(int AxisNo, double Acc, double Speed, double Distance, EnumTriggerType TriggerType, double Interval)
         {
-            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
+            if (!IsAxisInRange(AxisNo))
             {
                 return false;
             }
@@ -365,7 +367,7 @@ namespace JPT_TosaTest.MotionCards
             return false;
         }
 
-        public bool IsAxisInRange(int AxisNo)   //给Mgr用来查询板卡使用的，别的函数都是从0开始
+        public bool IsAxisInRange(int AxisNo)
         {
             return AxisNo >= 0 && AxisNo <= MAX_AXIS-MIN_AXIS;
         }
@@ -409,7 +411,7 @@ namespace JPT_TosaTest.MotionCards
 
         public void SetAxisPara(int AxisNo, AxisSetting Setting)
         {
-            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
+            if (!IsAxisInRange(AxisNo))
             {
                 return;
             }
@@ -434,8 +436,9 @@ namespace JPT_TosaTest.MotionCards
 
         public bool SetMode(UnitID Axis, UnitSettings mode)
         {
-            int AxisNo = (int)(Axis - 1);
-            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
+
+            int AxisNo = (int)Axis - (int)UnitID.U1;
+            if (!IsAxisInRange(AxisNo))
             {
                 return false;
             }
@@ -445,7 +448,7 @@ namespace JPT_TosaTest.MotionCards
 
         private bool IsPosValid(int AxisNo, double TargetPosRelative)
         {
-            if (AxisNo > MAX_AXIS - MIN_AXIS || AxisNo < 0)
+            if (!IsAxisInRange(AxisNo))
             {
                 return false;
             }
@@ -468,23 +471,24 @@ namespace JPT_TosaTest.MotionCards
             return "未定义错误类型";
         }
 
-        private void OnIrixiAxisStateChanged(object sender, Tuple<byte, AxisArgs> e)
+        private void OnIrixiAxisStateChanged(object sender, UnitState e)
         {
-            int AxisNo = e.Item1 - 1;
-            AxisArgsList[AxisNo].CurAbsPos = e.Item2.CurAbsPos;
-            AxisArgsList[AxisNo].IsBusy = e.Item2.IsBusy;
-            AxisArgsList[AxisNo].IsHomed = e.Item2.IsHomed;
-            AxisArgsList[AxisNo].IsInRequest = e.Item2.IsInRequest;
-            OnAxisStateChanged?.Invoke(this, e.Item1 - 1, AxisArgsList[AxisNo]);
-            if (AxisArgsList[AxisNo].ErrorCode != e.Item2.ErrorCode)
+            int AxisNo = e.UnitID - (int)UnitID.U1;
+            AxisArgsList[AxisNo].CurAbsPos = (double)e.AbsPosition/ AxisArgsList[AxisNo].GainFactor;
+            AxisArgsList[AxisNo].IsBusy = e.IsBusy;
+            AxisArgsList[AxisNo].IsHomed = e.IsHomed;
+            OnAxisStateChanged?.Invoke(this, AxisNo, AxisArgsList[AxisNo]);
+            if (AxisArgsList[AxisNo].ErrorCode != (byte)e.Error)
             {
-                AxisArgsList[AxisNo].ErrorCode = e.Item2.ErrorCode;
-                if (e.Item2.ErrorCode != 0)
+                AxisArgsList[AxisNo].ErrorCode = (byte)e.Error;
+                if ((byte)e.Error != 0)
                 {
-                    OnErrorOccured?.Invoke(this, e.Item2.ErrorCode, ParseErrorCode(e.Item2.ErrorCode));
+                    OnErrorOccured?.Invoke(this, (int)e.Error, ParseErrorCode((int)e.Error));
                 }
             }
         }
+
+       
 
     }
 
