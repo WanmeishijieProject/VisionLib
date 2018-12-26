@@ -27,6 +27,11 @@ namespace JPT_TosaTest.ViewModel
         Pause,
         Idle,
     }
+    public enum EnumAlignerType
+    {
+        BlinderSearch,
+        FastAlign1D,
+    }
 
     public class MainViewModel : ViewModelBase
     {
@@ -45,7 +50,7 @@ namespace JPT_TosaTest.ViewModel
         private MonitorViewModel MonitorVm = null;
         private const int HOME_PAGE = 1, SETTING_PAGE = 2, INFO_PAGE=3,
             CAMERA_PAGE = 4, MONITOR_PAGE = 5, USER_PAGE = 6;
-
+       
 
         public MainViewModel(IDataService dataService)
         {
@@ -107,7 +112,14 @@ namespace JPT_TosaTest.ViewModel
             DataForPreSetPosition = dtPoint;
             UpdateWorkFlowData(DataForPreSetPosition);
 
-           
+            //初始化耦合类型
+            AlignerTypeList = new List<string>();
+            var type = typeof(EnumAlignerType);
+            var fs = type.GetFields();
+            for (int i = 1; i < fs.Length; i++)
+                AlignerTypeList.Add(fs[i].Name);
+
+
         }
 
         ~MainViewModel()
@@ -257,6 +269,20 @@ namespace JPT_TosaTest.ViewModel
                 }
             }
             get { return _systemState; }
+        }
+        public List<string> AlignerTypeList
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// 当前的耦合类型
+        /// </summary>
+        public string CurAlignerTypeString
+        {
+
+            get;set;
         }
         #endregion
 
@@ -552,39 +578,31 @@ namespace JPT_TosaTest.ViewModel
             }
         }
 
-        /// <summary>
-        /// 加紧松开FA
-        /// </summary>
-        public RelayCommand CommandGrabFA
-        {
-            get { return new RelayCommand(()=> {
-                
-            }); }
-        }
 
         /// <summary>
-        /// 加紧松开PLC
+        /// 开始耦合
         /// </summary>
-        public RelayCommand CommandGrabPLC  //PLC Top
+        public RelayCommand CommandStartAlign   //Support Bottom
         {
             get
             {
                 return new RelayCommand(() => {
+                    Enum.TryParse(CurAlignerTypeString, out EnumAlignerType type);
                     
                 });
             }
         }
 
         /// <summary>
-        /// 伸出缩回PD
+        /// 停止耦合
         /// </summary>
-        public RelayCommand CommandExtendPD   //Support Bottom
+        public RelayCommand CommandStopAlign   //Support Bottom
         {
             get
             {
                 return new RelayCommand(() => {
 
-                   
+
                 });
             }
         }

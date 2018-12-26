@@ -92,8 +92,8 @@
                     </Grid>
                 </ScrollViewer>
             </GroupBox>
-            <GroupBox Grid.Column="1" Header="示教器快捷键设置" Margin="16"  materialDesign:ColorZoneAssist.Mode="PrimaryLight">
-                    <local:UC_SetHotKey/>
+            <GroupBox  Grid.Column="1" Header="示教器快捷键设置" Margin="16"  materialDesign:ColorZoneAssist.Mode="PrimaryLight">
+                    <local:UC_SetHotKey Visibility="Hidden"/>
                 </GroupBox>
            
            

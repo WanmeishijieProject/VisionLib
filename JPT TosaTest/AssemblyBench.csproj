@@ -251,9 +251,7 @@
     <Compile Include="UserCtrl\UC_ErrorInfo.xaml.cs">
       <DependentUpon>UC_ErrorInfo.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UserCtrl\UC_HomeView.xaml.cs">
-      <DependentUpon>UC_HomeView.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="UserCtrl\UC_HomeView.xaml.cs" />
     <Compile Include="UserCtrl\UC_LogIn.xaml.cs">
       <DependentUpon>UC_LogIn.xaml</DependentUpon>
     </Compile>
@@ -316,8 +314,8 @@
     <Compile Include="Vision\ProcessStep\VisionProcessStepBase.cs" />
     <Compile Include="WorkFlow\WorkFlowData.cs" />
     <Compile Include="WorkFlow\WorkTemplate2.cs" />
-    <Compile Include="WorkFlow\WorkTemplate1.cs" />
-    <Compile Include="WorkFlow\WorkTemplate.cs" />
+    <Compile Include="WorkFlow\WF_Aligner.cs" />
+    <Compile Include="WorkFlow\WF_Camera.cs" />
     <Compile Include="WorkFlow\WorkFlowBase.cs" />
     <Compile Include="WorkFlow\WorkFlowMgr.cs" />
     <Page Include="MainWindow.xaml">
@@ -381,8 +379,8 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserCtrl\UC_HomeView.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="UserCtrl\UC_LogIn.xaml">
       <SubType>Designer</SubType>

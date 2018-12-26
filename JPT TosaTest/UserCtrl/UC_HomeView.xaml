@@ -48,12 +48,11 @@
                     <ColumnDefinition Width="80"/>
    
                 </Grid.ColumnDefinitions>
-               
-                <Button Grid.Column="4" Height="40" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="FA" Command="{Binding CommandGrabFA}"/>
-                <Button Grid.Column="5" Height="40" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="PLC" Command="{Binding CommandGrabPLC}"/>
-                <Button Grid.Column="6" Height="40" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="PD" Command="{Binding CommandExtendPD}"/>
-                <Button Grid.Column="7" Height="40" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="Home" Command="{Binding CommandHome}"/>
-               
+
+                <ComboBox Grid.Column="3" Grid.ColumnSpan="2" Height="40" Margin="5" SelectedIndex="0" SelectedItem="{Binding CurAlignerTypeString, Mode=OneWayToSource}" ItemsSource="{Binding AlignerTypeList, Mode=TwoWay}"/>
+                <Button Grid.Column="5" Height="40" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="开始耦合" Command="{Binding CommandStartAlign}"/>
+                <Button Grid.Column="6" Height="40" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="停止耦合" Command="{Binding CommandStopAlign}"/>
+                <Button Grid.Column="7" Height="40" Margin="5" Background="{StaticResource ThemColor}" Style="{StaticResource RoundButtonStyle1}" Content="回原点" Command="{Binding CommandHome}"/>
                 <Grid Grid.ColumnSpan="7" VerticalAlignment="Bottom" Margin="5">
                     <Line X1="3" Y1="1" X2="1500" Y2="1" Stroke="{StaticResource ThemColor}" StrokeThickness="2"/>
                 </Grid>

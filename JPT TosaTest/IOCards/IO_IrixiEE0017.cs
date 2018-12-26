@@ -29,16 +29,23 @@ namespace JPT_TosaTest.IOCards
 
         public bool Init(IOCardCfg ioCfg, ICommunicationPortCfg communicationPortCfg)
         {
-            this.ioCfg = ioCfg;
-            ComportCfg portCfg = communicationPortCfg as ComportCfg;
-            comport = CommunicationMgr.Instance.FindPortByPortName(ioCfg.PortName) as Comport;
-            if (comport == null)
-                return false;
-            else
+            try
             {
-                _controller = M12Wrapper.CreateInstance(portCfg.Port, portCfg.BaudRate);
-                _controller.Open();
-                return true;
+                this.ioCfg = ioCfg;
+                ComportCfg portCfg = communicationPortCfg as ComportCfg;
+                comport = CommunicationMgr.Instance.FindPortByPortName(ioCfg.PortName) as Comport;
+                if (comport == null)
+                    return false;
+                else
+                {
+                    _controller = M12Wrapper.CreateInstance(portCfg.Port, portCfg.BaudRate);
+                    _controller.Open();
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
             }
         }
 
