@@ -43,12 +43,13 @@ namespace JPT_TosaTest.UserCtrl
             if (bAttach)
             {
                 HalconVision.Instance.AttachCamWIndow(0, "Cam1", Cam1.HalconWindow);
-               
+                HalconVision.Instance.AttachCamWIndow(0, "Cam2", Cam2.HalconWindow);
+
             }
             else
             {
                 HalconVision.Instance.DetachCamWindow(0, "Cam1");
-     
+                HalconVision.Instance.DetachCamWindow(0, "Cam2");
             }
         }
         private async void LoadDelay(int ms)

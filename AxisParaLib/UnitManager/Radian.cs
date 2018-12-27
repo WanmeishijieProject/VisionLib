@@ -8,7 +8,7 @@ namespace AxisParaLib.UnitManager
 {
     public class Radian : UnitBase
     {
-        public override double Factor => 1;
+        public override double Factor => 180.0 / 3.1415926;
 
         public override string DisplayNameEN => "rad";
 

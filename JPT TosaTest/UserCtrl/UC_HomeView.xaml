@@ -32,16 +32,16 @@
         <Grid Grid.Row="0" Grid.Column="1" Grid.RowSpan="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="100"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition MinHeight="200"/>
                 <RowDefinition Height="5"/>
-                <RowDefinition Height="*" MinHeight="100"/>
+                <RowDefinition MinHeight="100"/>
             </Grid.RowDefinitions>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="180"/>
                     <ColumnDefinition Width="2"/>
-                    <ColumnDefinition Width="180"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="80"/>
                     <ColumnDefinition Width="80"/>
                     <ColumnDefinition Width="80"/>
                     <ColumnDefinition Width="80"/>
@@ -59,7 +59,7 @@
             </Grid>
             
             <UserCtrl:UC_TeachBox Grid.Row="1" Margin="5,5,5,20"/>
-            <GridSplitter Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="5" Background="{StaticResource ThemColor}"/>
+            <GridSplitter Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="5" Background="{StaticResource ThemColor}" />
             <Grid Grid.Row="3" Margin="5,0">
                 <Grid>
                     <Grid.ContextMenu>
@@ -82,8 +82,9 @@
                             
                         </ContextMenu>
                     </Grid.ContextMenu>
-                    <DataGrid x:Name="DatagridPos" CanUserAddRows="False" CanUserSortColumns="False" ItemsSource="{Binding DataForPreSetPosition.DefaultView, UpdateSourceTrigger=PropertyChanged}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
-                    ScrollViewer.VerticalScrollBarVisibility="Visible" Cursor="Arrow" GridLinesVisibility="All" VerticalGridLinesBrush="LightBlue" Background="Transparent" CanUserReorderColumns="False" CanUserResizeColumns="False" MinHeight="50"/>
+                    <DataGrid x:Name="DatagridPos" CanUserAddRows="False" CanUserSortColumns="False" ItemsSource="{Binding DataForPreSetPosition.DefaultView, UpdateSourceTrigger=PropertyChanged}"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" VerticalAlignment="Top"
+                              ScrollViewer.VerticalScrollBarVisibility="Visible" Cursor="Arrow" GridLinesVisibility="All" VerticalGridLinesBrush="LightBlue" Background="Transparent" CanUserReorderColumns="False" CanUserResizeColumns="False" MinHeight="50"/>
 
                     <materialDesign:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionPopupBox}"
                     PlacementMode="LeftAndAlignMiddles"

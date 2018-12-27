@@ -43,7 +43,8 @@ namespace JPT_TosaTest.WorkFlow
         protected WorkFlowConfig cfg = null;
         protected CancellationTokenSource cts =new CancellationTokenSource();
         protected Stack<object> nStepStack=new Stack<object>();
-        protected Task t = null; 
+        protected Task t = null;
+        protected int nSubStep = 0;
         protected object Step { get; set; }
         private object _lock = new object();
         protected object PeekStep()
@@ -132,7 +133,7 @@ namespace JPT_TosaTest.WorkFlow
         public bool Stop()
         {
             cts.Cancel();
-            ClearAllStep();
+            nSubStep = 0;
             return true;
         }
         public bool Pause()
@@ -152,6 +153,7 @@ namespace JPT_TosaTest.WorkFlow
         {
             Messenger.Default.Send<string>(ErrorMsg, "Error");
         }
+
         public void SetCmd(object step,object para=null)
         {
             PushStep(step,para);

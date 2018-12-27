@@ -169,12 +169,17 @@ namespace JPT_TosaTest.ViewModel
             {
                 foreach (DataRow row in dt.Rows)
                 {
-                    List<double> list = new List<double>();
-                    for (int i=1;i<dt.Columns.Count; i++)
+                    WFPointModel PointModel = new WFPointModel()
                     {
-                        list.Add(double.Parse(row[i].ToString()));  
-                    }
-                    WorkFlow.WorkFlowMgr.Instance.AddPoint(row[0].ToString(), list);
+                        PointName= row[0].ToString(),
+                        X= double.Parse(row[1].ToString()),
+                        Y = double.Parse(row[2].ToString()),
+                        Z = double.Parse(row[3].ToString()),
+                        R = double.Parse(row[4].ToString()),
+                        CX = double.Parse(row[5].ToString()),
+                    };
+                   
+                    WorkFlow.WorkFlowMgr.Instance.AddPoint(PointModel);
                 }
             }
 
@@ -398,10 +403,10 @@ namespace JPT_TosaTest.ViewModel
                         DataRow dr = DataForPreSetPosition.NewRow();
                         for (int i = 0; i < AxisStatecollection.Count; i++)
                         {
-                            if(AxisStatecollection[i].Unit.Category==EnumUnitCategory.Length)
+                            if (AxisStatecollection[i].Unit.Category == EnumUnitCategory.Length)
                                 dr[i + 1] = UnitHelper.ConvertUnit(AxisStatecollection[i].Unit, new Millimeter(), AxisStatecollection[i].CurAbsPos);
                             else
-                                dr[i+1]=UnitHelper.ConvertUnit(AxisStatecollection[i].Unit, new Degree(), AxisStatecollection[i].CurAbsPos);
+                                dr[i + 1] = UnitHelper.ConvertUnit(AxisStatecollection[i].Unit, new Degree(), AxisStatecollection[i].CurAbsPos);
 
                         }
                         DataForPreSetPosition.Rows.Add(dr);
@@ -436,12 +441,14 @@ namespace JPT_TosaTest.ViewModel
             {
                 return new RelayCommand<DataGridCellInfo>(drv =>
                 {
+                   
                     if (drv != null)
                     {
                         DataRowView item = drv.Item as DataRowView;
                         DataGridTextColumn dgc = drv.Column as DataGridTextColumn;
                         int index = dgc.DisplayIndex;
-             
+                        if (MessageBox.Show($"确定要移动到该位置吗", "提示", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+                            return;
                         if (index > 0)
                         {
                             var data = item[index];
@@ -460,30 +467,34 @@ namespace JPT_TosaTest.ViewModel
             {
                 return new RelayCommand<DataGridCellInfo>(drv =>
                 {
-                    try
+                try
+                {
+                    if (drv != null)
                     {
-                        if (drv != null)
+                        DataRowView item = drv.Item as DataRowView;
+                        string PointName = item[0].ToString();
+                        if (MessageBox.Show($"确定要更新点吗", "提示", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+                            return;
+                        foreach (DataRow row in DataForPreSetPosition.Rows)
                         {
-                            DataRowView item = drv.Item as DataRowView;
-                            string PointName = item[0].ToString();
-                            foreach (DataRow row in DataForPreSetPosition.Rows)
+                            if (row[0].ToString().Equals(PointName))
                             {
-                                if (row[0].ToString().Equals(PointName))
+                                //更新
+                                MonitorVm = SimpleIoc.Default.GetInstance<MonitorViewModel>();
+                                int i = 0;
+                                foreach (var state in MonitorVm.AxisStateCollection)
                                 {
-                                    //更新
-                                    MonitorVm = SimpleIoc.Default.GetInstance<MonitorViewModel>();
-                                    int i = 0;
-                                    foreach (var state in MonitorVm.AxisStateCollection)
-                                    {
-                                        if (state.Unit.Category == EnumUnitCategory.Length)
-                                            row[++i] = UnitHelper.ConvertUnit(state.Unit, new Millimeter(), state.CurAbsPos);
-                                        else
-                                            row[++i] = UnitHelper.ConvertUnit(state.Unit, new Degree(), state.CurAbsPos);
+                                    if (state.Unit.Category == EnumUnitCategory.Length)
+                                        row[++i] = UnitHelper.ConvertUnit(state.Unit, new Millimeter(), state.CurAbsPos);
+                                    else
+                                        row[++i] = UnitHelper.ConvertUnit(state.Unit, new Degree(), state.CurAbsPos);
 
-                                    }
                                 }
                             }
-                            UC_MessageBox.ShowMsgBox($"更新点{PointName}成功", "提示", MsgType.Info);
+                        }
+                        UC_MessageBox.ShowMsgBox($"更新点{PointName}成功", "提示", MsgType.Info);
+
+
                         }
                         else
                         {
