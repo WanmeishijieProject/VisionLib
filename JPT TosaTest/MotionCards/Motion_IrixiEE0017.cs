@@ -11,7 +11,7 @@ using AxisParaLib;
 using M12;
 using M12.Definitions;
 using M12.Base;
-
+using M12.Commands.Alignment;
 
 namespace JPT_TosaTest.MotionCards
 {
@@ -79,7 +79,7 @@ namespace JPT_TosaTest.MotionCards
                 ComportCfg portCfg = communicationPortCfg as ComportCfg;
                 comport = CommunicationMgr.Instance.FindPortByPortName(motionCfg.PortName) as Comport;
                 _controller = M12Wrapper.CreateInstance(portCfg.Port, portCfg.BaudRate);
-                _controller.OnAxisStateChanged += OnIrixiAxisStateChanged;
+                _controller.OnUnitStateUpdated += OnIrixiAxisStateChanged;
                 _controller.Open();
 
                 return true;
@@ -228,7 +228,7 @@ namespace JPT_TosaTest.MotionCards
                     int StepsInt = TargetPos - CurPos;
                     try
                     {
-                        _controller.Move((M12.Definitions.UnitID)(axisIndex), StepsInt, (byte)Speed, CancellationToken.None);
+                        _controller.Move((M12.Definitions.UnitID)(axisIndex), StepsInt, (byte)Speed);
                     }
                     catch
                     {
@@ -265,7 +265,7 @@ namespace JPT_TosaTest.MotionCards
                     UInt16 IntervalPause = (UInt16)(Interval * AxisArgsList[AxisNo].GainFactor);
                     try
                     {
-                        _controller.MoveTriggerADC((M12.Definitions.UnitID)(axisIndex), StepsInt, (byte)Speed, IntervalPause, CancellationToken.None);
+                        _controller.MoveTriggerADC((M12.Definitions.UnitID)(axisIndex), StepsInt, (byte)Speed, IntervalPause);
                     }
                     catch
                     {
@@ -306,7 +306,7 @@ namespace JPT_TosaTest.MotionCards
                     byte SpeedInt = (byte)Speed;
                     try
                     {
-                        _controller.Move((M12.Definitions.UnitID)axisIndex, StepsInt, SpeedInt, CancellationToken.None);
+                        _controller.Move((M12.Definitions.UnitID)axisIndex, StepsInt, SpeedInt);
                     }
                     catch
                     {
@@ -345,7 +345,7 @@ namespace JPT_TosaTest.MotionCards
                 UInt16 IntervalUInt = (UInt16)(Interval * AxisArgsList[AxisNo].GainFactor);
                 try
                 {
-                    _controller.MoveTriggerADC((M12.Definitions.UnitID)axisIndex, StepsInt, SpeedInt, IntervalUInt, CancellationToken.None);
+                    _controller.MoveTriggerADC((M12.Definitions.UnitID)axisIndex, StepsInt, SpeedInt, IntervalUInt);
                 }
                 catch
                 {
@@ -452,7 +452,24 @@ namespace JPT_TosaTest.MotionCards
             byte SpeedPause = (byte)Speed;
             UInt16 IntervalPause = (UInt16)(AxisArgsList[XAxisNo].GainFactor * Interval);
 
-            _controller.StartBlindSearch(XAxis, YAxis, RangePause, GapPause, IntervalPause, SpeedPause, AdcUsed, out ScanResults);
+            var HArgs = new BlindSearchArgs() {
+                 Interval= IntervalPause,
+                 Speed=SpeedPause,
+                 Gap=GapPause,
+                 Unit= XAxis,
+                 Range=RangePause
+            };
+
+            var VArgs = new BlindSearchArgs()
+            {
+                Interval = IntervalPause,
+                Speed = SpeedPause,
+                Gap = GapPause,
+                Unit = YAxis,
+                Range = RangePause
+            };
+
+            _controller.StartBlindSearch(HArgs, VArgs, AdcUsed, out ScanResults);
             return true;
         }
 

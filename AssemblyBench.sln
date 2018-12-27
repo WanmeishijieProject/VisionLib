@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyBenchTests", "Assem
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AxisParaLib", "AxisParaLib\AxisParaLib.csproj", "{550D7643-117D-4B91-8DA7-56A138558EDB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "M12", "..\..\M12Lib\M12\M12.csproj", "{0D53D43A-73DE-4AB8-9549-E9C06675928F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "M12", "..\..\irixi-m12-library-develop\M12\M12.csproj", "{0D53D43A-73DE-4AB8-9549-E9C06675928F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

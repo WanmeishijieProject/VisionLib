@@ -540,7 +540,7 @@
     <Resource Include="Images\Monitor.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\M12Lib\M12\M12.csproj">
+    <ProjectReference Include="..\..\..\irixi-m12-library-develop\M12\M12.csproj">
       <Project>{0d53d43a-73de-4ab8-9549-e9c06675928f}</Project>
       <Name>M12</Name>
     </ProjectReference>
