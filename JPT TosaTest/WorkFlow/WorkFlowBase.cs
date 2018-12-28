@@ -43,7 +43,7 @@ namespace JPT_TosaTest.WorkFlow
         public event StationInfoHandler OnStationInfoChanged;
         protected WorkFlowConfig cfg = null;
         protected CancellationTokenSource cts =new CancellationTokenSource();
-        protected Stack<object> nStepStack=new Stack<object>();
+        protected Queue<object> nStepQueue=new Queue<object>();
         protected Task t = null;
         protected int nSubStep = 0;
         protected object Step { get; set; }
@@ -54,8 +54,8 @@ namespace JPT_TosaTest.WorkFlow
             {
                 lock (_lock)
                 {
-                    if(nStepStack.Count>0)
-                        return nStepStack.Peek();
+                    if(nStepQueue.Count>0)
+                        return nStepQueue.Peek();
                     return null;
                 }
             }
@@ -68,7 +68,7 @@ namespace JPT_TosaTest.WorkFlow
         protected void PushStep(object Step, CmdArgsBase para=null) {
             lock (_lock)
             {
-                nStepStack.Push(Step);
+                nStepQueue.Enqueue(Step);
                 CmdPara = para;
             }
         }
@@ -76,34 +76,34 @@ namespace JPT_TosaTest.WorkFlow
         {
             lock (_lock)
             {
-                nStepStack.Pop();
-                nStepStack.Push(Step);
+                nStepQueue.Dequeue();
+                nStepQueue.Enqueue(Step);
             }
         }
         protected void PushBatchStep(object[] nSteps)
         {
             foreach (var step in nSteps)
-                nStepStack.Push(step);
+                nStepQueue.Enqueue(step);
         }
         protected void PopStep()
         {
             lock (_lock)
             {
-                nStepStack.Pop();
+                nStepQueue.Dequeue();
             }
         }
         public void ClearAllStep()
         {
             lock (_lock)
             {
-                nStepStack.Clear();
+                nStepQueue.Clear();
             }
         }
         protected int GetCurStepCount()
         {
             lock (_lock)
             {
-                return nStepStack.Count;
+                return nStepQueue.Count;
             }
         }
         public virtual bool UserInit() { return true; }

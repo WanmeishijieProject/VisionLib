@@ -1,4 +1,5 @@
 ﻿using JPT_TosaTest.Config.ProcessParaManager;
+using M12.Definitions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,14 +8,9 @@ using System.Threading.Tasks;
 
 namespace JPT_TosaTest.WorkFlow.CmdArgs
 {
-    public enum EnumPreAlignPolarity
-    {
-        LEFT,
-        RIGHT,
-    }
+    
     public class CmdPreAlignmentArgs : CmdArgsBase
     {
-        public EnumPreAlignPolarity PreAlignPolarity { get; set; }
-        public BlindSearchArgsF BlindSearchArgs { get; set; }
+        public int AxisNoBaseZero { get; set; }
     }
 }

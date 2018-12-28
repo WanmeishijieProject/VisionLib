@@ -22,26 +22,10 @@ namespace JPT_TosaTest.WorkFlow
             DO_NOTHING,
             EXIT,
         }
-        private Motion_IrixiEE0017 motion = null;
-        private IO_IrixiEE0017 io = null;
         private const int CAM_TOP = 0, CAM_BACK = 1;
         public override bool UserInit()
         {
-            try
-            {
-                motion = MotionMgr.Instance.FindMotionCardByAxisIndex(1) as Motion_IrixiEE0017;
-                io = IOCardMgr.Instance.FindIOCardByCardName("IO_IrixiEE0017[0]") as IO_IrixiEE0017;
-                bool bRet= motion!=null && io!=null;
-                if (!bRet)
-                    ShowInfo($"初始化失败");
-                return true;
-
-            }
-            catch(Exception ex)
-            {
-                ShowError(ex.Message);
-                return false;
-            }
+            return true;
         }
         public WF_Camera(WorkFlowConfig cfg) : base(cfg)
         {

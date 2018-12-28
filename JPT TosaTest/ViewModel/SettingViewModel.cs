@@ -61,7 +61,7 @@ namespace JPT_TosaTest.ViewModel
                 }
                 else
                 {
-                    HotKeyCollect.Add(new HotKeyModel());
+                    HotKeyCollect.Add(new HotKeyModel());            
                 }
             }
 

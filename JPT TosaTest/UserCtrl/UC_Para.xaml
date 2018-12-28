@@ -30,7 +30,8 @@
                             <RowDefinition/>
                             <RowDefinition/>
                         </Grid.RowDefinitions>
-                        <ListBox Name="ArgsListBox" ItemsSource="{Binding AlignArgsBaseFCollect}" Grid.RowSpan="2">
+                        <ListBox Name="ArgsListBox" ItemsSource="{Binding AlignArgsBaseFCollect}" Grid.RowSpan="2" BorderThickness="1"
+                                 Margin="5,0,5,0" BorderBrush="{StaticResource ThemColor}" FontSize="15">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <Grid>

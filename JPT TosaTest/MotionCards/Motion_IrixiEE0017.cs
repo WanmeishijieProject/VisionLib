@@ -12,6 +12,8 @@ using M12;
 using M12.Definitions;
 using M12.Base;
 using M12.Commands.Alignment;
+using JPT_TosaTest.Config.ProcessParaManager;
+
 
 namespace JPT_TosaTest.MotionCards
 {
@@ -436,37 +438,31 @@ namespace JPT_TosaTest.MotionCards
             return AxisNo >= 0 && AxisNo <= MAX_AXIS - MIN_AXIS;
         }
 
-        public bool DoBlindSearch(UnitID XAxis, UnitID YAxis, double Range, double Gap, double Speed, double Interval, ADCChannels AdcUsed, out List<Point3D> ScanResults)
+        public bool DoBlindSearch(BlindSearchArgsF HArgsF, BlindSearchArgsF VArgsF, ADCChannels AdcUsed, out List<Point3D> ScanResults)
         {
             ScanResults = new List<Point3D>();
-            int XAxisNo = (int)XAxis - 1;
-            int YAxisNo = (int)YAxis - 1;
+            int XAxisNo = HArgsF.AxisNoBaseZero;
+            int YAxisNo = VArgsF.AxisNoBaseZero;
             if (XAxisNo > MAX_AXIS - MIN_AXIS || XAxisNo < 0 || YAxisNo > MAX_AXIS - MIN_AXIS || YAxisNo < 0)
             {
                 return false;
             }
-            int XaxisIndex = XAxisNo + 1;
-            int YaxisIndex = YAxisNo + 1;
-            UInt16 RangePause = (UInt16)(AxisArgsList[XAxisNo].GainFactor*Range);
-            UInt16 GapPause = (UInt16)(AxisArgsList[XAxisNo].GainFactor * Gap);
-            byte SpeedPause = (byte)Speed;
-            UInt16 IntervalPause = (UInt16)(AxisArgsList[XAxisNo].GainFactor * Interval);
 
             var HArgs = new BlindSearchArgs() {
-                 Interval= IntervalPause,
-                 Speed=SpeedPause,
-                 Gap=GapPause,
-                 Unit= XAxis,
-                 Range=RangePause
+                 Interval= (ushort)(HArgsF.Interval*AxisArgsList[XAxisNo].GainFactor),
+                 Speed= HArgsF.Speed,
+                 Gap = (ushort)(HArgsF.Gap * AxisArgsList[XAxisNo].GainFactor),
+                 Unit= HArgsF.AxisNoBaseZero+UnitID.U1,
+                 Range= (uint)(HArgsF.Range * AxisArgsList[XAxisNo].GainFactor),
             };
 
             var VArgs = new BlindSearchArgs()
             {
-                Interval = IntervalPause,
-                Speed = SpeedPause,
-                Gap = GapPause,
-                Unit = YAxis,
-                Range = RangePause
+                Interval = (ushort)(VArgsF.Interval * AxisArgsList[YAxisNo].GainFactor),
+                Speed = VArgsF.Speed,
+                Gap = (ushort)(VArgsF.Gap * AxisArgsList[YAxisNo].GainFactor),
+                Unit = VArgsF.AxisNoBaseZero + UnitID.U1,
+                Range = (uint)(VArgsF.Range * AxisArgsList[YAxisNo].GainFactor),
             };
 
             _controller.StartBlindSearch(HArgs, VArgs, AdcUsed, out ScanResults);

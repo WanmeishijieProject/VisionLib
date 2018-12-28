@@ -21,6 +21,7 @@ using GalaSoft.MvvmLight.Ioc;
 using JPT_TosaTest.WorkFlow;
 using static JPT_TosaTest.WorkFlow.WF_Aligner;
 using JPT_TosaTest.WorkFlow.CmdArgs;
+using JPT_TosaTest.Config.ProcessParaManager;
 
 namespace JPT_TosaTest.ViewModel
 {
@@ -596,17 +597,32 @@ namespace JPT_TosaTest.ViewModel
         /// <summary>
         /// 开始耦合
         /// </summary>
-        public RelayCommand CommandStartAlign   //Support Bottom
+        public RelayCommand CommandStartAlign   //开始耦合
         {
             get
             {
                 return new RelayCommand(() => {
                     Enum.TryParse(CurAlignerTypeString, out EnumAlignerType type);
                     var station=WorkFlow.WorkFlowMgr.Instance.FindStationByName("WF_Aligner") as WF_Aligner;
-                    station.SetCmd(STEP.DoAlign, new CmdPreAlignmentArgs() {
-                        CmdName=STEP.DoAlign.ToString(),
-                        PreAlignPolarity=EnumPreAlignPolarity.LEFT,
-                        //BlindSearchArgs=Config.ConfigMgr.Instance.ProcessData.blindSearchArgsF,
+                    //预对位
+                    station.SetCmd(STEP.MoveToPreAlignPos, new CmdPreAlignmentArgs() {
+                         AxisNoBaseZero=3,
+                    });
+
+                    station.SetCmd(STEP.MoveToPreAlignPos, new CmdPreAlignmentArgs()
+                    {
+                        AxisNoBaseZero = 3,
+                    });
+                    station.SetCmd(STEP.MoveToPreAlignPos, new CmdPreAlignmentArgs()
+                    {
+                        AxisNoBaseZero = 3,
+                    });
+                    //耦合
+                    Config.ConfigMgr.Instance.ProcessDataMgr.GetBlindSearchArgs(out BlindSearchArgsF HArg, out BlindSearchArgsF VArg);
+                    station.SetCmd(STEP.DoBlindSearchAlign,new CmdAlignArgs() {
+                         CmdName= STEP.DoBlindSearchAlign.ToString(),
+                          HArgs=HArg,
+                          VArgs=VArg,
                     });
                 });
             }
@@ -615,7 +631,7 @@ namespace JPT_TosaTest.ViewModel
         /// <summary>
         /// 停止耦合
         /// </summary>
-        public RelayCommand CommandStopAlign   //Support Bottom
+        public RelayCommand CommandStopAlign  //停止耦合
         {
             get
             {

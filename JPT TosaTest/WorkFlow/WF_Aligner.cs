@@ -13,6 +13,9 @@ using JPT_TosaTest.Model;
 using M12.Definitions;
 using M12.Base;
 using M12.Commands.Alignment;
+using JPT_TosaTest.WorkFlow.CmdArgs;
+using JPT_TosaTest.Config.ProcessParaManager;
+using JPT_TosaTest.Classes.WatchDog;
 
 namespace JPT_TosaTest.WorkFlow
 {
@@ -22,7 +25,8 @@ namespace JPT_TosaTest.WorkFlow
         {
             Init,
             HomeAll,
-            DoAlign,
+            MoveToPreAlignPos,
+            DoBlindSearchAlign,
 
             DO_NOTHING,
             EXIT,
@@ -35,12 +39,17 @@ namespace JPT_TosaTest.WorkFlow
 
         public override bool UserInit()
         {
+#if FAKEMOTION
+            return true;
+#else
             motion = MotionMgr.Instance.FindMotionCardByAxisIndex(1) as Motion_IrixiEE0017;
             io = IOCardMgr.Instance.FindIOCardByCardName("IO_IrixiEE0017[0]") as IO_IrixiEE0017;
             bool bRet = motion != null && io != null;
             if (!bRet)
                 ShowInfo($"初始化失败");
             return bRet;
+#endif
+
         }
         public WF_Aligner(WorkFlowConfig cfg) : base(cfg)
         {
@@ -54,28 +63,37 @@ namespace JPT_TosaTest.WorkFlow
                 PushStep(STEP.Init);
                 while (!cts.IsCancellationRequested)
                 {
-                    Thread.Sleep(10);
-                    if (bPause)
-                        continue;
                     Step = PeekStep();
+                    Thread.Sleep(10);
+                    if (bPause || Step==null)
+                        continue;
                     
                     switch (Step)
                     {
-                        case STEP.Init:
-                            HomeAll();
-                            MoveToInitPos();
+                        case STEP.Init: //初始化
+                            //HomeAll();
+                            //MoveToInitPos();
                             PopStep();
                             break;
 
-                        case STEP.HomeAll:
+                        case STEP.HomeAll:  //回原点
                             HomeAll();
                             PopStep();
                             break;
-                        case STEP.DoAlign:
-                            DoAlignment();
-                            PopStep();
+                        case STEP.DoBlindSearchAlign:   //耦合
+                            {
+                                var para = CmdPara as CmdAlignArgs;
+                                DoBlindSearchAlignment(para.HArgs, para.VArgs);
+                                PopStep();
+                            }
                             break;
-
+                        case STEP.MoveToPreAlignPos:    //预对位
+                            {
+                                var para = CmdPara as CmdPreAlignmentArgs;
+                                MoveToProAlignPosition(para.AxisNoBaseZero);
+                                PopStep();
+                            }
+                            break;
                         case STEP.EXIT:
                             return 0;
                         default:
@@ -92,7 +110,7 @@ namespace JPT_TosaTest.WorkFlow
             }
         }
 
-        #region Private Method
+#region Private Method
         /// <summary>
         /// 回原点
         /// </summary>
@@ -145,10 +163,11 @@ namespace JPT_TosaTest.WorkFlow
         /// </summary>
         private void MoveToInitPos()
         {
-           
+            var dog = new Dog(10000);
             nSubStep = 1;
             while (!cts.IsCancellationRequested)
             {
+                dog.CheckTimeOut("移动到初始位置超时");
                 switch (nSubStep)
                 {
                     case 1:
@@ -162,15 +181,55 @@ namespace JPT_TosaTest.WorkFlow
         /// <summary>
         /// 耦合
         /// </summary>
-        private void DoAlignment()
+        private void DoBlindSearchAlignment(BlindSearchArgsF HArgsF, BlindSearchArgsF VArgsF)
         {
+
             ShowInfo("开始耦合......");
-            motion.DoBlindSearch(UnitID.U1, UnitID.U2, 0.9, 0.01, 5, 0.001, ADCChannels.CH2, out List<Point3D> Value);
+            motion.DoBlindSearch(HArgsF,VArgsF, ADCChannels.CH2, out List<Point3D> Value);
             ShowInfo("耦合完成......");
         }
 
-       
-        #endregion
+        /// <summary>
+        /// 接触传感器预对位
+        /// </summary>
+        /// <param name="HAxis"></param>
+        private void MoveToProAlignPosition(int HAxisNo)
+        {
+            var dog = new Dog(5000);
+            nSubStep = 1;
+            motion.SetCssThreshold(CSSCH.CH1, 500, 1000);
+            motion.SetCssEnable(CSSCH.CH1, true);
+            while (!cts.IsCancellationRequested)
+            {
+                dog.CheckTimeOut("预对位超时");
+                switch (nSubStep)
+                {
+                    case 1:
+                        motion.MoveRel(HAxisNo, 500, 5, 99999);
+                        nSubStep = 2;
+                        break;
+                    case 2:
+                        if (motion.IsNormalStop(HAxisNo))
+                        {
+                            nSubStep = 3;
+                        }
+                        break;
+                    case 3:
+                        motion.MoveRel(HAxisNo, 500, 5, -0.01);
+                        nSubStep = 4;
+                        break;
+                    case 4:
+                        if (motion.IsNormalStop(HAxisNo))
+                        {
+                            return;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }          
+        }
+#endregion
 
     }
 }

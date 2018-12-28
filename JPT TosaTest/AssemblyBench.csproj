@@ -25,7 +25,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS, TEST</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;TEST;FAKEMOTION</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>true</RunCodeAnalysis>
@@ -149,6 +149,7 @@
     <Compile Include="Classes\ObservableCollectionThreadSafe.cs" />
     <Compile Include="Classes\PasswordBoxBehavior.cs" />
     <Compile Include="Classes\PSSWraper.cs" />
+    <Compile Include="Classes\WatchDog\Dog.cs" />
     <Compile Include="Communication\CommunicationMgr.cs" />
     <Compile Include="Communication\Comport.cs" />
     <Compile Include="Communication\CommunicationPortBase.cs" />
@@ -313,6 +314,7 @@
     <Compile Include="Vision\ProcessStep\StepFindModel.cs" />
     <Compile Include="Vision\VisionDataOperateSet.cs" />
     <Compile Include="Vision\ProcessStep\VisionProcessStepBase.cs" />
+    <Compile Include="WorkFlow\CmdArgs\CmdAlignArgs.cs" />
     <Compile Include="WorkFlow\CmdArgs\CmdArgsBase.cs" />
     <Compile Include="WorkFlow\CmdArgs\CmdPreAlignmentArgs.cs" />
     <Compile Include="WorkFlow\WorkFlowData.cs" />
