@@ -7,19 +7,20 @@ using System.Threading.Tasks;
 using GalaSoft.MvvmLight.Messaging;
 using JPT_TosaTest.Config.SoftwareManager;
 using JPT_TosaTest.Config.SystemCfgManager;
+using JPT_TosaTest.WorkFlow.CmdArgs;
 
 namespace JPT_TosaTest.WorkFlow
 {
-    public enum STEP : int
-    {
-        Init,
-        CmdGetProductPLC,
-        CmdGetProductSupport,
-        CmdFindLine,
-        DO_NOTHING,
-        EMG,
-        EXIT,
-    }
+    //public enum STEP : int
+    //{
+    //    Init,
+    //    CmdGetProductPLC,
+    //    CmdGetProductSupport,
+    //    CmdFindLine,
+    //    DO_NOTHING,
+    //    EMG,
+    //    EXIT,
+    //}
     public enum EnumProductType
     {
         SUPPORT,
@@ -38,7 +39,7 @@ namespace JPT_TosaTest.WorkFlow
         public string StationName;
         public int StationIndex;
         protected bool bPause = false;
-        protected object CmdPara = null;
+        protected CmdArgsBase CmdPara = null;
         public event StationInfoHandler OnStationInfoChanged;
         protected WorkFlowConfig cfg = null;
         protected CancellationTokenSource cts =new CancellationTokenSource();
@@ -64,12 +65,11 @@ namespace JPT_TosaTest.WorkFlow
             }
 
         }
-        protected void PushStep(object Step, object para=null) {
+        protected void PushStep(object Step, CmdArgsBase para=null) {
             lock (_lock)
             {
                 nStepStack.Push(Step);
-                if(para!=null)
-                    CmdPara = para;
+                CmdPara = para;
             }
         }
         protected void PopAndPushStep(object Step)
@@ -106,7 +106,7 @@ namespace JPT_TosaTest.WorkFlow
                 return nStepStack.Count;
             }
         }
-        protected virtual bool UserInit() { return true; }
+        public virtual bool UserInit() { return true; }
         public WorkFlowBase(WorkFlowConfig cfg) { this.cfg = cfg; }
         public void ShowInfo(string strInfo=null)    //int msg, int iPara, object lParam
         {
@@ -118,11 +118,7 @@ namespace JPT_TosaTest.WorkFlow
         public bool Start()
         {
             bPause = false;
-            if (!UserInit())
-            {
-                return false;
-            }
-            else if (t==null || t.Status == TaskStatus.Canceled || t.Status == TaskStatus.RanToCompletion)
+            if (t==null || t.Status == TaskStatus.Canceled || t.Status == TaskStatus.RanToCompletion)
             {
                 cts = new CancellationTokenSource();
                 t = new Task(() => ThreadFunc(this), cts.Token);
@@ -154,10 +150,11 @@ namespace JPT_TosaTest.WorkFlow
             Messenger.Default.Send<string>(ErrorMsg, "Error");
         }
 
-        public void SetCmd(object step,object para=null)
+        public void SetCmd(object step,CmdArgsBase para=null)
         {
             PushStep(step,para);
         }
+
         public object GetCurCmd()
         {
             return PeekStep();

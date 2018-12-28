@@ -12,6 +12,7 @@ using JPT_TosaTest.IOCards;
 using JPT_TosaTest.Model;
 using M12.Definitions;
 using M12.Base;
+using M12.Commands.Alignment;
 
 namespace JPT_TosaTest.WorkFlow
 {
@@ -32,7 +33,7 @@ namespace JPT_TosaTest.WorkFlow
         private IO_IrixiEE0017 io = null;
         private const int AXIS_X = 0, AXIS_Y = 1, AXIS_Z = 2, AXIS_R = 3, AXIS_CX = 4;
 
-        protected override bool UserInit()
+        public override bool UserInit()
         {
             motion = MotionMgr.Instance.FindMotionCardByAxisIndex(1) as Motion_IrixiEE0017;
             io = IOCardMgr.Instance.FindIOCardByCardName("IO_IrixiEE0017[0]") as IO_IrixiEE0017;
@@ -92,6 +93,9 @@ namespace JPT_TosaTest.WorkFlow
         }
 
         #region Private Method
+        /// <summary>
+        /// 回原点
+        /// </summary>
         private void HomeAll()
         {
             
@@ -102,14 +106,14 @@ namespace JPT_TosaTest.WorkFlow
                 {
                     case 1:
                         ShowInfo("Z轴回原点");
-                        motion.Home(AXIS_Z, 0, 500, 1, 2);
+                        motion.Home(AXIS_Z, 0, 500, 2, 5);
                         nSubStep = 2;
                         break;
                     case 2:
                         if (motion.IsHomeStop(AXIS_Z))
                         {
                             ShowInfo("Y轴回原点");
-                            motion.Home(AXIS_Y, 0, 500, 1, 2);
+                            motion.Home(AXIS_Y, 0, 500, 2, 5);
                             nSubStep = 3;
                         }
                         break;
@@ -117,9 +121,9 @@ namespace JPT_TosaTest.WorkFlow
                         if (motion.IsHomeStop(AXIS_Y))
                         {
                             ShowInfo("X,R,CX轴回原点");
-                            motion.Home(AXIS_X,0,500,1,2);
-                            motion.Home(AXIS_R, 0, 500, 5, 10);
-                            motion.Home(AXIS_CX, 0, 500, 20, 50);
+                            motion.Home(AXIS_X,0,500,2,5);
+                            motion.Home(AXIS_R, 0, 500, 2, 5);
+                            motion.Home(AXIS_CX, 0, 500, 10, 30);
                             nSubStep = 4;
                         }
                         break;
@@ -135,25 +139,37 @@ namespace JPT_TosaTest.WorkFlow
                 }
             }
         }
+
+        /// <summary>
+        /// 移动到初始位置
+        /// </summary>
         private void MoveToInitPos()
         {
+           
             nSubStep = 1;
             while (!cts.IsCancellationRequested)
             {
                 switch (nSubStep)
                 {
                     case 1:
-                        break;
+                        return;
                     case 2:
                         break;
                 }
             }
         }
+
+        /// <summary>
+        /// 耦合
+        /// </summary>
         private void DoAlignment()
         {
-            motion.DoBlindSearch(UnitID.U1, UnitID.U2, 0.1, 0.01, 5, 10001, ADCChannels.CH2, out List<Point3D> Value);
-
+            ShowInfo("开始耦合......");
+            motion.DoBlindSearch(UnitID.U1, UnitID.U2, 0.9, 0.01, 5, 0.001, ADCChannels.CH2, out List<Point3D> Value);
+            ShowInfo("耦合完成......");
         }
+
+       
         #endregion
 
     }

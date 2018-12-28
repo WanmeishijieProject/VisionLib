@@ -3,6 +3,7 @@ using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
 using JPT_TosaTest.Classes;
 using JPT_TosaTest.Config;
+using JPT_TosaTest.Config.ProcessParaManager;
 using JPT_TosaTest.Model;
 using JPT_TosaTest.MotionCards;
 using JPT_TosaTest.UserCtrl;
@@ -28,9 +29,6 @@ namespace JPT_TosaTest.ViewModel
 
         private Dictionary<string, Tuple<HotKey, HotKey>> HotKeyDic = new Dictionary<string, Tuple<HotKey, HotKey>>();
         private string ProcessDataFilePath = FileHelper.GetCurFilePathString() + "Config\\";
-       
-
-
         public SettingViewModel()
         {
             HotKeyCollect = new ObservableCollection<HotKeyModel>();
@@ -75,89 +73,23 @@ namespace JPT_TosaTest.ViewModel
 
             //初始化Model
             Messenger.Default.Send("", "UpdateModelFiles");
-            TiaColletion = new ObservableCollection<string>();
-            for (int i = 0; i < 20; i++)
-                TiaColletion.Add($"Tia_{i}");
+
+            //更新耦合参数列表
+            AlignArgsBaseFCollect = new ObservableCollection<AlignArgsBaseF>();
+            foreach (var it in ConfigMgr.Instance.ProcessDataMgr.BlindSearArgs)
+                AlignArgsBaseFCollect.Add(it);
         }
         
         #region Property
         public ObservableCollection<HotKeyModel> HotKeyCollect { get; set; }
         public IEnumerable<Swatch> Swatches { get; }
-        public int CenterLineOffset
+
+        public BlindSearchArgsF AligmentArgsF
         {
-            get { return ConfigMgr.Instance.ProcessData.CenterLineOffset; }
-            set
-            {
-                if (value != ConfigMgr.Instance.ProcessData.CenterLineOffset)
-                {
-                    ConfigMgr.Instance.ProcessData.CenterLineOffset = value;
-                    RaisePropertyChanged();
-                }
-            }
-        }
-        public int PadOffset
-        {
-            get { return ConfigMgr.Instance.ProcessData.PadOffset; }
-            set
-            {
-                if (value != ConfigMgr.Instance.ProcessData.PadOffset)
-                {
-                    ConfigMgr.Instance.ProcessData.PadOffset = value;
-                    RaisePropertyChanged();
-                }
-            }
-        }
-        public string TiaModelName
-        {
-            get { return ConfigMgr.Instance.ProcessData.TiaModelName; }
-            set
-            {
-                if (value != ConfigMgr.Instance.ProcessData.TiaModelName)
-                {
-                    ConfigMgr.Instance.ProcessData.TiaModelName = value;
-                    RaisePropertyChanged();
-                }
-            }
-        }
-        public string HsgModelName
-        {
-            get { return ConfigMgr.Instance.ProcessData.HsgModelName; }
-            set
-            {
-                if (value != ConfigMgr.Instance.ProcessData.HsgModelName)
-                {
-                    ConfigMgr.Instance.ProcessData.HsgModelName = value;
-                    RaisePropertyChanged();
-                }
-            }
-        }
-        public string TiaName
-        {
-            get { return ConfigMgr.Instance.ProcessData.TiaType; }
-            set
-            {
-                if (value != ConfigMgr.Instance.ProcessData.TiaType)
-                {
-                    ConfigMgr.Instance.ProcessData.TiaType = value;
-                    RaisePropertyChanged();
-                }
-            }
-        }
-        public double Pressure
-        {
-            get { return ConfigMgr.Instance.ProcessData.Presure; }
-            set
-            {
-                if (value != ConfigMgr.Instance.ProcessData.Presure)
-                {
-                    ConfigMgr.Instance.ProcessData.Presure = value;
-                    RaisePropertyChanged();
-                }
-            }
+            get;set;
         }
 
-
-        public ObservableCollection<string> TiaColletion { get; set; }
+        public ObservableCollection<AlignArgsBaseF> AlignArgsBaseFCollect { get; set; }
         #endregion
 
 
@@ -187,22 +119,6 @@ namespace JPT_TosaTest.ViewModel
                     RegisterHotKey(tuple.Item2, tuple.Item1);
                 });
             }
-        }
-
-        /// <summary>
-        /// 将压力传感器里面的值读取出来写入
-        /// </summary>
-        public RelayCommand CalibPressure
-        {
-            get { return new RelayCommand(()=> {
-                Motion_IrixiEE0017 MotionCard = MotionMgr.Instance.FindMotionCardByCardName("Motion_IrixiEE0017[0]") as Motion_IrixiEE0017;
-                MotionCard.ReadAD(ADCChannels.CH1, out double[] values);
-                if (values != null && values.Length > 0)
-                {
-                    //MotionCard.SetCssThreshold(CSSCH.CH1, (ushort)values[0], (ushort)values[0]);
-                    Pressure = values[0];
-                }
-            }); }
         }
         #endregion
 

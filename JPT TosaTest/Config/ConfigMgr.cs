@@ -18,6 +18,7 @@ using System.Reflection;
 using System.Text;
 using System.IO.Ports;
 using JPT_TosaTest.Communication;
+using JPT_TosaTest.Config.ProcessParaManager;
 
 namespace JPT_TosaTest.Config
 {
@@ -44,14 +45,14 @@ namespace JPT_TosaTest.Config
         private readonly string File_SoftwareCfg = FileHelper.GetCurFilePathString() + "Config\\SoftwareCfg.json";
         private readonly string File_SystemParaCfg = FileHelper.GetCurFilePathString() + "Config\\SystemParaCfg.json";
         private readonly string File_UserCfg = FileHelper.GetCurFilePathString() + "User.json";
-        private readonly string File_ProcessPara = FileHelper.GetCurFilePathString() + "Config\\ProcessPara.para";
+        private readonly string File_ProcessPara = FileHelper.GetCurFilePathString() + "Config\\ProcessPara.json";
 
 
         public  HardwareCfgManager HardwareCfgMgr = null;
         public  SoftwareCfgManager SoftwareCfgMgr = null;
         public  SystemParaCfgManager SystemParaCfgMgr =null;
         public UserCfgManager UserCfgMgr = null;
-        public ProcessParaManager.ProcessPara ProcessData = new ProcessParaManager.ProcessPara();
+        public ProcessParaMgr ProcessDataMgr = new ProcessParaManager.ProcessParaMgr();
 
 
         //public static 
@@ -351,8 +352,15 @@ namespace JPT_TosaTest.Config
 
             #region >>>>ProcessPara
             //从文件中读取参数
-            string strPara = File.ReadAllText(File_ProcessPara);
-            ProcessData.FromString(strPara);
+            try
+            {
+                var json_string = File.ReadAllText(File_ProcessPara);
+                ProcessDataMgr = JsonConvert.DeserializeObject<ProcessParaMgr>(json_string);
+            }
+            catch (Exception ex)
+            {
+                errList.Add(String.Format("Unable to load config file {0}, {1}", File_UserCfg, ex.Message));
+            }
             #endregion
         }
         public void SaveConfig(EnumConfigType cfgType, object[] listObj)
@@ -383,7 +391,7 @@ namespace JPT_TosaTest.Config
                     (objSaved as UserCfgManager).Users= listObj as UserModel[];
                     break;
                 case EnumConfigType.ProcessPara:
-                    File.WriteAllText(File_ProcessPara, ProcessData.ToString());
+                    //File.WriteAllText(File_ProcessPara, ProcessData.ToString());
                     return;
                 default:
                     break;

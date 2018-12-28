@@ -12,7 +12,7 @@ namespace JPT_TosaTest.WorkFlow
 {
     public class WorkTemplate2 : WorkFlowBase
     {
-        protected override bool UserInit()
+        public override bool UserInit()
         {
             return true;
         }

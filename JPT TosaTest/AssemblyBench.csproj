@@ -164,7 +164,9 @@
     <Compile Include="Config\HardwareManager\CameraCfg.cs" />
     <Compile Include="Config\HardwareManager\MotionCardCfg.cs" />
     <Compile Include="Config\HardwareManager\HardwareCfgManager.cs" />
-    <Compile Include="Config\ProcessParaManager\ProcessPara.cs" />
+    <Compile Include="Config\ProcessParaManager\AlignArgsBaseF.cs" />
+    <Compile Include="Config\ProcessParaManager\BlindSearchArgsF.cs" />
+    <Compile Include="Config\ProcessParaManager\ProcessParaMgr.cs" />
     <Compile Include="Config\SoftwareManager\HotKeyCfg.cs" />
     <Compile Include="Config\SoftwareManager\IoNameCfg.cs" />
     <Compile Include="Config\SoftwareManager\WorkFlowConfig.cs" />
@@ -309,10 +311,10 @@
     <Compile Include="Vision\ProcessStep\StepShowFlag.cs" />
     <Compile Include="Vision\ProcessStep\StepFindeLineByModel.cs" />
     <Compile Include="Vision\ProcessStep\StepFindModel.cs" />
-    <Compile Include="Vision\ProcessStep\StepShowLineBottom.cs" />
-    <Compile Include="Vision\ProcessStep\StepShowLineTop.cs" />
     <Compile Include="Vision\VisionDataOperateSet.cs" />
     <Compile Include="Vision\ProcessStep\VisionProcessStepBase.cs" />
+    <Compile Include="WorkFlow\CmdArgs\CmdArgsBase.cs" />
+    <Compile Include="WorkFlow\CmdArgs\CmdPreAlignmentArgs.cs" />
     <Compile Include="WorkFlow\WorkFlowData.cs" />
     <Compile Include="WorkFlow\WorkTemplate2.cs" />
     <Compile Include="WorkFlow\WF_Aligner.cs" />

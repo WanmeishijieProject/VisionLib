@@ -25,7 +25,7 @@ namespace JPT_TosaTest.WorkFlow
         private Motion_IrixiEE0017 motion = null;
         private IO_IrixiEE0017 io = null;
         private const int CAM_TOP = 0, CAM_BACK = 1;
-        protected override bool UserInit()
+        public override bool UserInit()
         {
             try
             {

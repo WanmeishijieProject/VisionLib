@@ -93,8 +93,18 @@ namespace JPT_TosaTest.WorkFlow
         public bool StartAllStation()
         {
             bool bRet = true;
+
             foreach (var it in stationDic)
-                bRet &= it.Value.Start();
+            {
+                bRet &=it.Value.UserInit();
+            }
+            if (bRet)
+            {
+                foreach (var it in stationDic)
+                {
+                    bRet &= it.Value.Start();
+                }
+            }
             return bRet;
         }
         public bool PauseAllStation()

@@ -447,7 +447,7 @@ namespace JPT_TosaTest.MotionCards
             }
             int XaxisIndex = XAxisNo + 1;
             int YaxisIndex = YAxisNo + 1;
-            UInt16 RangePause = (UInt16)AxisArgsList[XAxisNo].GainFactor;
+            UInt16 RangePause = (UInt16)(AxisArgsList[XAxisNo].GainFactor*Range);
             UInt16 GapPause = (UInt16)(AxisArgsList[XAxisNo].GainFactor * Gap);
             byte SpeedPause = (byte)Speed;
             UInt16 IntervalPause = (UInt16)(AxisArgsList[XAxisNo].GainFactor * Interval);

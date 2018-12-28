@@ -18,6 +18,9 @@ using AxisParaLib.UnitManager;
 using JPT_TosaTest.Vision;
 using System.IO;
 using GalaSoft.MvvmLight.Ioc;
+using JPT_TosaTest.WorkFlow;
+using static JPT_TosaTest.WorkFlow.WF_Aligner;
+using JPT_TosaTest.WorkFlow.CmdArgs;
 
 namespace JPT_TosaTest.ViewModel
 {
@@ -599,7 +602,12 @@ namespace JPT_TosaTest.ViewModel
             {
                 return new RelayCommand(() => {
                     Enum.TryParse(CurAlignerTypeString, out EnumAlignerType type);
-                    
+                    var station=WorkFlow.WorkFlowMgr.Instance.FindStationByName("WF_Aligner") as WF_Aligner;
+                    station.SetCmd(STEP.DoAlign, new CmdPreAlignmentArgs() {
+                        CmdName=STEP.DoAlign.ToString(),
+                        PreAlignPolarity=EnumPreAlignPolarity.LEFT,
+                        //BlindSearchArgs=Config.ConfigMgr.Instance.ProcessData.blindSearchArgsF,
+                    });
                 });
             }
         }
