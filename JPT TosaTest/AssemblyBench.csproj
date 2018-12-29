@@ -25,7 +25,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;TEST;FAKEMOTION</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;CODE_ANALYSIS;TEST;_FAKEMOTION</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>true</RunCodeAnalysis>
@@ -141,6 +141,11 @@
     <Compile Include="Classes\AlimentClass\ScanCurve\ScanCurve3D.cs" />
     <Compile Include="Classes\AlimentClass\ScanCurve\ScanCurveBase.cs" />
     <Compile Include="Classes\AlimentClass\ScanCurve\ScanCurveGroup.cs" />
+    <Compile Include="Classes\AlimentResultClass\AlimentResult2D.cs" />
+    <Compile Include="Classes\AlimentResultClass\AlimentResult3D.cs" />
+    <Compile Include="Classes\AlimentResultClass\AlimentResultBase.cs" />
+    <Compile Include="Classes\AlimentResultClass\ChartTypeByResultSelector.cs" />
+    <Compile Include="Classes\AlimentResultClass\IAlimentResult.cs" />
     <Compile Include="Classes\HotKey.cs" />
     <Compile Include="Classes\NotifyPropertyChangedExtension.cs" />
     <Compile Include="Classes\FileHelper.cs" />

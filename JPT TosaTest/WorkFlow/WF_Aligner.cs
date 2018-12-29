@@ -27,6 +27,7 @@ namespace JPT_TosaTest.WorkFlow
             HomeAll,
             MoveToPreAlignPos,
             DoBlindSearchAlign,
+            DoFastAlign1D,
 
             DO_NOTHING,
             EXIT,
@@ -71,8 +72,8 @@ namespace JPT_TosaTest.WorkFlow
                     switch (Step)
                     {
                         case STEP.Init: //初始化
-                            //HomeAll();
-                            //MoveToInitPos();
+                            HomeAll();
+                            MoveToInitPos();
                             PopStep();
                             break;
 
@@ -83,10 +84,14 @@ namespace JPT_TosaTest.WorkFlow
                         case STEP.DoBlindSearchAlign:   //耦合
                             {
                                 var para = CmdPara as CmdAlignArgs;
-                                DoBlindSearchAlignment(para.HArgs, para.VArgs);
+                                DoBlindSearchAlignment(para);
                                 PopStep();
                             }
                             break;
+                        case STEP.DoFastAlign1D:
+
+                            break;
+
                         case STEP.MoveToPreAlignPos:    //预对位
                             {
                                 var para = CmdPara as CmdPreAlignmentArgs;
@@ -181,11 +186,14 @@ namespace JPT_TosaTest.WorkFlow
         /// <summary>
         /// 耦合
         /// </summary>
-        private void DoBlindSearchAlignment(BlindSearchArgsF HArgsF, BlindSearchArgsF VArgsF)
+        private void DoBlindSearchAlignment(CmdAlignArgs CmdPara)
         {
-
+            var HArgsF = CmdPara.HArgs;
+            var VArgsF = CmdPara.VArgs;
             ShowInfo("开始耦合......");
             motion.DoBlindSearch(HArgsF,VArgsF, ADCChannels.CH2, out List<Point3D> Value);
+            CmdPara.QResult=Value;
+            CmdPara.FireFinishAlimentEvent();
             ShowInfo("耦合完成......");
         }
 

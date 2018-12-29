@@ -22,6 +22,7 @@ using JPT_TosaTest.WorkFlow;
 using static JPT_TosaTest.WorkFlow.WF_Aligner;
 using JPT_TosaTest.WorkFlow.CmdArgs;
 using JPT_TosaTest.Config.ProcessParaManager;
+using JPT_TosaTest.Classes.AlimentResultClass;
 
 namespace JPT_TosaTest.ViewModel
 {
@@ -48,13 +49,13 @@ namespace JPT_TosaTest.ViewModel
         private bool _showSnakeInfoBar = false;
         private string _snakeLastError = "";
         private LogExcel PrePointSetExcel;
-        private string POINT_FILE = "Config/Point.xls";
-        private object Hom_2D=null, ModelPos=null;
+        private string POINT_FILE = "Config/Point.xls";    
         private EnumSystemState _systemState = EnumSystemState.Idle;
         private MonitorViewModel MonitorVm = null;
         private const int HOME_PAGE = 1, SETTING_PAGE = 2, INFO_PAGE=3,
-            CAMERA_PAGE = 4, MONITOR_PAGE = 5, USER_PAGE = 6;
-       
+                            CAMERA_PAGE = 4, MONITOR_PAGE = 5, USER_PAGE = 6;
+
+        private IAlimentResult _alimentResult = null;
 
         public MainViewModel(IDataService dataService)
         {
@@ -292,6 +293,18 @@ namespace JPT_TosaTest.ViewModel
         {
 
             get;set;
+        }
+
+        public IAlimentResult AlimentResult
+        {
+            get { return _alimentResult; }
+            set {
+                if (_alimentResult != value)
+                {
+                    _alimentResult = value;
+                    RaisePropertyChanged();
+                }
+            }
         }
         #endregion
 
@@ -605,27 +618,37 @@ namespace JPT_TosaTest.ViewModel
                     Enum.TryParse(CurAlignerTypeString, out EnumAlignerType type);
                     var station=WorkFlow.WorkFlowMgr.Instance.FindStationByName("WF_Aligner") as WF_Aligner;
                     //预对位
-                    station.SetCmd(STEP.MoveToPreAlignPos, new CmdPreAlignmentArgs() {
-                         AxisNoBaseZero=3,
-                    });
+                    //station.SetCmd(STEP.MoveToPreAlignPos, new CmdPreAlignmentArgs() {
+                    //     AxisNoBaseZero=3,
+                    //});
 
-                    station.SetCmd(STEP.MoveToPreAlignPos, new CmdPreAlignmentArgs()
-                    {
-                        AxisNoBaseZero = 3,
-                    });
-                    station.SetCmd(STEP.MoveToPreAlignPos, new CmdPreAlignmentArgs()
-                    {
-                        AxisNoBaseZero = 3,
-                    });
                     //耦合
                     Config.ConfigMgr.Instance.ProcessDataMgr.GetBlindSearchArgs(out BlindSearchArgsF HArg, out BlindSearchArgsF VArg);
-                    station.SetCmd(STEP.DoBlindSearchAlign,new CmdAlignArgs() {
-                         CmdName= STEP.DoBlindSearchAlign.ToString(),
-                          HArgs=HArg,
-                          VArgs=VArg,
-                    });
+                    var CmdArgs = new CmdAlignArgs()
+                    {
+                        CmdName = STEP.DoBlindSearchAlign.ToString(),
+                        HArgs = HArg,
+                        VArgs = VArg,
+                    };
+                    CmdArgs.OnAligmentFinished += CmdArgs_OnAligmentFinished;
+                    station.SetCmd(STEP.DoBlindSearchAlign,CmdArgs);
+
                 });
             }
+        }
+
+        private void CmdArgs_OnAligmentFinished(object sender, List<M12.Base.Point3D> e)
+        {
+            AlimentResult = new AlimentResult3D()
+            {
+                DisplayName = "BlindSearch结果",
+                XTitle = "X轴",
+                YTitle = "Y轴",
+                ZTitle = "强度值",
+                DataList = e,
+                Visible=true,
+            };
+
         }
 
         /// <summary>

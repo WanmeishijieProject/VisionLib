@@ -11,16 +11,6 @@ using JPT_TosaTest.WorkFlow.CmdArgs;
 
 namespace JPT_TosaTest.WorkFlow
 {
-    //public enum STEP : int
-    //{
-    //    Init,
-    //    CmdGetProductPLC,
-    //    CmdGetProductSupport,
-    //    CmdFindLine,
-    //    DO_NOTHING,
-    //    EMG,
-    //    EXIT,
-    //}
     public enum EnumProductType
     {
         SUPPORT,
