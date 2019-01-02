@@ -3,7 +3,7 @@
                     xmlns:system="clr-namespace:System;assembly=mscorlib"
                     xmlns:local="clr-namespace:JPT_TosaTest.Resource.Lang">
     
-    <system:String x:Key="Appliction_Title">Assembly Bench</system:String>
+    <system:String x:Key="Appliction_Title">FA Aligner</system:String>
     <system:String x:Key="Page_Frame_Menu_Page_Home">Home</system:String>
     <system:String x:Key="Page_Frame_Menu_Page_Run"> Run </system:String>
     <system:String x:Key="Page_Frame_Menu_Page_Menu">Menu</system:String>
@@ -20,7 +20,7 @@
     <system:String x:Key="Snake_OK">OK</system:String>
 
     
-    <system:String x:Key="Status_Version">Ver:1.0.0.0</system:String>
+    <system:String x:Key="Status_Version">Ver:1.0.0</system:String>
     <system:String x:Key="Status_User">User:</system:String>
     <system:String x:Key="Status_Info">INFO</system:String>
 

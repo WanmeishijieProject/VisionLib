@@ -26,7 +26,7 @@ namespace JPT_TosaTest.WorkFlow
                     break;
                 }
             }
-            if (bFound)
+            if (!bFound)
                 PointList.Add(pt);
 
         }

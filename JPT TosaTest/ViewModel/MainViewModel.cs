@@ -618,9 +618,15 @@ namespace JPT_TosaTest.ViewModel
                     Enum.TryParse(CurAlignerTypeString, out EnumAlignerType type);
                     var station=WorkFlow.WorkFlowMgr.Instance.FindStationByName("WF_Aligner") as WF_Aligner;
                     //预对位
-                    //station.SetCmd(STEP.MoveToPreAlignPos, new CmdPreAlignmentArgs() {
-                    //     AxisNoBaseZero=3,
-                    //});
+                    station.SetCmd(STEP.MoveToPreAlignPos, new CmdPreAlignmentArgs()
+                    {
+                        AxisNoBaseZero = 0,
+                    });
+
+                    station.SetCmd(STEP.MoveToPreAlignPos, new CmdPreAlignmentArgs()
+                    {
+                        AxisNoBaseZero = 1,
+                    });
 
                     //耦合
                     Config.ConfigMgr.Instance.ProcessDataMgr.GetBlindSearchArgs(out BlindSearchArgsF HArg, out BlindSearchArgsF VArg);
@@ -631,7 +637,7 @@ namespace JPT_TosaTest.ViewModel
                         VArgs = VArg,
                     };
                     CmdArgs.OnAligmentFinished += CmdArgs_OnAligmentFinished;
-                    station.SetCmd(STEP.DoBlindSearchAlign,CmdArgs);
+                    station.SetCmd(STEP.DoBlindSearchAlign, CmdArgs);
 
                 });
             }
@@ -670,8 +676,10 @@ namespace JPT_TosaTest.ViewModel
             get
             {
                 return new RelayCommand(() => {
-                    
-                    
+                    var station = WorkFlowMgr.Instance.FindStationByName("WF_Aligner");
+                    station.SetCmd(STEP.Init);
+
+
                 });
             }
         }

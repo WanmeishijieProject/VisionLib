@@ -2,33 +2,28 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
-using GalaSoft.MvvmLight.Messaging;
 using HalconDotNet;
-using JPT_TosaTest.Classes;
-using JPT_TosaTest.UserCtrl;
-using JPT_TosaTest.UserCtrl.VisionDebugTool;
-using JPT_TosaTest.Vision.ProcessStep;
+using VisionLib.CommonVisionStep;
+using static VisionLib.VisionDefinitions;
 
-namespace JPT_TosaTest.Vision
+namespace VisionLib
 {
 
-    public class HalconVision : VisionDataOperateSet
+    public class HalconVision
     {
         #region constructor
         private HalconVision()
         {
-            HOperatorSet.GenEmptyObj(out HObject emptyImage);
+            HOperatorSet.GenEmptyObj(out Region);
             for (int i = 0; i < 10; i++)
             {
-
-                HoImageList.Add(emptyImage);
-                AcqHandleList.Add(new HTuple());
-                KList.Add(1);
-                _lockList.Add(new object());
+                CamInfoList.Add(new CameraInfoModel()
+                {
+                    CamID = -1,
+                });
             }
-            HOperatorSet.GenEmptyObj(out Region);
-            //CamCfgDic = FindCamera(EnumCamType.GigEVision,new List<string>() { "Cam_Up","Cam_Down"});
         }
         private static readonly Lazy<HalconVision> _instance = new Lazy<HalconVision>(() => new HalconVision());
         public static HalconVision Instance
@@ -38,123 +33,104 @@ namespace JPT_TosaTest.Vision
         #endregion
 
         #region  Field
-        public List<object> _lockList = new List<object>();
-        private List<HObject> HoImageList = new List<HObject>(10);    //Image
-        private List<HTuple> AcqHandleList = new List<HTuple>(10);    //Aqu
-        private List<double> KList = new List<double>(10);
-        private Dictionary<int, Dictionary<string, HTuple>> HwindowDic = new Dictionary<int, Dictionary<string, HTuple>>();    //Hwindow
-        private Dictionary<int, Tuple<HTuple, HTuple>> ActiveCamDic = new Dictionary<int, Tuple<HTuple, HTuple>>();
+        private List<CameraInfoModel> CamInfoList = new List<CameraInfoModel>();
         private Dictionary<string, Tuple<string, string>> CamCfgDic = new Dictionary<string, Tuple<string, string>>();
         private HObject Region = null;
         public Enum_REGION_OPERATOR RegionOperator = Enum_REGION_OPERATOR.ADD;
         public Enum_REGION_TYPE RegionType = Enum_REGION_TYPE.CIRCLE;
         private AutoResetEvent SyncEvent = new AutoResetEvent(false);
-        private string DebugWindowName = "CameraDebug";
+        private string WINDOW_DEBUG = "CameraDebug";
         #endregion
 
-        public bool AttachCamWIndow(int nCamID, string Name, HTuple hWindow)
+        public void AttachCamWIndow(int nCamID, string Name, HTuple hWindow)
         {
-            if (nCamID < 0)
-                return false;
-            lock (_lockList[nCamID])
+            CheckCamIDAvilible(nCamID);
+            foreach (var it in CamInfoList)
             {
-
-                //关联当前窗口
-                if (HwindowDic.Keys.Contains(nCamID))
+                lock (it.VisionLock)
                 {
-                    var its = from hd in HwindowDic[nCamID] where hd.Key == Name select hd;
-                    if (its.Count() == 0)
-                        HwindowDic[nCamID].Add(Name, hWindow);
-                    else
-                        HwindowDic[nCamID][Name] = hWindow;
-                }
-                else
-                    HwindowDic.Add(nCamID, new Dictionary<string, HTuple>() { { Name, hWindow } });
-                if (ActiveCamDic.Keys.Contains(nCamID))
-                {
-                    if (HwindowDic[nCamID][Name] != -1)
-                        HOperatorSet.SetPart(HwindowDic[nCamID][Name], 0, 0, ActiveCamDic[nCamID].Item2, ActiveCamDic[nCamID].Item1);
-                }
-
-
-                //需要解除此窗口与其他相机的关联
-                foreach (var kps in HwindowDic)
-                {
-                    if (kps.Key == nCamID)
-                        continue;
-                    foreach (var kp in kps.Value)
+                    if (it.CamID == nCamID)
                     {
-                        if (kp.Key == Name)
+                        if (it.AttachedWindowDic.Keys.Contains(Name))
                         {
-                            kps.Value.Remove(Name);
-                            break;
+                            it.AttachedWindowDic[Name] = hWindow;
+                        }
+                        else
+                        {
+                            it.AttachedWindowDic.Add(Name, hWindow);
+                        }
+                    }
+                    else
+                    {
+                        if (it.AttachedWindowDic.Keys.Contains(Name))
+                        {
+                            it.AttachedWindowDic.Remove(Name);
                         }
                     }
                 }
-                return true;
             }
-
-        }
-        public bool DetachCamWindow(int nCamID, string Name)
+            }
+   
+        public void DetachCamWindow(int nCamID, string Name)
         {
-            if (nCamID < 0)
-                return false;
-            lock (_lockList[nCamID])
+            var Cam=CheckCamIDAvilible(nCamID);
+            lock (Cam.VisionLock)
             {
-                if (HwindowDic.Keys.Contains(nCamID))
+                if (Cam.AttachedWindowDic.Keys.Contains(Name))
                 {
-                    if (HwindowDic[nCamID].Keys.Contains(Name))
-                        HwindowDic[nCamID].Remove(Name);
+                    Cam.AttachedWindowDic.Remove(Name);
                 }
-                return true;
             }
         }
         public void GetSyncSp(out AutoResetEvent Se, out object Lock, int CamID)
         {
+            CheckCamIDAvilible(CamID);
+            Lock = null;
             Se = SyncEvent;
-            Lock = _lockList[CamID];
-
+            var Cam = CheckCamIDAvilible(CamID);
+            Lock = Cam.VisionLock; 
         }
 
         public bool OpenCam(int nCamID)
         {
-            if (nCamID < 0)
-                return false;
+            CheckCamIDAvilible(nCamID);
             HObject image = null;
             HTuple hv_AcqHandle = null;
             HTuple width = 0, height = 0;
             try
             {
-                lock (_lockList[nCamID])
+                var Cam = CheckCamIDAvilible(nCamID);
+                lock (Cam.VisionLock)
                 {
-                    if (!IsCamOpen(nCamID))
+                    if (!Cam.IsConnected)
                     {
                         //HOperatorSet.OpenFramegrabber("DirectShow", 1, 1, 0, 0, 0, 0, "default", 8, "rgb",
                         //                        -1, "false", "default", "Integrated Camera", 0, -1, out hv_AcqHandle);
                         HOperatorSet.OpenFramegrabber(CamCfgDic.ElementAt(nCamID).Value.Item2, 1, 1, 0, 0, 0, 0, "default", 8, "gray",
-                                                   -1, "false", "default", CamCfgDic.ElementAt(nCamID).Value.Item1, 0, -1, out hv_AcqHandle);
-                        HOperatorSet.GrabImage(out image, hv_AcqHandle);
-                        HOperatorSet.GetImageSize(image, out width, out height);
-                        ActiveCamDic.Add(nCamID, new Tuple<HTuple, HTuple>(width, height));
-                        AcqHandleList[nCamID] = hv_AcqHandle;
+                                                    -1, "false", "default", CamCfgDic.ElementAt(nCamID).Value.Item1, 0, -1, out hv_AcqHandle);
+                        Cam.AcqHandle = hv_AcqHandle;
+                        Cam.IsActive = true;
+                        Cam.IsConnected = true;
                     }
-                    if (IsCamOpen(nCamID))
+                    if (Cam.IsConnected)
                     {
-                        if (HwindowDic.Keys.Contains(nCamID))
+                        HOperatorSet.GrabImage(out image, Cam.AcqHandle);
+                        HOperatorSet.GetImageSize(image, out width, out height);
+                        Cam.Image = image;
+                        Cam.ImageWidth = width;
+                        Cam.ImageHeight = height;
+
+                        foreach (var dic in Cam.AttachedWindowDic)
                         {
-                            foreach (var it in HwindowDic[nCamID])
-                            {
-                                HOperatorSet.SetPart(it.Value, 0, 0, ActiveCamDic[nCamID].Item2, ActiveCamDic[nCamID].Item1);
-                                HOperatorSet.DispObj(image, it.Value);
-                            }
+                            HOperatorSet.SetPart(dic.Value, 0, 0, Cam.ImageWidth, Cam.ImageHeight);
+                            HOperatorSet.DispObj(image, dic.Value);
                         }
                     }
                     return true;
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Messenger.Default.Send<string>($"Open Camera Error:{CamCfgDic.ElementAt(nCamID)}:{ex.Message}", "ShowError");
                 return false;
             }
             finally
@@ -165,34 +141,35 @@ namespace JPT_TosaTest.Vision
         }
         public bool CloseCam(int nCamID)
         {
-            if (nCamID < 0)
-                return false;
-            try
+            CheckCamIDAvilible(nCamID);
+            foreach (var it in CamInfoList)
             {
-                lock (_lockList[nCamID])
+                lock (it.VisionLock)
                 {
-                    if (ActiveCamDic.Keys.Contains(nCamID))
+                    if (it.IsConnected)
                     {
-                        HOperatorSet.CloseFramegrabber(AcqHandleList[nCamID]);
-                        ActiveCamDic.Remove(nCamID);
+                        HOperatorSet.CloseFramegrabber(it.AcqHandle);
+                        it.IsConnected = false;
+                        it.IsActive = false;
                     }
-                    return true;
                 }
             }
-            catch (Exception ex)
-            {
-                Messenger.Default.Send<string>(ex.Message, "ShowError");
-                return false;
-            }
+            return true;
         }
         public bool IsCamOpen(int nCamID)
         {
-            if (nCamID < 0)
-                return false;
-            lock (_lockList[nCamID])
+            CheckCamIDAvilible(nCamID);
+            foreach (var it in CamInfoList)
             {
-                return ActiveCamDic.Keys.Contains(nCamID);
+                lock (it.VisionLock)
+                {
+                    if (it.CamID == nCamID)
+                    {
+                        return it.IsConnected;
+                    }
+                }
             }
+            return false;
         }
         /// <summary>
         /// 采集图像
@@ -202,52 +179,49 @@ namespace JPT_TosaTest.Vision
         /// <param name="bContinus"></param>
         public void GrabImage(int nCamID, bool bDispose = true, bool bContinus = false)
         {
-            if (nCamID < 0)
-                return;
+            CheckCamIDAvilible(nCamID);
             HObject image = null;
             try
             {
-                lock (_lockList[nCamID])
+                var Cams = from cam in CamInfoList where cam.CamID == nCamID select cam;
+                if (Cams.Count() > 0)
                 {
-                    if (!HwindowDic.Keys.Contains(nCamID))
+                    var Cam = Cams.First();
+                    lock (Cam.VisionLock)
                     {
-                        Messenger.Default.Send<string>(string.Format("请先给相机{0}绑定视觉窗口", nCamID), "ShowError");
-                        return;
-                    }
-                    if (!IsCamOpen(nCamID))
-                        OpenCam(nCamID);
-                    if (!IsCamOpen(nCamID))
-                        return;
-                    if (!bContinus)
-                        HOperatorSet.GrabImage(out image, AcqHandleList[nCamID]);
-                    else
-                        HOperatorSet.GrabImageAsync(out image, AcqHandleList[nCamID], -1);
-
-                    HOperatorSet.GetImageSize(image, out HTuple width, out HTuple height);
-
-                    HOperatorSet.GenEmptyObj(out Region);
-
-                    if (HoImageList[nCamID] != null)
-                    {
-                        HoImageList[nCamID].Dispose();
-                        HoImageList[nCamID] = null;
-                    }
-                    HoImageList[nCamID] = image.SelectObj(1);
-                    if (!SyncEvent.WaitOne(20))
-                    {
-                        foreach (var it in HwindowDic[nCamID])
-                            if (it.Value != -1)
+                        if (Cam.AttachedWindowDic.Count == 0)
+                            throw new Exception($"请先给相机{Cam.CamID}绑定视觉窗口");
+                        if (IsCamOpen(nCamID))
+                        {
+                            if (!bContinus)
                             {
-                                //HOperatorSet.SetPart(it.Value, height/2-500, width/2-500, height/2+500, width/2+500);
-                                HOperatorSet.SetPart(it.Value, 0, 0, height, width);
-                                HOperatorSet.DispObj(HoImageList[nCamID], it.Value);
+                                HOperatorSet.GrabImage(out image, Cam.AcqHandle);
                             }
+                            else
+                            {
+                                HOperatorSet.GrabImageAsync(out image, Cam.AcqHandle, -1);
+                            }
+                            Cam.Image = image;
+                            if (!SyncEvent.WaitOne(50))
+                            {
+                                foreach (var dic in Cam.AttachedWindowDic)
+                                {
+                                    if (dic.Value != -1)
+                                    {
+                                        HOperatorSet.SetPart(dic.Value, 0, 0, Cam.ImageHeight, Cam.ImageWidth);
+                                        HOperatorSet.DispObj(Cam.Image, dic.Value);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                            throw new Exception($"请先打开相机{Cam.CamID}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Messenger.Default.Send<string>(ex.Message, "ShowError");
+                throw new Exception($"相机{nCamID}采集图片出错：{ex.Message}");
             }
             finally
             {
@@ -266,227 +240,22 @@ namespace JPT_TosaTest.Vision
         public bool ProcessImage(VisionProcessStepBase ProcessStep)
         {
             int nCamID = ProcessStep.In_CamID;
-            if (nCamID < 0)
-                return false;
-            ProcessStep.In_Image = HoImageList[nCamID];
+            CheckCamIDAvilible(nCamID);
+            var Cams = from cam in CamInfoList where cam.CamID == nCamID select cam;
+            if (Cams.Count() <= 0)
+                throw new Exception($"错误的相机ID：相机{nCamID}未找到");
+            var Cam = Cams.First();
+            ProcessStep.In_Image =Cam.Image;
             return ProcessStep.Process();
         }
-        /// <summary>
-        /// 最终的供客户端使用的接口，处理不同的任务
-        /// </summary>
-        /// <param name="nStep"></param>
-        /// <param name="nCamID"></param>
-        /// <param name="para"></param> 形式是 ROIName & ModelName
-        /// <param name="result"></param>
-        /// <returns></returns>
        
-        public bool DrawRoi(int nCamID, EnumRoiType type, out object outRegion, string fileName = null)
-        {
-            outRegion = null;
-            if (nCamID < 0)
-                return false;
-            try
-            {
-                switch (type)
-                {
-                    case EnumRoiType.ModelRegionReduce:
-                        if (fileName != null)   //如果是现有的Model
-                        {
-                            string[] strList = fileName.Split('.');
-                            if (strList.Length == 2)
-                            {
-                                if (HwindowDic.Keys.Contains(nCamID) && HwindowDic[nCamID].Keys.Contains(DebugWindowName))
-                                {
-                                    HTuple window = HwindowDic[nCamID][DebugWindowName];
-                                    HTuple row, column, phi, length1, length2, radius;
-                                    HObject newRegion = null;
-                                    HOperatorSet.SetColor(window, "green");
 
-                                    if (File.Exists($"{strList[0]}.reg"))
-                                        HOperatorSet.ReadRegion(out Region, $"{strList[0]}.reg");   //如果已经有了就先都出来
-                                    switch (RegionType)
-                                    {
-                                        case Enum_REGION_TYPE.RECTANGLE:
-                                            HOperatorSet.DrawRectangle2Mod(window, 100, 100, 100, 100, 100, out row, out column, out phi, out length1, out length2);
-                                            HOperatorSet.GenRectangle2(out newRegion, row, column, phi, length1, length2);
-                                            break;
-                                        case Enum_REGION_TYPE.CIRCLE:
-                                            HOperatorSet.DrawCircleMod(window, 100, 100, 100, out row, out column, out radius);
-                                            HOperatorSet.GenCircle(out newRegion, row, column, radius);
-                                            break;
-                                        default:
-                                            break;
-                                    }
-
-                                    if (RegionOperator == Enum_REGION_OPERATOR.ADD)
-                                    {
-                                        HOperatorSet.Union2(Region, newRegion, out Region);
-                                    }
-                                    else
-                                    {
-                                        HOperatorSet.Difference(Region, newRegion, out Region);
-                                    }
-                                    HOperatorSet.SetDraw(window, "margin");
-                                    HOperatorSet.SetColor(window, "red");
-                                    HOperatorSet.ClearWindow(window);
-                                    HOperatorSet.DispObj(HoImageList[nCamID], window);
-                                    HOperatorSet.DispObj(Region, window);
-
-                                    //存储
-                                    HOperatorSet.WriteRegion(Region, $"{strList[0]}.reg");
-                                    outRegion = Region;
-                                    return true;
-                                }
-                                Messenger.Default.Send<String>("绘制模板窗口没有打开,或者该相机未关联绘制模板窗口", "ShowError");
-                            }
-                        }
-                        else  //如果是新建的Model
-                        {
-                            if (HwindowDic.Keys.Contains(nCamID) && HwindowDic[nCamID].Keys.Contains(DebugWindowName))
-                            {
-                                HTuple window = HwindowDic[nCamID][DebugWindowName];
-                                HTuple row, column, phi, length1, length2, radius;
-                                HObject newRegion = null;
-                                HOperatorSet.SetColor(window, "green");
-                                switch (RegionType)
-                                {
-                                    case Enum_REGION_TYPE.RECTANGLE:
-                                        HOperatorSet.DrawRectangle2Mod(window, 100, 100, 100, 100, 100, out row, out column, out phi, out length1, out length2);
-                                        HOperatorSet.GenRectangle2(out newRegion, row, column, phi, length1, length2);
-                                        break;
-                                    case Enum_REGION_TYPE.CIRCLE:
-                                        HOperatorSet.DrawCircleMod(window, 100, 100, 100, out row, out column, out radius);
-                                        HOperatorSet.GenCircle(out newRegion, row, column, radius);
-                                        break;
-                                    default:
-                                        break;
-                                }
-
-                                if (RegionOperator == Enum_REGION_OPERATOR.ADD)
-                                {
-                                    HOperatorSet.Union2(Region, newRegion, out Region);
-                                }
-                                else
-                                {
-                                    HOperatorSet.Difference(Region, newRegion, out Region);
-                                }
-                                HOperatorSet.SetDraw(window, "margin");
-                                HOperatorSet.SetColor(window, "red");
-                                HOperatorSet.ClearWindow(window);
-                                HOperatorSet.DispObj(HoImageList[nCamID], window);
-                                HOperatorSet.DispObj(Region, window);
-                                outRegion = Region;
-                            }
-                        }
-
-                        break;
-                }
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Messenger.Default.Send<String>(string.Format("DrawRoi出错:{0}", ex.Message), "ShowError");
-                return false;
-            }
-        }
-        public bool NewRoi(int nCamID, string strRoiName)     //就在建立找边ROI的时候有用到
-        {
-            if (nCamID < 0)
-                return false;
-            // Stack for temporary objects 
-            HObject[] OTemp = new HObject[20];
-            long SP_O = 0;
-
-            // Local iconic variables 
-
-            HObject ho_Rectangle, ho_Rectangle1, ho_EmptyRegion;
-
-            // Local control variables 
-
-            HTuple hv_Row, hv_Column;
-            HTuple hv_Phi, hv_Length1, hv_Length2, hv_Row1, hv_Column1;
-            HTuple hv_Phi1, hv_Length11, hv_Length21, hv_data;
-
-            // Initialize local and output iconic variables 
-            HOperatorSet.GenEmptyObj(out ho_Rectangle);
-            HOperatorSet.GenEmptyObj(out ho_Rectangle1);
-            HOperatorSet.GenEmptyObj(out ho_EmptyRegion);
-
-            try
-            {
-                if (HwindowDic.Keys.Contains(nCamID) && HwindowDic[nCamID].Keys.Contains(DebugWindowName))
-                {
-                    HTuple window = HwindowDic[nCamID][DebugWindowName];
-                    HOperatorSet.SetWindowAttr("background_color", "black");
-                    HOperatorSet.SetDraw(window, "margin");
-                    disp_message(window, "请绘制第一个ROI，以右键结束绘制", "window",
-                        12, 12, "black", "true");
-                    HOperatorSet.DrawRectangle2Mod(window, 100, 100, 100, 100, 100, out hv_Row,
-                        out hv_Column, out hv_Phi, out hv_Length1, out hv_Length2);
-                    ho_Rectangle.Dispose();
-                    HOperatorSet.GenRectangle2(out ho_Rectangle, hv_Row, hv_Column, hv_Phi, hv_Length1,
-                        hv_Length2);
-                    HOperatorSet.DispObj(ho_Rectangle, window);
-                    disp_message(window, "请绘制第二个ROI，以右键结束绘制", "window", 12, 12, "black", "true");
-                    HOperatorSet.DrawRectangle2Mod(window, 100, 100, 100, 100, 100, out hv_Row1, out hv_Column1, out hv_Phi1, out hv_Length11, out hv_Length21);
-                    ho_Rectangle1.Dispose();
-                    HOperatorSet.GenRectangle2(out ho_Rectangle1, hv_Row1, hv_Column1, hv_Phi1, hv_Length11, hv_Length21);
-                    HOperatorSet.DispObj(ho_Rectangle1, window);
-                    hv_data = new HTuple();
-                    hv_data[0] = hv_Row;
-                    hv_data[1] = hv_Column;
-                    hv_data[2] = hv_Phi;
-                    hv_data[3] = hv_Length1;
-                    hv_data[4] = hv_Length2;
-                    //第二个矩形的参数
-                    hv_data[5] = hv_Row1;
-                    hv_data[6] = hv_Column1;
-                    hv_data[7] = hv_Phi1;
-                    hv_data[8] = hv_Length11;
-                    hv_data[9] = hv_Length21;
-                    ho_EmptyRegion.Dispose();
-                    HOperatorSet.GenEmptyRegion(out ho_EmptyRegion);
-                    OTemp[SP_O] = ho_EmptyRegion.CopyObj(1, -1);
-                    SP_O++;
-                    ho_EmptyRegion.Dispose();
-                    HOperatorSet.ConcatObj(OTemp[SP_O - 1], ho_Rectangle, out ho_EmptyRegion);
-                    OTemp[SP_O - 1].Dispose();
-                    SP_O = 0;
-                    OTemp[SP_O] = ho_EmptyRegion.CopyObj(1, -1);
-                    SP_O++;
-                    ho_EmptyRegion.Dispose();
-                    HOperatorSet.ConcatObj(OTemp[SP_O - 1], ho_Rectangle1, out ho_EmptyRegion);
-                    OTemp[SP_O - 1].Dispose();
-                    SP_O = 0;
-
-                    //创建实际的Roi文件
-                    HOperatorSet.WriteTuple(hv_data, $"{strRoiName}.tup");
-                    HOperatorSet.WriteRegion(ho_EmptyRegion, $"{strRoiName}.reg");
-
-
-                    ho_Rectangle.Dispose();
-                    ho_Rectangle1.Dispose();
-                    ho_EmptyRegion.Dispose();
-                    return true;
-                }
-                return false;
-            }
-            catch (HalconException HDevExpDefaultException)
-            {
-                ho_Rectangle.Dispose();
-                ho_Rectangle1.Dispose();
-                ho_EmptyRegion.Dispose();
-                throw new Exception($"创建Roi时候出现错误:{HDevExpDefaultException.Message}");
-
-            }
-
-
-
-        }
+      
         public bool ShowRoi(int nCamID, object Region)     //显示ROI
         {
+            var Cam = CheckCamIDAvilible(nCamID);
             HObject region = Region as HObject;
-            foreach (var it in HwindowDic[nCamID])
+            foreach (var it in Cam.AttachedWindowDic)
             {
                 if (it.Value != -1)
                 {
@@ -498,14 +267,17 @@ namespace JPT_TosaTest.Vision
 
             return true;
         }
+
+
         public bool ShowRoi(string RoiFilePathName)     //显示ROI
         {
             string[] splitString = RoiFilePathName.Split('\\');
             if (splitString.Length > 2)
             {
                 int nCamID = Convert.ToInt16(splitString[splitString.Length - 1].Substring(3, 1));
+                var Cam = CheckCamIDAvilible(nCamID);
                 HOperatorSet.ReadRegion(out HObject region, RoiFilePathName);
-                foreach (var it in HwindowDic[nCamID])
+                foreach (var it in Cam.AttachedWindowDic)
                 {
                     if (it.Value != -1)
                     {
@@ -523,20 +295,18 @@ namespace JPT_TosaTest.Vision
         public bool ShowModel(string ModelFilePathName)     //就在建立修改的时候有用到,同时更新多个窗口
         {
             HObject modelContours = null;
-
-
             string[] splitString = ModelFilePathName.Split('\\');
             if (splitString.Length > 1)
             {
                 int nCamID = Convert.ToInt16(splitString[splitString.Length - 1].Substring(3, 1));
-
+                var Cam = CheckCamIDAvilible(nCamID);
                 //三个文件同时读取
                 splitString = ModelFilePathName.Split('.');
                 HOperatorSet.ReadShapeModel(ModelFilePathName, out HTuple ModelID);
                 HOperatorSet.ReadRegion(out HObject ModelRoiRegion, $"{splitString[0]}.reg");
                 HOperatorSet.ReadTuple($"{splitString[0]}.tup", out HTuple ModelOriginPos);
 
-                foreach (var it in HwindowDic[nCamID])
+                foreach (var it in Cam.AttachedWindowDic)
                 {
                     if (it.Value != -1)
                     {
@@ -564,14 +334,13 @@ namespace JPT_TosaTest.Vision
         {
             try
             {
-                if (nCamID < 0)
-                    return false;
+                var Cam = CheckCamIDAvilible(nCamID);
                 if (!Directory.Exists(filePath))
                     return false;
                 switch (type)
                 {
                     case EnumImageType.Image:
-                        HOperatorSet.WriteImage(HoImageList[nCamID], "jpeg", 0, $"{filePath}\\{fileName}");
+                        HOperatorSet.WriteImage(Cam.Image, "jpeg", 0, $"{filePath}\\{fileName}");
                         break;
                     case EnumImageType.Window:
                         HOperatorSet.DumpWindow(hWindow, "jpeg", $"{filePath}\\{fileName}");
@@ -581,25 +350,16 @@ namespace JPT_TosaTest.Vision
             }
             catch (Exception ex)
             {
-                UC_MessageBox.ShowMsgBox($"{ex.Message}", "错误", MsgType.Error);
                 return false;
             }
         }
-
         public bool OpenImageInWindow(int nCamID, string imageFilePath, HTuple hwindow)
         {
             try
             {
                 HOperatorSet.ReadImage(out HObject image, imageFilePath);
-                if (nCamID >= 0)
-                {
-                    if (HoImageList[nCamID] != null)
-                    {
-                        HoImageList[nCamID].Dispose();
-                        HoImageList[nCamID] = null;
-                    }
-                    HoImageList[nCamID] = image.SelectObj(1);
-                }
+                var Cam = CheckCamIDAvilible(nCamID);
+                Cam.Image = image.SelectObj(1);
                 HOperatorSet.GetImageSize(image, out HTuple width, out HTuple height);
                 HOperatorSet.SetPart(hwindow, 0, 0, height, width);
                 HOperatorSet.DispObj(image, hwindow);
@@ -608,7 +368,6 @@ namespace JPT_TosaTest.Vision
             }
             catch (Exception ex)
             {
-                UC_MessageBox.ShowMsgBox($"{ex.Message}", "错误", MsgType.Error);
                 return false;
             }
         }
@@ -617,9 +376,9 @@ namespace JPT_TosaTest.Vision
             HOperatorSet.CloseAllFramegrabbers();
             return true;
         }
-        public Dictionary<string, Tuple<string, string>> FindCamera(EnumCamType camType, List<string> acturalNameList, out List<string> ErrorList)
+        public List<FindCamResult> FindCamera(EnumCamType camType, List<string> acturalNameList, out List<string> ErrorList)
         {
-            Dictionary<string, Tuple<string, string>> dic = new Dictionary<string, Tuple<string, string>>();
+            var ResultList = new List<FindCamResult>();
             ErrorList = new List<string>();
 #if TEST
             dic.Add("DirectShow", new Tuple<string, string>("Integrated Camera", "DirectShow"));
@@ -630,7 +389,7 @@ namespace JPT_TosaTest.Vision
             {
                 HOperatorSet.InfoFramegrabber(camType.ToString(), "info_boards", out HTuple hv_Information, out HTuple hv_ValueList);
                 if (0 == hv_ValueList.Length)
-                    return dic;
+                    return ResultList;
                 for (int i = 0; i < acturalNameList.Count; i++)
                 {
                     bool bFind = false;
@@ -642,7 +401,7 @@ namespace JPT_TosaTest.Vision
                             string Name = listAttr.First().Trim().Replace("device:", "");
                             if (Name.Contains(acturalNameList[i]))
                             {
-                                dic.Add(acturalNameList[i], new Tuple<string, string>(Name.Trim(), camType.ToString()));
+                                ResultList.Add(new FindCamResult(acturalNameList[i], Name.Trim(), camType));
                                 bFind = true;
                                 break;
                             }
@@ -651,13 +410,12 @@ namespace JPT_TosaTest.Vision
                     if (!bFind)
                         ErrorList.Add($"相机:{ acturalNameList[i]}未找到硬件，请检查硬件连接或者配置");
                 }
-                CamCfgDic = dic;
-                return dic;
+                return ResultList;
             }
             catch (Exception ex)
             {
                 ErrorList.Add($"FIndCamera error:{ex.Message}");
-                return dic;
+                return ResultList;
             }
 
         }
@@ -678,6 +436,7 @@ namespace JPT_TosaTest.Vision
             try
             {
                 int nCamID = 0;
+                var Cam = CheckCamIDAvilible(nCamID);
                 string[] strModelListDot = ModelFileName.Split('.');
                 if (strModelListDot.Length < 2)
                     return false;
@@ -694,27 +453,11 @@ namespace JPT_TosaTest.Vision
 
                 //
                 HOperatorSet.GetImageSize(image, out HTuple ImageWidth, out HTuple ImageHeight);
-                if (hv_Row1.Length == 0)
+                if (hv_Row1.Length != 0)
                 {
-                    foreach (var it in HwindowDic[nCamID])
-                    {
-                        disp_message(it.Value, "查找模板失败", "window", 10, 10, "red", "true");
-                    }
-                    return false;
-                }
-                else
-                {
-                    foreach (var it in HwindowDic[nCamID])
-                    {
-                        HOperatorSet.SetPart(it.Value, 0, 0, ImageHeight, ImageWidth);
-                        HOperatorSet.SetColor(it.Value, "red");
-                        //disp_message(it.Value, $"模板位置:({ hv_Row1},{ hv_Column1})", "window", 10, 10, "red", "true");
-                        //disp_message(it.Value, $"分数: { hv_Score}", "window", 50, 10, "red", "true");
-                        HOperatorSet.DispCross(it.Value, hv_Row1, hv_Column1, 80, hv_Angle);
-                        ModelPos[0] = hv_Row1;
-                        ModelPos[1] = hv_Column1;
-                        ModelPos[2] = hv_Angle;
-                    }
+                    ModelPos[0] = hv_Row1;
+                    ModelPos[1] = hv_Column1;
+                    ModelPos[2] = hv_Angle;
 
                     //计算转换矩阵
                     HTuple originRow = hv_ModelPos[0];
@@ -740,22 +483,12 @@ namespace JPT_TosaTest.Vision
         /// <param name="ModelPos"></param>
         /// <param name="lineList"></param>
         /// <returns></returns>
-        public bool FindLineBasedModelRoi(HObject image, List<string> LineParaList, HTuple hom_2D, HTuple ModelPos, out List<object> lineList)
+        public bool FindLineBasedModelRoi(HObject image, List<string> LineParaList, HTuple hom_2D, HTuple ModelPos, out List<VisionLineData> lineList)
         {
-            List<object> lineListRawData = new List<object>();
-            lineList = new List<object>();
-
+            lineList = new List<VisionLineData>();
             //ReadRectangle
             try
             {
-                foreach (var it in HwindowDic[0])
-                {
-                    HOperatorSet.SetSystem("flush_graphic", "false");
-                    HOperatorSet.SetDraw(it.Value, "margin");
-                    HOperatorSet.SetColor(it.Value, "green");
-                    HOperatorSet.SetLineWidth(it.Value, 1);
-                    HOperatorSet.SetSystem("flush_graphic", "true");
-                }
                 foreach (var para in LineParaList)
                 {
 
@@ -785,19 +518,19 @@ namespace JPT_TosaTest.Vision
                             case "LINETOOL":
                                 {
                                     HTuple CaliperNum = int.Parse(strRtPara[0]);
-                                    Enum.TryParse(strRtPara[1], out EnumEdgeType EdgeType);
+                                    Enum.TryParse(strRtPara[1], out EnumLinePolarityType EdgeType);
                                     Enum.TryParse(strRtPara[2], out EnumSelectType SelectType);
                                     double.TryParse(strRtPara[3], out double fContrast);
                                     HTuple Contrast = Math.Round(fContrast);
                                     FindLine(image, EdgeType, SelectType, CaliperNum, Contrast, outRoiRow, outRoiCol, Phi + ModelPos[2], L1, L2, out HTuple StartRow, out HTuple StartCol, out HTuple EndRow, out HTuple EndCol);
-                                    lineList.Add(new Tuple<HTuple, HTuple, HTuple, HTuple>(StartRow, StartCol, EndRow, EndCol));
+                                    lineList.Add(new VisionLineData(StartRow, StartCol, EndRow, EndCol));
                                 }
                                 break;
                             case "PAIRTOOL":
                                 {
                                     HTuple CaliperNum = int.Parse(strRtPara[0]);
                                     HTuple ExpectedPairNum = int.Parse(strRtPara[1]);
-                                    Enum.TryParse(strRtPara[2], out EnumPairType PairType);
+                                    Enum.TryParse(strRtPara[2], out EnumPairPolarityType PairType);
                                     Enum.TryParse(strRtPara[3], out EnumSelectType SelectType);
                                     double.TryParse(strRtPara[4], out double fContrast);
                                     HTuple Contrast = Math.Round(fContrast);
@@ -806,29 +539,14 @@ namespace JPT_TosaTest.Vision
                                        out HTuple OutSecondRowStart, out HTuple SecondColStart, out HTuple OutSecondRowEnd, out HTuple OutSecondColEnd);
                                     for (HTuple index = 0; index < ExpectedPairNum; index++)
                                     {
-                                        lineList.Add(new Tuple<HTuple, HTuple, HTuple, HTuple>(OutFirstRowStart[index], FirstColStart[index], OutFirstRowEnd[index], OutFirstColEnd[index]));
-                                        lineList.Add(new Tuple<HTuple, HTuple, HTuple, HTuple>(OutSecondRowStart[index], SecondColStart[index], OutSecondRowEnd[index], OutSecondColEnd[index]));
+                                        lineList.Add(new VisionLineData(OutFirstRowStart[index], FirstColStart[index], OutFirstRowEnd[index], OutFirstColEnd[index]));
+                                        lineList.Add(new VisionLineData(OutSecondRowStart[index], SecondColStart[index], OutSecondRowEnd[index], OutSecondColEnd[index]));
                                     }
                                 }
                                 break;
                             default:
                                 throw new Exception("invalid TOOL");
-                        }
-                        foreach (var it in HwindowDic[0])
-                        {
-                            HOperatorSet.DispObj(rect, it.Value);
-                        }
-                    }
-                }
-                //Display绿色是原始直线
-                foreach (var it in HwindowDic[0])
-                {
-                    HOperatorSet.DispObj(image, it.Value);
-                    foreach (var obj in lineList)
-                    {
-                        Tuple<HTuple, HTuple, HTuple, HTuple> line = obj as Tuple<HTuple, HTuple, HTuple, HTuple>;
-                        if (line != null)
-                            HOperatorSet.DispLine(it.Value, line.Item1, line.Item2, line.Item3, line.Item4);
+                        }  
                     }
                 }
                 return true;
@@ -844,49 +562,21 @@ namespace JPT_TosaTest.Vision
             lineList = new List<object>();
             return true;
         }
-        public bool DisplayLines(int nCamID, List<Tuple<HTuple, HTuple, HTuple, HTuple>> lineList, string Color = "red")
+        public bool DisplayLines(int nCamID, List<VisionLineData> lineList, string Color = "red")
         {
             try
             {
-                lock (_lockList[nCamID])
+                var Cam = CheckCamIDAvilible(nCamID);
+                lock (Cam.VisionLock)
                 {
                     if (lineList == null)
                         return false;
-                    foreach (var it in HwindowDic[nCamID])
+                    foreach (var it in Cam.AttachedWindowDic)
                     {
                         HOperatorSet.SetColor(it.Value, Color);
                         foreach (var line in lineList)
                         {
-                            HOperatorSet.DispLine(it.Value, line.Item1, line.Item2, line.Item3, line.Item4);
-                        }
-                    }
-                    return true;
-                }
-            }
-            catch
-            {
-                return false;
-            }
-        }
-        public bool DisplayLines(int nCamID, List<object> lineList, string Color = "red")
-        {
-            try
-            {
-                lock (_lockList[nCamID])
-                {
-                    if (lineList == null)
-                        return false;
-                    var TupleLineList = new List<Tuple<HTuple, HTuple, HTuple, HTuple>>();
-                    foreach (var it in lineList as List<object>)
-                    {
-                        TupleLineList.Add(it as Tuple<HTuple, HTuple, HTuple, HTuple>);
-                    }
-                    foreach (var it in HwindowDic[nCamID])
-                    {
-                        HOperatorSet.SetColor(it.Value, Color);
-                        foreach (var line in TupleLineList)
-                        {
-                            HOperatorSet.DispLine(it.Value, line.Item1, line.Item2, line.Item3, line.Item4);
+                            HOperatorSet.DispLine(it.Value, line.RowStart, line.ColStart, line.RowEnd, line.ColEnd);
                         }
                     }
                     return true;
@@ -899,11 +589,11 @@ namespace JPT_TosaTest.Vision
         }
         public bool DisplayPolygonRegion(int nCamID, HTuple Row, HTuple Col, string Color = "red")
         {
-            lock (_lockList[nCamID])
+            var Cam = CheckCamIDAvilible(nCamID);
+            lock (Cam.VisionLock)
             {
                 HOperatorSet.GenRegionPolygonFilled(out HObject region, Row, Col);
-
-                foreach (var it in HwindowDic[nCamID])
+                foreach (var it in Cam.AttachedWindowDic)
                 {
                     HOperatorSet.SetColor(it.Value, Color);
                     HOperatorSet.SetDraw(it.Value, "fill");
@@ -921,23 +611,18 @@ namespace JPT_TosaTest.Vision
         /// <param name="RealDistance">实际距离um</param>
         /// <param name="PLineList">应该包含至少两条平行线用来计算像素距离</param>
         /// <returns></returns>
-        public bool SetKValueOfCam(int nCamID, double RealDistance, List<object> PLineList, out double factor)
+        public bool SetKValueOfCam(int nCamID, double RealDistance, List<VisionLineData> LineList, out double factor)
         {
+            var Cam=CheckCamIDAvilible(nCamID);
             factor = 1;
-            if (PLineList == null || PLineList.Count < 2 || RealDistance == 0.0f)
+            if (LineList == null || LineList.Count < 2 || RealDistance == 0.0f)
                 return false;
-            var LineList = new List<Tuple<double, double, double, double>>();
-            foreach (object it in PLineList)
-            {
-                LineList.Add(it as Tuple<double, double, double, double>);
-            }
-
-            if (LineList == null || LineList.Count < 2)
-                return false;
-            HOperatorSet.DistancePl(LineList[0].Item1, LineList[0].Item2, LineList[1].Item1, LineList[1].Item2, LineList[1].Item3, LineList[1].Item4, out HTuple D1);
-            HOperatorSet.DistancePl(LineList[0].Item3, LineList[0].Item4, LineList[1].Item1, LineList[1].Item2, LineList[1].Item3, LineList[1].Item4, out HTuple D2);
-            KList[nCamID] = (2 * RealDistance) / (D1 + D2);
-            factor = KList[nCamID];
+         
+            HOperatorSet.DistancePl(LineList[0].RowStart, LineList[0].ColStart, LineList[1].RowStart, LineList[1].ColStart, LineList[1].RowEnd, LineList[1].ColEnd, out HTuple D1);
+            HOperatorSet.DistancePl(LineList[0].RowEnd, LineList[0].ColEnd, LineList[1].RowStart, LineList[1].ColStart, LineList[1].RowEnd, LineList[1].ColEnd, out HTuple D2);
+            factor = (2 * RealDistance) / (D1 + D2);
+            Cam.KX = factor;
+            Cam.KY = factor;
             return true;
         }
         public void SetRefreshWindow(int nCamID, bool bRefresh)
@@ -946,13 +631,24 @@ namespace JPT_TosaTest.Vision
         }
         #endregion
 
+        /// <summary>
+        /// 创建模板前的预览
+        /// </summary>
+        /// <param name="nCamID"></param>
+        /// <param name="MinThre"></param>
+        /// <param name="MaxThre"></param>
+        /// <param name="modelType"></param>
+        /// <param name="regionFilePath"></param>
+        /// <param name="regionIn"></param>
+        /// <returns></returns>
         public bool PreCreateShapeModel(int nCamID, int MinThre, int MaxThre, EnumShapeModelType modelType, string regionFilePath, object regionIn = null)
         {
-            if (nCamID < 0 || MaxThre < MinThre)
+            var Cam = CheckCamIDAvilible(nCamID);
+            if (MaxThre < MinThre)
                 return false;
-            if (HwindowDic.Keys.Contains(nCamID) && HwindowDic[nCamID].Keys.Contains(DebugWindowName))
+            if (Cam.AttachedWindowDic.Keys.Contains(WINDOW_DEBUG))
             {
-                HTuple window = HwindowDic[nCamID][DebugWindowName];
+                HTuple window = Cam.AttachedWindowDic[WINDOW_DEBUG];
                 switch (modelType)
                 {
                     case EnumShapeModelType.Gray:
@@ -961,7 +657,7 @@ namespace JPT_TosaTest.Vision
                         break;
                     case EnumShapeModelType.XLD:
                         HObject region = regionIn as HObject;
-                        return PreProcessShapeMode(HoImageList[nCamID], window, MinThre, MaxThre, region, regionFilePath, true);
+                        return PreProcessShapeMode(Cam.Image, window, MinThre, MaxThre, region, regionFilePath, true);
                     default:
                         return false;
                 }
@@ -970,11 +666,12 @@ namespace JPT_TosaTest.Vision
         }
         public bool SaveShapeModel(int nCamID, int MinThre, int MaxThre, EnumShapeModelType modelType, string regionFilePath, object regionIn = null)
         {
-            if (nCamID < 0 || MaxThre < MinThre)
+            var Cam = CheckCamIDAvilible(nCamID);
+            if (MaxThre < MinThre)
                 return false;
-            if (HwindowDic.Keys.Contains(nCamID) && HwindowDic[nCamID].Keys.Contains(DebugWindowName))
+            if (Cam.AttachedWindowDic.Keys.Contains(WINDOW_DEBUG))
             {
-                HTuple window = HwindowDic[nCamID][DebugWindowName];
+                HTuple window = Cam.AttachedWindowDic[WINDOW_DEBUG];
                 switch (modelType)
                 {
                     case EnumShapeModelType.Gray:
@@ -983,7 +680,7 @@ namespace JPT_TosaTest.Vision
                         break;
                     case EnumShapeModelType.XLD:
                         HObject region = regionIn as HObject;
-                        return PreProcessShapeMode(HoImageList[nCamID], window, MinThre, MaxThre, region, regionFilePath, false);
+                        return PreProcessShapeMode(Cam.Image, window, MinThre, MaxThre, region, regionFilePath, false);
                     default:
                         return false;
                 }
@@ -1007,118 +704,10 @@ namespace JPT_TosaTest.Vision
             return null;
         }
 
-        public void Debug_FindLine(int nCamID, EnumEdgeType Plority, EnumSelectType SelectType, int Contrast, int CaliperNum)
-        {
-            try
-            {
-                HTuple Row = new HTuple(), Col = new HTuple(), Phi = new HTuple(), L1 = new HTuple(), L2 = new HTuple();
-                HTuple WindowHandle = HwindowDic[nCamID][DebugWindowName];
-                HOperatorSet.SetColor(WindowHandle, "green");
-                HOperatorSet.SetLineWidth(WindowHandle, 1);
-                if (string.IsNullOrEmpty(LineRoiData)) //如果是首次就画一个矩形
-                {
-                    Debug_DrawRectangle2(WindowHandle, out Row, out Col, out Phi, out L1, out L2);
-                    GetRectData(EnumToolType.LineTool, Row, Col, Phi, L1, L2);
-                }
-                else
-                {
-                    string[] paraList = LineRoiData.Split('&');
-                    Row = double.Parse(paraList[0]);
-                    Col = double.Parse(paraList[1]);
-                    Phi = double.Parse(paraList[2]);
-                    L1 = double.Parse(paraList[3]);
-                    L2 = double.Parse(paraList[4]);
-                }
+       
 
-                FindLine(HoImageList[nCamID], Plority, SelectType, CaliperNum, Contrast, Row, Col, Phi, L1, L2, out HTuple hv_OutRowStart, out HTuple hv_OutColStart, out HTuple hv_OutRowEnd, out HTuple hv_OutColEnd);
-
-                HOperatorSet.SetSystem("flush_graphic", "false");
-                HOperatorSet.ClearWindow(WindowHandle);
-                HOperatorSet.DispObj(HoImageList[nCamID], WindowHandle);
-
-                HOperatorSet.SetColor(WindowHandle, "red");
-                HOperatorSet.SetLineWidth(WindowHandle, 3);
-
-                HOperatorSet.SetSystem("flush_graphic", "true");
-                HOperatorSet.DispLine(WindowHandle, hv_OutRowStart, hv_OutColStart, hv_OutRowEnd, hv_OutColEnd);
-
-
-                //HOperatorSet.AngleLx(hv_OutRowStart, hv_OutColStart, hv_OutRowEnd, hv_OutColEnd, out HTuple angle);
-                //angle = angle < 0 ? (angle + 3.1415926) : angle;
-                //disp_message(WindowHandle, "角度：" + angle * 180.0 / 3.1415926 + "度", "image", hv_OutRowStart, hv_OutColStart, "red", "false");
-            }
-            catch (Exception ex)
-            {
-
-            }
-        }
-        public void Debug_FindPair(int nCamID, EnumPairType Plority, EnumSelectType SelectType, int ExpectedPairNum, int Contrast, int CaliperNum)
-        {
-            try
-            {
-                HTuple Row = new HTuple(), Col = new HTuple(), Phi = new HTuple(), L1 = new HTuple(), L2 = new HTuple();
-                HTuple WindowHandle = HwindowDic[nCamID][DebugWindowName];
-                HOperatorSet.SetColor(WindowHandle, "green");
-                HOperatorSet.SetLineWidth(WindowHandle, 1);
-                if (string.IsNullOrEmpty(PairRoiData)) //如果是首次就画一个矩形
-                {
-                    Debug_DrawRectangle2(WindowHandle, out Row, out Col, out Phi, out L1, out L2);
-                    GetRectData(EnumToolType.PairTool, Row, Col, Phi, L1, L2);
-                }
-                else
-                {
-                    string[] paraList = PairRoiData.Split('&');
-                    Row = double.Parse(paraList[0]);
-                    Col = double.Parse(paraList[1]);
-                    Phi = double.Parse(paraList[2]);
-                    L1 = double.Parse(paraList[3]);
-                    L2 = double.Parse(paraList[4]);
-                }
-
-                FindPair(HoImageList[nCamID], ExpectedPairNum, Plority, SelectType, CaliperNum, Contrast, Row, Col, Phi, L1, L2,
-                        out HTuple OutFirstRowStart, out HTuple FirstColStart, out HTuple OutFirstRowEnd, out HTuple OutFirstColEnd,
-                        out HTuple OutSecondRowStart, out HTuple SecondColStart, out HTuple OutSecondRowEnd, out HTuple OutSecondColEnd);
-
-
-                HOperatorSet.SetSystem("flush_graphic", "false");
-                HOperatorSet.ClearWindow(WindowHandle);
-                HOperatorSet.DispObj(HoImageList[nCamID], WindowHandle);
-
-                HOperatorSet.SetColor(WindowHandle, "red");
-                HOperatorSet.SetLineWidth(WindowHandle, 3);
-
-                HOperatorSet.SetSystem("flush_graphic", "true");
-                HOperatorSet.DispLine(WindowHandle, OutFirstRowStart, FirstColStart, OutFirstRowEnd, OutFirstColEnd);
-                HOperatorSet.DispLine(WindowHandle, OutSecondRowStart, SecondColStart, OutSecondRowEnd, OutSecondColEnd);
-            }
-            catch
-            {
-
-            }
-        }
-        public void ZoomImage(int nCamID)
-        {
-            HTuple Offset = 3;
-            HTuple WindowHandle = HwindowDic[nCamID][DebugWindowName];
-            HOperatorSet.GetPart(WindowHandle, out HTuple oldRow1, out HTuple oldCol1, out HTuple oldRow2, out HTuple oldCol2);
-            HOperatorSet.DrawRectangle1Mod(WindowHandle, oldRow1+Offset, oldCol1+Offset, oldRow2-Offset, oldCol2-Offset, out HTuple row1, out HTuple col1, out HTuple row2, out HTuple col2);
-            HOperatorSet.GenRectangle1(out HObject ZoomRectangle, row1, col1, row2, col2);
-            HOperatorSet.SetLineWidth(WindowHandle, 1);
-            HOperatorSet.SetDraw(WindowHandle, "margin");
-            HOperatorSet.SetColor(WindowHandle, "red");
-            HOperatorSet.SetPart(WindowHandle, row1, col1, row2, col2);
-            HOperatorSet.DispObj(HoImageList[nCamID], WindowHandle);
-            ZoomRectangle.Dispose();
-        }
-        public void ResetZoomImage(int nCamID)
-        {
-            HTuple WindowHandle = HwindowDic[nCamID][DebugWindowName];
-            HOperatorSet.GetImageSize(HoImageList[nCamID], out HTuple width, out HTuple height);
-            HOperatorSet.SetPart(WindowHandle, 0, 0, height, width);
-            HOperatorSet.DispObj(HoImageList[nCamID], WindowHandle);
-        }
         #region Private method
-        private void FindLine(HObject ho_Image, EnumEdgeType Polarity, EnumSelectType selectType, HTuple hv_CaliperNum, HTuple hv_EdgeGrayValue, HTuple hv_RoiRow, HTuple hv_RoiCol, HTuple hv_RoiPhi, HTuple hv_RoiL1, HTuple hv_RoiL2, out HTuple hv_OutRowStart, out HTuple hv_OutColStart, out HTuple hv_OutRowEnd, out HTuple hv_OutColEnd)
+        private void FindLine(HObject ho_Image, EnumLinePolarityType Polarity, EnumSelectType selectType, HTuple hv_CaliperNum, HTuple hv_EdgeGrayValue, HTuple hv_RoiRow, HTuple hv_RoiCol, HTuple hv_RoiPhi, HTuple hv_RoiL1, HTuple hv_RoiL2, out HTuple hv_OutRowStart, out HTuple hv_OutColStart, out HTuple hv_OutRowEnd, out HTuple hv_OutColEnd)
         {
             // Local iconic variables 
             HObject ho_Rectangle, ho_Contour = null;
@@ -1131,9 +720,9 @@ namespace JPT_TosaTest.Vision
             HTuple hv_Distance = new HTuple(), hv_RowBegin = new HTuple();
             HTuple hv_ColBegin = new HTuple(), hv_RowEnd = new HTuple();
             HTuple hv_ColEnd = new HTuple(), hv_Nr = new HTuple(), hv_Nc = new HTuple();
-            HTuple hv_Dist = new HTuple(),hv_Polarity=new HTuple(),hv_SelectType=new HTuple();
+            HTuple hv_Dist = new HTuple(), hv_Polarity = new HTuple(), hv_SelectType = new HTuple();
             HTuple hv_CaliperNum_COPY_INP_TMP = hv_CaliperNum.Clone();
-           
+
             // Initialize local and output iconic variables 
             HOperatorSet.GenEmptyObj(out ho_Rectangle);
             HOperatorSet.GenEmptyObj(out ho_Contour);
@@ -1168,13 +757,13 @@ namespace JPT_TosaTest.Vision
 
             switch (Polarity)
             {
-                case EnumEdgeType.LightToDark:
-                    hv_Polarity = "negative"; 
+                case EnumLinePolarityType.LightToDark:
+                    hv_Polarity = "negative";
                     break;
-                case EnumEdgeType.DarkToLight:
+                case EnumLinePolarityType.DarkToLight:
                     hv_Polarity = "positive";
                     break;
-                case EnumEdgeType.All:
+                case EnumLinePolarityType.All:
                     hv_Polarity = "all";
                     break;
             }
@@ -1194,7 +783,7 @@ namespace JPT_TosaTest.Vision
             {
                 HOperatorSet.GenMeasureRectangle2(hv_newRow, hv_newCol, hv_RoiPhi, hv_newL1,
                     hv_newL2, hv_Width, hv_Height, "nearest_neighbor", out hv_MeasureHandle);
- 
+
                 HOperatorSet.MeasurePos(ho_Image, hv_MeasureHandle, 1, hv_EdgeGrayValue, hv_Polarity,
                     hv_SelectType, out hv_RowEdge, out hv_ColumnEdge, out hv_Amplitude, out hv_Distance);
                 hv_newRow = hv_BaseRow - (((hv_newL2 * hv_Cos) * hv_Index) * 2);
@@ -1586,10 +1175,10 @@ namespace JPT_TosaTest.Vision
         {
             Row = Col = Phi = L1 = L2 = 0;
             HOperatorSet.GetPart(WindowHandle, out HTuple oldRow1, out HTuple oldCol1, out HTuple oldRow2, out HTuple oldCol2);
-            HOperatorSet.DrawRectangle2Mod(WindowHandle, (oldRow1+oldRow2)/2, (oldCol1+oldCol2)/2, 0, 100, 100, out Row, out Col, out Phi, out L1, out L2);
+            HOperatorSet.DrawRectangle2Mod(WindowHandle, (oldRow1 + oldRow2) / 2, (oldCol1 + oldCol2) / 2, 0, 100, 100, out Row, out Col, out Phi, out L1, out L2);
         }
-        private void FindPair(HObject ho_Image,HTuple ExpectPairNum, EnumPairType Polarity, EnumSelectType selectType, HTuple hv_CaliperNum, HTuple hv_EdgeGrayValue, HTuple hv_RoiRow, HTuple hv_RoiCol, HTuple hv_RoiPhi, HTuple hv_RoiL1, HTuple hv_RoiL2, 
-                              out HTuple hv_OutFirstRowStart, out HTuple hv_OutFirstColStart, out HTuple hv_OutFirstRowEnd, out HTuple hv_OutFirstColEnd, 
+        private void FindPair(HObject ho_Image, HTuple ExpectPairNum, EnumPairPolarityType Polarity, EnumSelectType selectType, HTuple hv_CaliperNum, HTuple hv_EdgeGrayValue, HTuple hv_RoiRow, HTuple hv_RoiCol, HTuple hv_RoiPhi, HTuple hv_RoiL1, HTuple hv_RoiL2,
+                              out HTuple hv_OutFirstRowStart, out HTuple hv_OutFirstColStart, out HTuple hv_OutFirstRowEnd, out HTuple hv_OutFirstColEnd,
                               out HTuple hv_OutSecondRowStart, out HTuple hv_OutSecondColStart, out HTuple hv_OutSecondRowEnd, out HTuple hv_OutSecondColEnd)
         {
             // Local iconic variables 
@@ -1602,7 +1191,7 @@ namespace JPT_TosaTest.Vision
             HTuple hv_Distance = new HTuple(), hv_RowBegin = new HTuple();
             HTuple hv_ColBegin = new HTuple(), hv_RowEnd = new HTuple();
             HTuple hv_ColEnd = new HTuple(), hv_Nr = new HTuple(), hv_Nc = new HTuple();
-            HTuple hv_Dist = new HTuple(), hv_Polarity = new HTuple(), hv_SelectType=new HTuple();
+            HTuple hv_Dist = new HTuple(), hv_Polarity = new HTuple(), hv_SelectType = new HTuple();
             HTuple hv_CaliperNum_COPY_INP_TMP = hv_CaliperNum.Clone();
             List<HTuple> RowFirstList = new List<HTuple>();
             List<HTuple> ColFirstList = new List<HTuple>();
@@ -1651,18 +1240,18 @@ namespace JPT_TosaTest.Vision
 
             hv_newRow = hv_BaseRow.Clone();
             hv_newCol = hv_BaseCol.Clone();
-            
+
             hv_nCount = 0;
 
             switch (Polarity)
             {
-                case EnumPairType.Dark:
+                case EnumPairPolarityType.Dark:
                     hv_Polarity = "negative";
                     break;
-                case EnumPairType.Light:
+                case EnumPairPolarityType.Light:
                     hv_Polarity = "positive";
                     break;
-                case EnumPairType.All:
+                case EnumPairPolarityType.All:
                     hv_Polarity = "all";
                     break;
             }
@@ -1686,13 +1275,13 @@ namespace JPT_TosaTest.Vision
                 HOperatorSet.GenRectangle2(out HObject rectDebug, hv_newRow, hv_newCol, hv_RoiPhi, hv_newL1, hv_newL2);
                 HOperatorSet.MeasurePairs(ho_Image, hv_MeasureHandle, 1, hv_EdgeGrayValue, hv_Polarity, hv_SelectType, out HTuple rowEdgeFirst, out HTuple columnEdgeFirst,
                                         out HTuple amplitudeFirst, out HTuple rowEdgeSecond, out HTuple columnEdgeSecond, out HTuple amplitudeSecond, out HTuple intraDistance, out HTuple interDistance);
-               
+
                 hv_newRow = hv_BaseRow - (((hv_newL2 * hv_Cos) * hv_Index) * 2);
                 hv_newCol = hv_BaseCol - (((hv_newL2 * hv_Sin) * hv_Index) * 2);
 
-                if (rowEdgeFirst.Length != 0 && rowEdgeFirst.Length==rowEdgeSecond.Length && ExpectPairNum== rowEdgeFirst.Length)
+                if (rowEdgeFirst.Length != 0 && rowEdgeFirst.Length == rowEdgeSecond.Length && ExpectPairNum == rowEdgeFirst.Length)
                 {
-                    for(HTuple i=0;i<ExpectPairNum;i++)
+                    for (HTuple i = 0; i < ExpectPairNum; i++)
                     {
                         RowFirstList[i][hv_nCount] = rowEdgeFirst[i];
                         ColFirstList[i][hv_nCount] = columnEdgeFirst[i];
@@ -1705,7 +1294,7 @@ namespace JPT_TosaTest.Vision
             }
             for (int i = 0; i < RowFirstList.Count; i++)
             {
-                if (RowFirstList[i].Length!= 0)
+                if (RowFirstList[i].Length != 0)
                 {
                     ho_Contour.Dispose();
                     HOperatorSet.GenContourPolygonXld(out ho_Contour, RowFirstList[i], ColFirstList[i]);
@@ -1861,130 +1450,119 @@ namespace JPT_TosaTest.Vision
           HTuple hv_LineInRow1, HTuple hv_LineInCol1, HTuple hv_Distance, HTuple hv_Direction,
           HTuple hv_Polarity, out HTuple hv_LineOutRow, out HTuple hv_LineOutCol, out HTuple hv_LineOutRow1,
           out HTuple hv_LineOutCol1, out HTuple hv_k, out HTuple hv_b)
+        {
+
+
+            // Local control variables 
+
+            HTuple hv_RealDeltaCol, hv_RealDeltaRow, hv_kIn;
+            HTuple hv_bIn, hv_k1, hv_b1, hv_k2, hv_b2, hv_Sqrt1, hv_Sqrt2;
+            HTuple hv_row1, hv_col1, hv_rowTemp1, hv_colTemp1, hv_row2;
+            HTuple hv_col2, hv_rowTemp2, hv_colTemp2;
+
+            // Initialize local and output iconic variables 
+
+            hv_LineOutRow = new HTuple();
+            hv_LineOutCol = new HTuple();
+            hv_LineOutRow1 = new HTuple();
+            hv_LineOutCol1 = new HTuple();
+            HOperatorSet.TupleReal(hv_LineInCol1 - hv_LineInCol, out hv_RealDeltaCol);
+            HOperatorSet.TupleReal(hv_LineInRow1 - hv_LineInRow, out hv_RealDeltaRow);
+
+            hv_kIn = hv_RealDeltaCol / hv_RealDeltaRow;
+            hv_bIn = hv_LineInCol - (hv_kIn * hv_LineInRow);
+            hv_k = hv_kIn.Clone();
+            hv_b = hv_bIn.Clone();
+
+
+            hv_k1 = -1 / hv_kIn;
+            hv_b1 = ((hv_LineInRow * hv_kIn) + hv_bIn) - (hv_k1 * hv_LineInRow);
+
+            hv_k2 = hv_k1.Clone();
+            hv_b2 = ((hv_LineInRow1 * hv_kIn) + hv_bIn) - (hv_k2 * hv_LineInRow1);
+
+            //找出目标点
+            HOperatorSet.TupleSqrt((hv_Distance * hv_Distance) / ((hv_k1 * hv_k1) + 1), out hv_Sqrt1);
+            HOperatorSet.TupleSqrt((hv_Distance * hv_Distance) / ((hv_k2 * hv_k2) + 1), out hv_Sqrt2);
+
+
+            hv_row1 = hv_Sqrt1 + hv_LineInRow;
+            hv_col1 = (hv_k1 * hv_row1) + hv_b1;
+            hv_rowTemp1 = hv_Sqrt2 + hv_LineInRow1;
+            hv_colTemp1 = (hv_k2 * hv_rowTemp1) + hv_b2;
+
+
+            //另一条平行线
+            hv_row2 = (-hv_Sqrt1) + hv_LineInRow;
+            hv_col2 = (hv_k1 * hv_row2) + hv_b1;
+            hv_rowTemp2 = (-hv_Sqrt2) + hv_LineInRow1;
+            hv_colTemp2 = (hv_k2 * hv_rowTemp2) + hv_b2;
+
+
+
+            if ((int)(new HTuple(hv_Direction.TupleEqual("row"))) != 0)
             {
-
-
-                // Local control variables 
-
-                HTuple hv_RealDeltaCol, hv_RealDeltaRow, hv_kIn;
-                HTuple hv_bIn, hv_k1, hv_b1, hv_k2, hv_b2, hv_Sqrt1, hv_Sqrt2;
-                HTuple hv_row1, hv_col1, hv_rowTemp1, hv_colTemp1, hv_row2;
-                HTuple hv_col2, hv_rowTemp2, hv_colTemp2;
-
-                // Initialize local and output iconic variables 
-
-                hv_LineOutRow = new HTuple();
-                hv_LineOutCol = new HTuple();
-                hv_LineOutRow1 = new HTuple();
-                hv_LineOutCol1 = new HTuple();
-                HOperatorSet.TupleReal(hv_LineInCol1 - hv_LineInCol, out hv_RealDeltaCol);
-                HOperatorSet.TupleReal(hv_LineInRow1 - hv_LineInRow, out hv_RealDeltaRow);
-
-                hv_kIn = hv_RealDeltaCol / hv_RealDeltaRow;
-                hv_bIn = hv_LineInCol - (hv_kIn * hv_LineInRow);
-                hv_k = hv_kIn.Clone();
-                hv_b = hv_bIn.Clone();
-
-
-                hv_k1 = -1 / hv_kIn;
-                hv_b1 = ((hv_LineInRow * hv_kIn) + hv_bIn) - (hv_k1 * hv_LineInRow);
-
-                hv_k2 = hv_k1.Clone();
-                hv_b2 = ((hv_LineInRow1 * hv_kIn) + hv_bIn) - (hv_k2 * hv_LineInRow1);
-
-                //找出目标点
-                HOperatorSet.TupleSqrt((hv_Distance * hv_Distance) / ((hv_k1 * hv_k1) + 1), out hv_Sqrt1);
-                HOperatorSet.TupleSqrt((hv_Distance * hv_Distance) / ((hv_k2 * hv_k2) + 1), out hv_Sqrt2);
-
-
-                hv_row1 = hv_Sqrt1 + hv_LineInRow;
-                hv_col1 = (hv_k1 * hv_row1) + hv_b1;
-                hv_rowTemp1 = hv_Sqrt2 + hv_LineInRow1;
-                hv_colTemp1 = (hv_k2 * hv_rowTemp1) + hv_b2;
-
-
-                //另一条平行线
-                hv_row2 = (-hv_Sqrt1) + hv_LineInRow;
-                hv_col2 = (hv_k1 * hv_row2) + hv_b1;
-                hv_rowTemp2 = (-hv_Sqrt2) + hv_LineInRow1;
-                hv_colTemp2 = (hv_k2 * hv_rowTemp2) + hv_b2;
-
-
-
-                if ((int)(new HTuple(hv_Direction.TupleEqual("row"))) != 0)
+                if ((int)(new HTuple(hv_Polarity.TupleGreaterEqual(0))) != 0)
                 {
-                    if ((int)(new HTuple(hv_Polarity.TupleGreaterEqual(0))) != 0)
+                    hv_LineOutRow = hv_row1.Clone();
+                    hv_LineOutCol = hv_col1.Clone();
+                    hv_LineOutRow1 = hv_rowTemp1.Clone();
+                    hv_LineOutCol1 = hv_colTemp1.Clone();
+
+                }
+                else
+                {
+                    hv_LineOutRow = hv_row2.Clone();
+                    hv_LineOutCol = hv_col2.Clone();
+                    hv_LineOutRow1 = hv_rowTemp2.Clone();
+                    hv_LineOutCol1 = hv_colTemp2.Clone();
+                }
+            }
+
+            if ((int)(new HTuple(hv_Direction.TupleEqual("col"))) != 0)
+            {
+                if ((int)(new HTuple(hv_Polarity.TupleGreaterEqual(0))) != 0)
+                {
+                    if ((int)(new HTuple(hv_col1.TupleGreaterEqual(hv_LineInCol))) != 0)
                     {
-                        hv_LineOutRow = hv_row1.Clone();
                         hv_LineOutCol = hv_col1.Clone();
+                        hv_LineOutRow = hv_row1.Clone();
                         hv_LineOutRow1 = hv_rowTemp1.Clone();
                         hv_LineOutCol1 = hv_colTemp1.Clone();
-
                     }
                     else
                     {
-                        hv_LineOutRow = hv_row2.Clone();
                         hv_LineOutCol = hv_col2.Clone();
+                        hv_LineOutRow = hv_row2.Clone();
                         hv_LineOutRow1 = hv_rowTemp2.Clone();
                         hv_LineOutCol1 = hv_colTemp2.Clone();
                     }
                 }
-
-                if ((int)(new HTuple(hv_Direction.TupleEqual("col"))) != 0)
+                else
                 {
-                    if ((int)(new HTuple(hv_Polarity.TupleGreaterEqual(0))) != 0)
+                    if ((int)(new HTuple(hv_col1.TupleGreaterEqual(hv_LineInCol))) != 0)
                     {
-                        if ((int)(new HTuple(hv_col1.TupleGreaterEqual(hv_LineInCol))) != 0)
-                        {
-                            hv_LineOutCol = hv_col1.Clone();
-                            hv_LineOutRow = hv_row1.Clone();
-                            hv_LineOutRow1 = hv_rowTemp1.Clone();
-                            hv_LineOutCol1 = hv_colTemp1.Clone();
-                        }
-                        else
-                        {
-                            hv_LineOutCol = hv_col2.Clone();
-                            hv_LineOutRow = hv_row2.Clone();
-                            hv_LineOutRow1 = hv_rowTemp2.Clone();
-                            hv_LineOutCol1 = hv_colTemp2.Clone();
-                        }
+                        hv_LineOutCol = hv_col2.Clone();
+                        hv_LineOutRow = hv_row2.Clone();
+                        hv_LineOutRow1 = hv_rowTemp2.Clone();
+                        hv_LineOutCol1 = hv_colTemp2.Clone();
                     }
                     else
                     {
-                        if ((int)(new HTuple(hv_col1.TupleGreaterEqual(hv_LineInCol))) != 0)
-                        {
-                            hv_LineOutCol = hv_col2.Clone();
-                            hv_LineOutRow = hv_row2.Clone();
-                            hv_LineOutRow1 = hv_rowTemp2.Clone();
-                            hv_LineOutCol1 = hv_colTemp2.Clone();
-                        }
-                        else
-                        {
-                            hv_LineOutCol = hv_col1.Clone();
-                            hv_LineOutRow = hv_row1.Clone();
-                            hv_LineOutRow1 = hv_rowTemp1.Clone();
-                            hv_LineOutCol1 = hv_colTemp1.Clone();
-                        }
+                        hv_LineOutCol = hv_col1.Clone();
+                        hv_LineOutRow = hv_row1.Clone();
+                        hv_LineOutRow1 = hv_rowTemp1.Clone();
+                        hv_LineOutCol1 = hv_colTemp1.Clone();
                     }
                 }
-                return;
             }
-        public bool SaveFlagToolRegion(string FileFullPathName)
-        {
-            try
-            {
-                HOperatorSet.WriteRegion(GeometryRegion, FileFullPathName.Replace(".para",".reg"));
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            return;
         }
+ 
         /// <summary>
-        ///  确定一个点的唯一位置，通过两条相交直线确定
+        /// 确定一个点的唯一位置，通过两条相交直线确定
         /// </summary>
-        /// <param name="WindowHandle"></param>
+        /// <param name="nCamID"></param>
         /// <param name="image"></param>
         /// <param name="rowStart"></param>
         /// <param name="colStart"></param>
@@ -1995,56 +1573,59 @@ namespace JPT_TosaTest.Vision
         /// <param name="rowEnd1"></param>
         /// <param name="colEnd1"></param>
         /// <param name="GeometryType"></param>
-        /// <param name="geometryPose">输出参数</param>
-        /// <param name="geometryRegion">几何区域</param>
+        /// <param name="OutRegion"></param>
+        /// <param name="PoseOfRegion">保存了两条垂线的交点，以及第一条直线与X轴的夹角</param>
         public void DrawGeometry(int nCamID, HObject image, HTuple rowStart, HTuple colStart, HTuple rowEnd, HTuple colEnd, HTuple rowStart1,
-            HTuple colStart1, HTuple rowEnd1, HTuple colEnd1, EnumGeometryType GeometryType)
+            HTuple colStart1, HTuple rowEnd1, HTuple colEnd1, EnumRoiType GeometryType, out HObject OutRegion, out HTuple PoseOfRegion)
         {
-            HTuple WindowHandle = HwindowDic[nCamID][DebugWindowName];
+            var Cam = CheckCamIDAvilible(nCamID);
+            HTuple WindowHandle = Cam.AttachedWindowDic[WINDOW_DEBUG];
+            OutRegion = new HObject();
+            PoseOfRegion = new HTuple();
             HOperatorSet.GetPart(WindowHandle, out HTuple oldRow1, out HTuple oldCol1, out HTuple oldRow2, out HTuple oldCol2);
             HTuple OldCenterRow = (oldRow1 + oldRow2) / 2;
             HTuple OldCenterCol = (oldCol1 + oldCol2) / 2;
             switch (GeometryType)
             {
-                case EnumGeometryType.CIRCLE:
+                case EnumRoiType.CIRCLE:
                     {
                         HOperatorSet.DrawCircleMod(WindowHandle, OldCenterRow, OldCenterCol, 200, out HTuple row, out HTuple col, out HTuple radius);
                         HOperatorSet.GenCircle(out HObject Circle, row, col, radius);
                         HOperatorSet.GenRegionLine(out HObject region1, row - 30, col, row + 30, col);
                         HOperatorSet.GenRegionLine(out HObject region2, row, col - 30, row, col + 30);
-                        HOperatorSet.Union2(Circle, GeometryRegion, out HObject UnionRegion);
-                        HOperatorSet.Union2(region1, UnionRegion, out  UnionRegion);
+                        HOperatorSet.Union2(Circle, OutRegion, out HObject UnionRegion);
+                        HOperatorSet.Union2(region1, UnionRegion, out UnionRegion);
                         HOperatorSet.Union2(region2, UnionRegion, out UnionRegion);
-                        HOperatorSet.Union2(GeometryRegion, UnionRegion, out UnionRegion);
-                        GeometryRegion = UnionRegion.SelectObj(1);
+                        HOperatorSet.Union2(OutRegion, UnionRegion, out UnionRegion);
+                        OutRegion = UnionRegion.SelectObj(1);
                         UnionRegion.Dispose();
                         Circle.Dispose();
                         region1.Dispose();
                         region2.Dispose();
                     }
                     break;
-                case EnumGeometryType.LINE:
+                case EnumRoiType.LINE:
                     {
                         HOperatorSet.DrawLineMod(WindowHandle, oldRow1, oldCol1, OldCenterRow, OldCenterCol, out HTuple row1, out HTuple col1, out HTuple row2, out HTuple col2);
                         HOperatorSet.GenRegionLine(out HObject Line, row1, col1, row2, col2);
-                        HOperatorSet.Union2(GeometryRegion, Line, out HObject UnionRegion);
-                        HOperatorSet.Union2(GeometryRegion, UnionRegion, out UnionRegion);
-                        GeometryRegion = UnionRegion.SelectObj(1);
+                        HOperatorSet.Union2(OutRegion, Line, out HObject UnionRegion);
+                        HOperatorSet.Union2(OutRegion, UnionRegion, out UnionRegion);
+                        OutRegion = UnionRegion.SelectObj(1);
 
                         UnionRegion.Dispose();
                         Line.Dispose();
 
                     }
                     break;
-                case EnumGeometryType.POINT:
+                case EnumRoiType.POINT:
                     {
                         HOperatorSet.DrawPointMod(WindowHandle, OldCenterRow, OldCenterCol, out HTuple row, out HTuple col);
                         HOperatorSet.GenRegionLine(out HObject region1, row - 30, col, row + 30, col);
-                        HOperatorSet.GenRegionLine(out HObject region2, row, col - 30, row , col + 30);
+                        HOperatorSet.GenRegionLine(out HObject region2, row, col - 30, row, col + 30);
                         HOperatorSet.Union2(region1, region2, out HObject UnionRegion);
 
-                        HOperatorSet.Union2(GeometryRegion, UnionRegion, out UnionRegion);
-                        GeometryRegion = UnionRegion.SelectObj(1);
+                        HOperatorSet.Union2(OutRegion, UnionRegion, out UnionRegion);
+                        OutRegion = UnionRegion.SelectObj(1);
 
                         UnionRegion.Dispose();
                         region1.Dispose();
@@ -2052,25 +1633,25 @@ namespace JPT_TosaTest.Vision
 
                     }
                     break;
-                case EnumGeometryType.RECTANGLE1:
+                case EnumRoiType.RECTANGLE1:
                     {
-                        HOperatorSet.DrawRectangle1Mod(WindowHandle, OldCenterRow, OldCenterCol, OldCenterRow+100, OldCenterCol+100, out HTuple row1, out HTuple col1, out HTuple row2, out HTuple col2);
+                        HOperatorSet.DrawRectangle1Mod(WindowHandle, OldCenterRow, OldCenterCol, OldCenterRow + 100, OldCenterCol + 100, out HTuple row1, out HTuple col1, out HTuple row2, out HTuple col2);
                         HOperatorSet.GenRectangle1(out HObject Rectangle, row1, col1, row2, col2);
 
-                        HOperatorSet.Union2(GeometryRegion, Rectangle, out HObject UnionRegion);
-                        GeometryRegion = UnionRegion.SelectObj(1);
+                        HOperatorSet.Union2(OutRegion, Rectangle, out HObject UnionRegion);
+                        OutRegion = UnionRegion.SelectObj(1);
 
                         UnionRegion.Dispose();
                         Rectangle.Dispose();
                     }
                     break;
-                case EnumGeometryType.RECTANGLE2:
+                case EnumRoiType.RECTANGLE2:
                     {
-                        HOperatorSet.DrawRectangle2Mod(WindowHandle, OldCenterRow, OldCenterCol, 0,100,100, out HTuple row, out HTuple col, out HTuple phi, out  HTuple L1, out HTuple L2);
-                        HOperatorSet.GenRectangle2(out HObject Rectangle, row, col, phi, L1,L2);
+                        HOperatorSet.DrawRectangle2Mod(WindowHandle, OldCenterRow, OldCenterCol, 0, 100, 100, out HTuple row, out HTuple col, out HTuple phi, out HTuple L1, out HTuple L2);
+                        HOperatorSet.GenRectangle2(out HObject Rectangle, row, col, phi, L1, L2);
 
-                        HOperatorSet.Union2(GeometryRegion, Rectangle, out HObject UnionRegion);
-                        GeometryRegion = UnionRegion.SelectObj(1);
+                        HOperatorSet.Union2(OutRegion, Rectangle, out HObject UnionRegion);
+                        OutRegion = UnionRegion.SelectObj(1);
 
                         UnionRegion.Dispose();
                         Rectangle.Dispose();
@@ -2085,24 +1666,36 @@ namespace JPT_TosaTest.Vision
             HOperatorSet.IntersectionLl(rowStart, colStart, rowEnd, colEnd, rowStart1, colStart1, rowEnd1, colEnd1,
                                         out HTuple rowSection, out HTuple colSection, out HTuple isParallel);
             HOperatorSet.AngleLx(rowStart, colStart, rowEnd, colEnd, out HTuple angle);
-           
-            GeometryPose[0] = rowSection;
-            GeometryPose[1] = colSection;
-            GeometryPose[2] = angle;
 
-            HOperatorSet.SetColor(WindowHandle,"green");
-            HOperatorSet.DispObj(GeometryRegion, WindowHandle);
-            HOperatorSet.DispRegion(GeometryRegion, WindowHandle);       
+            PoseOfRegion[0] = rowSection;
+            PoseOfRegion[1] = colSection;
+            PoseOfRegion[2] = angle;
+
         }
 
-        public void GetGeometryRegionBy2Lines(int CamID, HObject region ,HTuple rowStart, HTuple colStart, HTuple rowEnd, HTuple colEnd, HTuple rowStart1,
+        /// <summary>
+        /// 根据之前保存的模板位姿和两条直线，恢复所画的几何图形
+        /// </summary>
+        /// <param name="CamID"></param>
+        /// <param name="region"></param>
+        /// <param name="rowStart"></param>
+        /// <param name="colStart"></param>
+        /// <param name="rowEnd"></param>
+        /// <param name="colEnd"></param>
+        /// <param name="rowStart1"></param>
+        /// <param name="colStart1"></param>
+        /// <param name="rowEnd1"></param>
+        /// <param name="colEnd1"></param>
+        /// <param name="GeometryPose">两条直线的交点，第一条直线与X轴的夹角</param>
+        /// <param name="regionOut">转换之后的Region</param>
+        public void GetGeometryRegionBy2Lines(HObject region, HTuple rowStart, HTuple colStart, HTuple rowEnd, HTuple colEnd, HTuple rowStart1,
             HTuple colStart1, HTuple rowEnd1, HTuple colEnd1, HTuple GeometryPose, out HObject regionOut)
         {
             regionOut = new HObject();
             //原始数据
             HTuple originRow = GeometryPose[0];
             HTuple originCol = GeometryPose[1];
-            HTuple originAngle= GeometryPose[2];
+            HTuple originAngle = GeometryPose[2];
 
             //计算新的数据
             HOperatorSet.IntersectionLl(rowStart, colStart, rowEnd, colEnd, rowStart1, colStart1, rowEnd1, colEnd1,
@@ -2111,8 +1704,16 @@ namespace JPT_TosaTest.Vision
             HOperatorSet.VectorAngleToRigid(originRow, originCol, originAngle, rowSection, colSection, angle, out HTuple homMat2D);
             //投影变换
             HOperatorSet.AffineTransRegion(region, out regionOut, homMat2D, "false");
-            foreach(var it in HwindowDic[CamID])
-                HOperatorSet.DispObj(regionOut, it.Value);
+
+        }
+        private CameraInfoModel CheckCamIDAvilible(int nCamID,[CallerMemberName] string CallerName="")
+        {
+            if (nCamID < 0)
+                throw new Exception($"Wrong CamID:{nCamID} when {CallerName}");
+            var Cams = from cam in CamInfoList where cam.CamID == nCamID select cam;
+            if (Cams.Count() <= 0)
+                throw new Exception($"Wrong CamID:{nCamID} when {CallerName}");
+            return Cams.First();
         }
         #endregion
     }
@@ -2143,6 +1744,7 @@ namespace JPT_TosaTest.Vision
             return list;
         }
 
+       
 
     }
 }

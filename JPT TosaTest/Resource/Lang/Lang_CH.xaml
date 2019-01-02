@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:JPT_TosaTest.Resource.Lang"
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
-        <system:String x:Key="Appliction_Title">组装工作台</system:String>
+    <system:String x:Key="Appliction_Title">FA耦合工作台</system:String>
         <system:String x:Key="Page_Frame_Menu_Page_Home">主页</system:String>
         <system:String x:Key="Page_Frame_Menu_Page_Run">运行</system:String>
         <system:String x:Key="Page_Frame_Menu_Page_Menu">菜单</system:String>
@@ -19,7 +19,7 @@
         <system:String x:Key="Snake_OK">确定</system:String>
     
     
-        <system:String x:Key="Status_Version">版本:1.0.0.0</system:String>
+        <system:String x:Key="Status_Version">版本:1.0.0</system:String>
         <system:String x:Key="Status_User">用户:</system:String>
         <system:String x:Key="Status_Info">信息</system:String>
 

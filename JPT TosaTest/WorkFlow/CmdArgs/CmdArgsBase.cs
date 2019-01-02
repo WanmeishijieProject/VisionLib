@@ -9,5 +9,6 @@ namespace JPT_TosaTest.WorkFlow.CmdArgs
     public class CmdArgsBase
     {
         public string CmdName { get; set; }
+        
     }
 }

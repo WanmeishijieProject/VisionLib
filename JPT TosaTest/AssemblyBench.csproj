@@ -75,6 +75,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\JKLightSourceLib.dll</HintPath>
     </Reference>
+    <Reference Include="M12, Version=1.0.1.12, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\irixi-m12-library-develop\M12\bin\Debug\M12.dll</HintPath>
+    </Reference>
     <Reference Include="MaterialDesignColors">
       <HintPath>ExDll\MaterialDesignColors.dll</HintPath>
     </Reference>
@@ -550,10 +554,6 @@
     <Resource Include="Images\Monitor.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\irixi-m12-library-develop\M12\M12.csproj">
-      <Project>{0d53d43a-73de-4ab8-9549-e9c06675928f}</Project>
-      <Name>M12</Name>
-    </ProjectReference>
     <ProjectReference Include="..\AxisParaLib\AxisParaLib.csproj">
       <Project>{550d7643-117d-4b91-8da7-56a138558edb}</Project>
       <Name>AxisParaLib</Name>

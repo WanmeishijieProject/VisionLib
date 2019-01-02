@@ -29,7 +29,7 @@ namespace JPT_TosaTest.WorkFlow
         public string StationName;
         public int StationIndex;
         protected bool bPause = false;
-        protected CmdArgsBase CmdPara = null;
+        protected Queue<CmdArgsBase> CmdParaQueue = null;
         public event StationInfoHandler OnStationInfoChanged;
         protected WorkFlowConfig cfg = null;
         protected CancellationTokenSource cts =new CancellationTokenSource();
@@ -38,6 +38,11 @@ namespace JPT_TosaTest.WorkFlow
         protected int nSubStep = 0;
         protected object Step { get; set; }
         private object _lock = new object();
+        public WorkFlowBase(WorkFlowConfig cfg)
+        {
+            CmdParaQueue = new Queue<CmdArgsBase>();
+            this.cfg = cfg;
+        }
         protected object PeekStep()
         {
             try
@@ -59,7 +64,8 @@ namespace JPT_TosaTest.WorkFlow
             lock (_lock)
             {
                 nStepQueue.Enqueue(Step);
-                CmdPara = para;
+                if(para!=null)
+                    CmdParaQueue.Enqueue(para);
             }
         }
         protected void PopAndPushStep(object Step)
@@ -97,7 +103,7 @@ namespace JPT_TosaTest.WorkFlow
             }
         }
         public virtual bool UserInit() { return true; }
-        public WorkFlowBase(WorkFlowConfig cfg) { this.cfg = cfg; }
+
         public void ShowInfo(string strInfo=null)    //int msg, int iPara, object lParam
         {
             if (strInfo == null || strInfo.Trim().ToString() == "")
@@ -149,5 +155,7 @@ namespace JPT_TosaTest.WorkFlow
         {
             return PeekStep();
         }
+
+       
     }
 }
