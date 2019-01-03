@@ -12,16 +12,18 @@ namespace VisionLib.Tests
     [TestClass()]
     public class HalconVisionTests
     {
+        private HalconVision Vision = HalconVision.Instance;
         [TestMethod()]
         public void FindCameraTest()
         {
-            var Res=HalconVision.Instance.FindCamera(VisionDefinitions.EnumCamType.GigEVision, new List<string>() { "Cam_Up" }, out List<string> ErrorList);
-
-            StepFindModel FindModel = new StepFindModel()
-            {
-                In_CamID = 1,
-            };
-            Console.WriteLine($"{Res[0].NameForVision}");
+            var Res= Vision.FindCamera(VisionDefinitions.EnumCamType.GigEVision, new List<string>() { "Cam_Up" }, out List<string> ErrorList);
+            var Cam = Res[0];
+            
+            Vision.OpenCam(Cam.CamID);
+            Vision.GrabImage(Cam.CamID);
+            
+            Vision.SaveImage(Cam.CamID, VisionDefinitions.EnumImageType.Image, "C:\\公司文件资料", "2225678.jpg", 0);
+            Vision.CloseCam(Cam.CamID);
         }
 
 

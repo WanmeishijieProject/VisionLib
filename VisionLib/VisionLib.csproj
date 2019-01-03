@@ -52,7 +52,6 @@
     <Compile Include="CommonVisionStep\StepShowFlag.cs" />
     <Compile Include="CommonVisionStep\VisionLineData.cs" />
     <Compile Include="CommonVisionStep\VisionProcessStepBase.cs" />
-    <Compile Include="FindCamResult.cs" />
     <Compile Include="HalconVision.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VisionDefinitions.cs" />

@@ -17,13 +17,7 @@ namespace VisionLib
         private HalconVision()
         {
             HOperatorSet.GenEmptyObj(out Region);
-            for (int i = 0; i < 10; i++)
-            {
-                CamInfoList.Add(new CameraInfoModel()
-                {
-                    CamID = -1,
-                });
-            }
+           
         }
         private static readonly Lazy<HalconVision> _instance = new Lazy<HalconVision>(() => new HalconVision());
         public static HalconVision Instance
@@ -34,7 +28,6 @@ namespace VisionLib
 
         #region  Field
         private List<CameraInfoModel> CamInfoList = new List<CameraInfoModel>();
-        private Dictionary<string, Tuple<string, string>> CamCfgDic = new Dictionary<string, Tuple<string, string>>();
         private HObject Region = null;
         public Enum_REGION_OPERATOR RegionOperator = Enum_REGION_OPERATOR.ADD;
         public Enum_REGION_TYPE RegionType = Enum_REGION_TYPE.CIRCLE;
@@ -85,7 +78,6 @@ namespace VisionLib
         public void GetSyncSp(out AutoResetEvent Se, out object Lock, int CamID)
         {
             CheckCamIDAvilible(CamID);
-            Lock = null;
             Se = SyncEvent;
             var Cam = CheckCamIDAvilible(CamID);
             Lock = Cam.VisionLock; 
@@ -106,8 +98,8 @@ namespace VisionLib
                     {
                         //HOperatorSet.OpenFramegrabber("DirectShow", 1, 1, 0, 0, 0, 0, "default", 8, "rgb",
                         //                        -1, "false", "default", "Integrated Camera", 0, -1, out hv_AcqHandle);
-                        HOperatorSet.OpenFramegrabber(CamCfgDic.ElementAt(nCamID).Value.Item2, 1, 1, 0, 0, 0, 0, "default", 8, "gray",
-                                                    -1, "false", "default", CamCfgDic.ElementAt(nCamID).Value.Item1, 0, -1, out hv_AcqHandle);
+                        HOperatorSet.OpenFramegrabber(Cam.Type.ToString(), 1, 1, 0, 0, 0, 0, "default", 8, "gray",
+                                                    -1, "false", "default", Cam.NameForVision, 0, -1, out hv_AcqHandle);
                         Cam.AcqHandle = hv_AcqHandle;
                         Cam.IsActive = true;
                         Cam.IsConnected = true;
@@ -116,7 +108,9 @@ namespace VisionLib
                     {
                         HOperatorSet.GrabImage(out image, Cam.AcqHandle);
                         HOperatorSet.GetImageSize(image, out width, out height);
-                        Cam.Image = image;
+                        if (Cam.Image!=null)
+                            Cam.Image.Dispose();
+                        Cam.Image = image.SelectObj(1);
                         Cam.ImageWidth = width;
                         Cam.ImageHeight = height;
 
@@ -129,7 +123,7 @@ namespace VisionLib
                     return true;
                 }
             }
-            catch
+            catch(Exception ex)
             {
                 return false;
             }
@@ -189,19 +183,21 @@ namespace VisionLib
                     var Cam = Cams.First();
                     lock (Cam.VisionLock)
                     {
-                        if (Cam.AttachedWindowDic.Count == 0)
-                            throw new Exception($"请先给相机{Cam.CamID}绑定视觉窗口");
                         if (IsCamOpen(nCamID))
                         {
                             if (!bContinus)
                             {
+
                                 HOperatorSet.GrabImage(out image, Cam.AcqHandle);
                             }
                             else
                             {
                                 HOperatorSet.GrabImageAsync(out image, Cam.AcqHandle, -1);
                             }
-                            Cam.Image = image;
+                            if (Cam.Image!=null)
+                                Cam.Image.Dispose();
+                            Cam.Image = image.SelectObj(1);
+
                             if (!SyncEvent.WaitOne(50))
                             {
                                 foreach (var dic in Cam.AttachedWindowDic)
@@ -214,8 +210,6 @@ namespace VisionLib
                                 }
                             }
                         }
-                        else
-                            throw new Exception($"请先打开相机{Cam.CamID}");
                     }
                 }
             }
@@ -330,6 +324,16 @@ namespace VisionLib
             }
             return false;
         }
+
+        /// <summary>
+        /// 保存图片
+        /// </summary>
+        /// <param name="nCamID">相机ID号</param>
+        /// <param name="type">保存图片的类型Image-保存原图，Window-保存当前窗口</param>
+        /// <param name="filePath">图片路径如 C:\\Folder</param>
+        /// <param name="fileName">图片名称如 Image.jpg</param>
+        /// <param name="hWindow">当type=Window的时候需要提供此参数，否则忽略</param>
+        /// <returns></returns>
         public bool SaveImage(int nCamID, EnumImageType type, string filePath, string fileName, HTuple hWindow)
         {
             try
@@ -376,9 +380,9 @@ namespace VisionLib
             HOperatorSet.CloseAllFramegrabbers();
             return true;
         }
-        public List<FindCamResult> FindCamera(EnumCamType camType, List<string> acturalNameList, out List<string> ErrorList)
+        public List<CameraInfoModel> FindCamera(EnumCamType camType, List<string> acturalNameList, out List<string> ErrorList)
         {
-            var ResultList = new List<FindCamResult>();
+            
             ErrorList = new List<string>();
 #if TEST
             dic.Add("DirectShow", new Tuple<string, string>("Integrated Camera", "DirectShow"));
@@ -389,7 +393,7 @@ namespace VisionLib
             {
                 HOperatorSet.InfoFramegrabber(camType.ToString(), "info_boards", out HTuple hv_Information, out HTuple hv_ValueList);
                 if (0 == hv_ValueList.Length)
-                    return ResultList;
+                    return CamInfoList;
                 for (int i = 0; i < acturalNameList.Count; i++)
                 {
                     bool bFind = false;
@@ -401,7 +405,12 @@ namespace VisionLib
                             string Name = listAttr.First().Trim().Replace("device:", "");
                             if (Name.Contains(acturalNameList[i]))
                             {
-                                ResultList.Add(new FindCamResult(acturalNameList[i], Name.Trim(), camType));
+                                CamInfoList.Add(new CameraInfoModel() {
+                                    ActualName= acturalNameList[i],
+                                    NameForVision= Name.Trim(),
+                                    Type= camType,
+                                    CamID=i
+                                });
                                 bFind = true;
                                 break;
                             }
@@ -410,12 +419,12 @@ namespace VisionLib
                     if (!bFind)
                         ErrorList.Add($"相机:{ acturalNameList[i]}未找到硬件，请检查硬件连接或者配置");
                 }
-                return ResultList;
+                return CamInfoList;
             }
             catch (Exception ex)
             {
                 ErrorList.Add($"FIndCamera error:{ex.Message}");
-                return ResultList;
+                return CamInfoList;
             }
 
         }
@@ -959,10 +968,9 @@ namespace VisionLib
 
             return;
         }
-        private void disp_message(HTuple hv_WindowHandle, HTuple hv_String, HTuple hv_CoordSystem, HTuple hv_Row, HTuple hv_Column, HTuple hv_Color, HTuple hv_Box)
+        public void disp_message(HTuple hv_WindowHandle, HTuple hv_String, HTuple hv_CoordSystem, HTuple hv_Row, HTuple hv_Column, HTuple hv_Color, HTuple hv_Box)
         {
             // Local control variables 
-
             HTuple hv_Red, hv_Green, hv_Blue, hv_Row1Part;
             HTuple hv_Column1Part, hv_Row2Part, hv_Column2Part, hv_RowWin;
             HTuple hv_ColumnWin, hv_WidthWin, hv_HeightWin, hv_MaxAscent;
@@ -1706,7 +1714,8 @@ namespace VisionLib
             HOperatorSet.AffineTransRegion(region, out regionOut, homMat2D, "false");
 
         }
-        private CameraInfoModel CheckCamIDAvilible(int nCamID,[CallerMemberName] string CallerName="")
+
+        public CameraInfoModel CheckCamIDAvilible(int nCamID,[CallerMemberName] string CallerName="")
         {
             if (nCamID < 0)
                 throw new Exception($"Wrong CamID:{nCamID} when {CallerName}");
