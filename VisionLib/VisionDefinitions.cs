@@ -68,6 +68,7 @@ namespace VisionLib
             CIRCLE,
             RECTANGLE1,
             RECTANGLE2,
+            USERDEFINE,
         }
         public enum EnumVisionColor
         {
@@ -82,6 +83,18 @@ namespace VisionLib
         {
             margin,
             fill,
+        }
+
+        public enum EnumGenLineAxis
+        {
+            row,
+            col,
+        }
+
+        public enum EnumGenLineDirection
+        {
+            Small=-1,
+            Big=1,
         }
     }
 }

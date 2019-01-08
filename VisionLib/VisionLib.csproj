@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="CameraInfoModel.cs" />
     <Compile Include="DataModel\VisionLineData.cs" />
+    <Compile Include="DataModel\VisionPointAngleData.cs" />
     <Compile Include="DataModel\VisionRectangle1Data.cs" />
     <Compile Include="DataModel\VisionRectangle2Data.cs" />
     <Compile Include="HalconVision.cs" />

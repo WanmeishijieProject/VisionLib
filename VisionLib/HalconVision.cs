@@ -85,7 +85,6 @@ namespace VisionLib
 
         public bool OpenCam(int nCamID)
         {
-            CheckCamIDAvilible(nCamID);
             HObject image = null;
             HTuple hv_AcqHandle = null;
             HTuple width = 0, height = 0;
@@ -135,34 +134,31 @@ namespace VisionLib
         }
         public bool CloseCam(int nCamID)
         {
-            CheckCamIDAvilible(nCamID);
-            foreach (var it in CamInfoList)
+            var Cam = CheckCamIDAvilible(nCamID);
+            lock (Cam.VisionLock)
             {
-                lock (it.VisionLock)
+                if (Cam.IsConnected)
                 {
-                    if (it.IsConnected)
-                    {
-                        HOperatorSet.CloseFramegrabber(it.AcqHandle);
-                        it.IsConnected = false;
-                        it.IsActive = false;
-                    }
+                    HOperatorSet.CloseFramegrabber(Cam.AcqHandle);
+                    Cam.IsConnected = false;
+                    Cam.IsActive = false;
                 }
             }
+            
             return true;
         }
         public bool IsCamOpen(int nCamID)
         {
-            CheckCamIDAvilible(nCamID);
-            foreach (var it in CamInfoList)
+            var Cam = CheckCamIDAvilible(nCamID);
+           
+            lock (Cam.VisionLock)
             {
-                lock (it.VisionLock)
+                if (Cam.CamID == nCamID)
                 {
-                    if (it.CamID == nCamID)
-                    {
-                        return it.IsConnected;
-                    }
+                    return Cam.IsConnected;
                 }
             }
+            
             return false;
         }
         /// <summary>
@@ -173,47 +169,41 @@ namespace VisionLib
         /// <param name="bContinus"></param>
         public HObject GrabImage(int nCamID, bool bDispose = true, bool bContinus = false)
         {
-            CheckCamIDAvilible(nCamID);
+            var Cam = CheckCamIDAvilible(nCamID);
             HObject image = null;
             try
             {
-                var Cams = from cam in CamInfoList where cam.CamID == nCamID select cam;
-                if (Cams.Count() > 0)
+                lock (Cam.VisionLock)
                 {
-                    var Cam = Cams.First();
-                    lock (Cam.VisionLock)
+                    if (IsCamOpen(Cam.CamID))
                     {
-                        if (IsCamOpen(nCamID))
+                        if (!bContinus)
                         {
-                            if (!bContinus)
-                            {
 
-                                HOperatorSet.GrabImage(out image, Cam.AcqHandle);
-                            }
-                            else
-                            {
-                                HOperatorSet.GrabImageAsync(out image, Cam.AcqHandle, -1);
-                            }
-                            if (Cam.Image!=null)
-                                Cam.Image.Dispose();
-                            Cam.Image = image.SelectObj(1);
+                            HOperatorSet.GrabImage(out image, Cam.AcqHandle);
+                        }
+                        else
+                        {
+                            HOperatorSet.GrabImageAsync(out image, Cam.AcqHandle, -1);
+                        }
+                        if (Cam.Image!=null)
+                            Cam.Image.Dispose();
+                        Cam.Image = image.SelectObj(1);
                            
-                            if (!SyncEvent.WaitOne(50))
+                        if (!SyncEvent.WaitOne(50))
+                        {
+                            foreach (var dic in Cam.AttachedWindowDic)
                             {
-                                foreach (var dic in Cam.AttachedWindowDic)
+                                if (dic.Value != -1)
                                 {
-                                    if (dic.Value != -1)
-                                    {
-                                        HOperatorSet.SetPart(dic.Value, 0, 0, Cam.ImageHeight, Cam.ImageWidth);
-                                        HOperatorSet.DispObj(Cam.Image, dic.Value);
-                                    }
+                                    HOperatorSet.SetPart(dic.Value, 0, 0, Cam.ImageHeight, Cam.ImageWidth);
+                                    HOperatorSet.DispObj(Cam.Image, dic.Value);
                                 }
                             }
                         }
                     }
-                    return Cam.Image;
                 }
-                return null;
+                return Cam.Image;
             }
             catch (Exception ex)
             {
@@ -312,7 +302,7 @@ namespace VisionLib
                 return null;
             }
         }
-        public bool CloseCamera()
+        public bool CloseAllCamera()
         {
             HOperatorSet.CloseAllFramegrabbers();
             return true;
@@ -437,8 +427,6 @@ namespace VisionLib
             {
                 foreach (var para in LineParaList)
                 {
-
-
                     string[] paralist = para.Split('|');
                     if (paralist.Count() != 3)
                         continue;
@@ -503,6 +491,7 @@ namespace VisionLib
                 return false;
             }
         }
+
         public bool DisplayLines(HWindow WindowHandle, List<VisionLineData> lineList, EnumVisionColor Color)
         {
             try
@@ -529,7 +518,6 @@ namespace VisionLib
                 HOperatorSet.DispObj(region, WindowHandle);
                 region.Dispose();
                 return true;
-            
         }
         public bool DisplayRegion(HWindow WindowHandle, EnumVisionColor Color, EnumVisionDrawMode DrawMode, params HObject[] RegionList)
         {
@@ -582,7 +570,6 @@ namespace VisionLib
             factor = 1;
             if (LineList == null || LineList.Count < 2 || RealDistance == 0.0f)
                 return false;
-         
             HOperatorSet.DistancePl(LineList[0].RowStart, LineList[0].ColStart, LineList[1].RowStart, LineList[1].ColStart, LineList[1].RowEnd, LineList[1].ColEnd, out HTuple D1);
             HOperatorSet.DistancePl(LineList[0].RowEnd, LineList[0].ColEnd, LineList[1].RowStart, LineList[1].ColStart, LineList[1].RowEnd, LineList[1].ColEnd, out HTuple D2);
             factor = (2 * RealDistance) / (D1 + D2);
@@ -1263,11 +1250,9 @@ namespace VisionLib
         /// <param name="hv_bIn"></param>
         public void GetVerticalFromDistance(HTuple hv_FootRow, HTuple hv_FootCol, HTuple hv_LineRowStart,
             HTuple hv_LineColStart, HTuple hv_LineRowEnd, HTuple hv_LineColEnd, HTuple hv_Distance,
-            HTuple hv_Direction, HTuple hv_Polarity, out HTuple hv_TargetRow, out HTuple hv_TargetCol,
+            EnumGenLineAxis hv_GenLineAxis, EnumGenLineDirection hv_Polarity, out HTuple hv_TargetRow, out HTuple hv_TargetCol,
             out HTuple hv_k, out HTuple hv_b, out HTuple hv_kIn, out HTuple hv_bIn)
         {
-
-
             // Local control variables 
 
             HTuple hv_RealDeltaCol, hv_RealDeltaRow, hv_Sqrt;
@@ -1288,15 +1273,16 @@ namespace VisionLib
 
             //找出目标点
             HOperatorSet.TupleSqrt((hv_Distance * hv_Distance) / ((hv_k * hv_k) + 1), out hv_Sqrt);
+
             hv_row1 = hv_Sqrt + hv_FootRow;
             hv_col1 = (hv_k * hv_row1) + hv_b;
 
             hv_row2 = (-hv_Sqrt) + hv_FootRow;
             hv_col2 = (hv_k * hv_row2) + hv_b;
 
-            if ((int)(new HTuple(hv_Direction.TupleEqual("row"))) != 0)
+            if (hv_GenLineAxis == EnumGenLineAxis.row)
             {
-                if ((int)(new HTuple(hv_Polarity.TupleGreaterEqual(0))) != 0)
+                if (hv_Polarity==EnumGenLineDirection.Big)
                 {
                     hv_TargetRow = hv_row1.Clone();
                     hv_TargetCol = hv_col1.Clone();
@@ -1308,9 +1294,9 @@ namespace VisionLib
                 }
             }
 
-            if ((int)(new HTuple(hv_Direction.TupleEqual("col"))) != 0)
+            if (hv_GenLineAxis == EnumGenLineAxis.col)
             {
-                if ((int)(new HTuple(hv_Polarity.TupleGreaterEqual(0))) != 0)
+                if (hv_Polarity==EnumGenLineDirection.Big)
                 {
                     if ((int)(new HTuple(hv_col1.TupleGreaterEqual(hv_FootCol))) != 0)
                     {
@@ -1357,9 +1343,11 @@ namespace VisionLib
         /// <param name="hv_LineOutCol1">平行线终点Col</param>
         /// <param name="hv_k">平行线斜率</param>
         /// <param name="hv_b">平行线截距</param>
+
+
         public void GetParallelLineFromDistance(HTuple hv_LineInRow, HTuple hv_LineInCol,
-          HTuple hv_LineInRow1, HTuple hv_LineInCol1, HTuple hv_Distance, HTuple hv_Direction,
-          HTuple hv_Polarity, out HTuple hv_LineOutRow, out HTuple hv_LineOutCol, out HTuple hv_LineOutRow1,
+          HTuple hv_LineInRow1, HTuple hv_LineInCol1, HTuple hv_Distance, EnumGenLineAxis hv_GenLineAxis,
+          EnumGenLineDirection hv_Polarity, out HTuple hv_LineOutRow, out HTuple hv_LineOutCol, out HTuple hv_LineOutRow1,
           out HTuple hv_LineOutCol1, out HTuple hv_k, out HTuple hv_b)
         {
 
@@ -1411,9 +1399,9 @@ namespace VisionLib
 
 
 
-            if ((int)(new HTuple(hv_Direction.TupleEqual("row"))) != 0)
+            if (hv_GenLineAxis==EnumGenLineAxis.row)
             {
-                if ((int)(new HTuple(hv_Polarity.TupleGreaterEqual(0))) != 0)
+                if (hv_Polarity==EnumGenLineDirection.Big)
                 {
                     hv_LineOutRow = hv_row1.Clone();
                     hv_LineOutCol = hv_col1.Clone();
@@ -1430,9 +1418,9 @@ namespace VisionLib
                 }
             }
 
-            if ((int)(new HTuple(hv_Direction.TupleEqual("col"))) != 0)
+            if (hv_GenLineAxis==EnumGenLineAxis.col)
             {
-                if ((int)(new HTuple(hv_Polarity.TupleGreaterEqual(0))) != 0)
+                if (hv_Polarity==EnumGenLineDirection.Big)
                 {
                     if ((int)(new HTuple(hv_col1.TupleGreaterEqual(hv_LineInCol))) != 0)
                     {
@@ -1470,29 +1458,13 @@ namespace VisionLib
             return;
         }
  
-        /// <summary>
-        /// 确定一个点的唯一位置，通过两条相交直线确定
-        /// </summary>
-        /// <param name="nCamID"></param>
-        /// <param name="image"></param>
-        /// <param name="rowStart"></param>
-        /// <param name="colStart"></param>
-        /// <param name="rowEnd"></param>
-        /// <param name="colEnd"></param>
-        /// <param name="rowStart1"></param>
-        /// <param name="colStart1"></param>
-        /// <param name="rowEnd1"></param>
-        /// <param name="colEnd1"></param>
-        /// <param name="GeometryType"></param>
-        /// <param name="OutRegion"></param>
-        /// <param name="PoseOfRegion">保存了两条垂线的交点，以及第一条直线与X轴的夹角</param>
-        public void DrawGeometry(int nCamID, HObject image, HTuple rowStart, HTuple colStart, HTuple rowEnd, HTuple colEnd, HTuple rowStart1,
-            HTuple colStart1, HTuple rowEnd1, HTuple colEnd1, EnumRoiType GeometryType, out HObject OutRegion, out HTuple PoseOfRegion)
+
+        public void DrawGeometry(int nCamID, HObject image, VisionLineData LineX, VisionLineData LineY, EnumRoiType GeometryType, out HObject OutRegion, out VisionPointAngleData RegionPose)
         {
             var Cam = CheckCamIDAvilible(nCamID);
             HTuple WindowHandle = Cam.AttachedWindowDic[WINDOW_DEBUG];
             OutRegion = new HObject();
-            PoseOfRegion = new HTuple();
+            RegionPose = new VisionPointAngleData();
             HOperatorSet.GetPart(WindowHandle, out HTuple oldRow1, out HTuple oldCol1, out HTuple oldRow2, out HTuple oldCol2);
             HTuple OldCenterRow = (oldRow1 + oldRow2) / 2;
             HTuple OldCenterCol = (oldCol1 + oldCol2) / 2;
@@ -1572,50 +1544,57 @@ namespace VisionLib
                     break;
             }
 
-            //采用极坐标表示当前region的姿态
-            //与其中一条线的夹角，与两条直线交点的距离
-            HOperatorSet.IntersectionLl(rowStart, colStart, rowEnd, colEnd, rowStart1, colStart1, rowEnd1, colEnd1,
+            
+            //两条直线的交点
+            HOperatorSet.IntersectionLl(LineX.RowStart, LineX.ColStart, LineX.RowEnd, LineX.ColEnd, 
+                                        LineY.RowStart, LineY.ColStart, LineY.RowEnd, LineY.ColEnd,
                                         out HTuple rowSection, out HTuple colSection, out HTuple isParallel);
-            HOperatorSet.AngleLx(rowStart, colStart, rowEnd, colEnd, out HTuple angle);
 
-            PoseOfRegion[0] = rowSection;
-            PoseOfRegion[1] = colSection;
-            PoseOfRegion[2] = angle;
+            //LineX与X轴的距离
+            HOperatorSet.AngleLx(LineX.RowStart, LineX.ColStart, LineX.RowEnd, LineX.ColEnd, out HTuple angle);
+
+            RegionPose.Row = rowSection;
+            RegionPose.Col = colSection;
+            RegionPose.Angle = angle;
 
         }
+
         /// <summary>
-        /// 根据之前保存的模板位姿和两条直线，恢复所画的几何图形
+        /// 根据之前的Pose映射Region
         /// </summary>
-        /// <param name="CamID"></param>
         /// <param name="region"></param>
-        /// <param name="rowStart"></param>
-        /// <param name="colStart"></param>
-        /// <param name="rowEnd"></param>
-        /// <param name="colEnd"></param>
-        /// <param name="rowStart1"></param>
-        /// <param name="colStart1"></param>
-        /// <param name="rowEnd1"></param>
-        /// <param name="colEnd1"></param>
+        /// <param name="LineX"></param>
+        /// <param name="LineY"></param>
         /// <param name="GeometryPose">两条直线的交点，第一条直线与X轴的夹角</param>
         /// <param name="regionOut">转换之后的Region</param>
-        public void GetGeometryRegionBy2Lines(HObject region, HTuple rowStart, HTuple colStart, HTuple rowEnd, HTuple colEnd, HTuple rowStart1,
-            HTuple colStart1, HTuple rowEnd1, HTuple colEnd1, HTuple GeometryPose, out HObject regionOut)
+        public void GetGeometryRegionBy2Lines(HObject region, VisionLineData LineX, VisionLineData LineY, VisionPointAngleData GeometryPose, out HObject regionOut)
         {
             regionOut = new HObject();
             //原始数据
-            HTuple originRow = GeometryPose[0];
-            HTuple originCol = GeometryPose[1];
-            HTuple originAngle = GeometryPose[2];
+            HTuple originRow = GeometryPose.Row;
+            HTuple originCol = GeometryPose.Col;
+            HTuple originAngle = GeometryPose.Angle;
 
-            //计算新的数据
-            HOperatorSet.IntersectionLl(rowStart, colStart, rowEnd, colEnd, rowStart1, colStart1, rowEnd1, colEnd1,
-                                       out HTuple rowSection, out HTuple colSection, out HTuple isParallel);
-            HOperatorSet.AngleLx(rowStart, colStart, rowEnd, colEnd, out HTuple angle);
+            //计算新的数据，交点
+            HOperatorSet.IntersectionLl(LineX.RowStart, LineX.ColStart, LineX.RowEnd, LineX.ColEnd, 
+                                        LineY.RowStart, LineY.ColStart, LineY.RowEnd, LineY.ColEnd,
+                                        out HTuple rowSection, out HTuple colSection, out HTuple isParallel);
+            //夹角
+            HOperatorSet.AngleLx(LineX.RowStart, LineX.ColStart, LineX.RowEnd, LineX.ColEnd, out HTuple angle);
+
+            //计算矩阵
             HOperatorSet.VectorAngleToRigid(originRow, originCol, originAngle, rowSection, colSection, angle, out HTuple homMat2D);
+            
             //投影变换
             HOperatorSet.AffineTransRegion(region, out regionOut, homMat2D, "false");
-
         }
+
+        /// <summary>
+        /// 寻找指定CamID的Camera的信息
+        /// </summary>
+        /// <param name="nCamID"></param>
+        /// <param name="CallerName"></param>
+        /// <returns></returns>
         public CameraInfoModel CheckCamIDAvilible(int nCamID,[CallerMemberName] string CallerName="")
         {
             if (nCamID < 0)
@@ -1627,33 +1606,4 @@ namespace VisionLib
         }
     }
 
-    public class VisionDataHelper
-    {
-        public static List<string> GetRoiListForSpecCamera(int nCamID, List<string> fileListInDataDirection)
-        {
-            var list = new List<string>();
-            foreach (var it in fileListInDataDirection)
-            {
-                if (it.Contains(string.Format("Cam{0}_", nCamID)))
-                    list.Add(it);
-            }
-            return list;
-        }
-        public static List<string> GetTemplateListForSpecCamera(int nCamID, List<string> fileListInDataDirection)
-        {
-            var list = new List<string>();
-            if (nCamID >= 0)
-            {
-                foreach (var it in fileListInDataDirection)
-                {
-                    if (it.Contains(string.Format("Cam{0}_", nCamID)))
-                        list.Add(it);
-                }
-            }
-            return list;
-        }
-
-       
-
-    }
 }
