@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using HalconDotNet;
-using VisionLib.CommonVisionStep;
+using VisionLib.DataModel;
 using static VisionLib.VisionDefinitions;
 
 namespace VisionLib
@@ -171,7 +171,7 @@ namespace VisionLib
         /// <param name="nCamID"></param>
         /// <param name="bDispose"></param>
         /// <param name="bContinus"></param>
-        public void GrabImage(int nCamID, bool bDispose = true, bool bContinus = false)
+        public HObject GrabImage(int nCamID, bool bDispose = true, bool bContinus = false)
         {
             CheckCamIDAvilible(nCamID);
             HObject image = null;
@@ -197,7 +197,7 @@ namespace VisionLib
                             if (Cam.Image!=null)
                                 Cam.Image.Dispose();
                             Cam.Image = image.SelectObj(1);
-
+                           
                             if (!SyncEvent.WaitOne(50))
                             {
                                 foreach (var dic in Cam.AttachedWindowDic)
@@ -211,7 +211,9 @@ namespace VisionLib
                             }
                         }
                     }
+                    return Cam.Image;
                 }
+                return null;
             }
             catch (Exception ex)
             {
@@ -225,106 +227,34 @@ namespace VisionLib
                 }
             }
         }
+         
 
         /// <summary>
-        /// 传入的处理步骤参数
+        /// 根据模板名称读取模板
         /// </summary>
-        /// <param name="ProcessStep"></param>
+        /// <param name="Window"></param>
+        /// <param name="ModelFilePathName"></param>
         /// <returns></returns>
-        public bool ProcessImage(VisionProcessStepBase ProcessStep)
+        public bool ShowModel(HWindow Window, string ModelFilePathName)    
         {
-            int nCamID = ProcessStep.In_CamID;
-            CheckCamIDAvilible(nCamID);
-            var Cams = from cam in CamInfoList where cam.CamID == nCamID select cam;
-            if (Cams.Count() <= 0)
-                throw new Exception($"错误的相机ID：相机{nCamID}未找到");
-            var Cam = Cams.First();
-            ProcessStep.In_Image =Cam.Image;
-            return ProcessStep.Process();
-        }
-       
-
-      
-        public bool ShowRoi(int nCamID, object Region)     //显示ROI
-        {
-            var Cam = CheckCamIDAvilible(nCamID);
-            HObject region = Region as HObject;
-            foreach (var it in Cam.AttachedWindowDic)
+            HObject modelContours = null;
+            HOperatorSet.ReadShapeModel(ModelFilePathName, out HTuple ModelID);
+            HOperatorSet.SetDraw(Window, "margin");
+            HOperatorSet.SetColor(Window, "green");
+            HOperatorSet.GetShapeModelContours(out modelContours, ModelID, 1);
+            if (modelContours.CountObj() > 0)
             {
-                if (it.Value != -1)
-                {
-                    HOperatorSet.SetDraw(it.Value, "margin");
-                    HOperatorSet.SetColor(it.Value, "green");
-                    HOperatorSet.DispObj(region, it.Value);
-                }
+                HOperatorSet.GetShapeModelOrigin(ModelID, out HTuple originRow, out HTuple originColumn);
+                HOperatorSet.VectorAngleToRigid(0, 0, 0, originRow, originColumn, 0, out HTuple homMat2D);
+                HOperatorSet.AffineTransContourXld(modelContours, out HObject contoursAffinTrans, homMat2D);
+                HOperatorSet.DispObj(contoursAffinTrans, Window);
+                contoursAffinTrans.Dispose();
             }
-
+            modelContours.Dispose();
             return true;
         }
 
-
-        public bool ShowRoi(string RoiFilePathName)     //显示ROI
-        {
-            string[] splitString = RoiFilePathName.Split('\\');
-            if (splitString.Length > 2)
-            {
-                int nCamID = Convert.ToInt16(splitString[splitString.Length - 1].Substring(3, 1));
-                var Cam = CheckCamIDAvilible(nCamID);
-                HOperatorSet.ReadRegion(out HObject region, RoiFilePathName);
-                foreach (var it in Cam.AttachedWindowDic)
-                {
-                    if (it.Value != -1)
-                    {
-                        HOperatorSet.SetDraw(it.Value, "margin");
-                        HOperatorSet.SetColor(it.Value, "green");
-                        HOperatorSet.DispObj(region, it.Value);
-                    }
-                }
-                if (region.IsInitialized())
-                    region.Dispose();
-                return true;
-            }
-            return false;
-        }
-        public bool ShowModel(string ModelFilePathName)     //就在建立修改的时候有用到,同时更新多个窗口
-        {
-            HObject modelContours = null;
-            string[] splitString = ModelFilePathName.Split('\\');
-            if (splitString.Length > 1)
-            {
-                int nCamID = Convert.ToInt16(splitString[splitString.Length - 1].Substring(3, 1));
-                var Cam = CheckCamIDAvilible(nCamID);
-                //三个文件同时读取
-                splitString = ModelFilePathName.Split('.');
-                HOperatorSet.ReadShapeModel(ModelFilePathName, out HTuple ModelID);
-                HOperatorSet.ReadRegion(out HObject ModelRoiRegion, $"{splitString[0]}.reg");
-                HOperatorSet.ReadTuple($"{splitString[0]}.tup", out HTuple ModelOriginPos);
-
-                foreach (var it in Cam.AttachedWindowDic)
-                {
-                    if (it.Value != -1)
-                    {
-                        HOperatorSet.SetDraw(it.Value, "margin");
-                        HOperatorSet.SetColor(it.Value, "green");
-
-                        HOperatorSet.GetShapeModelContours(out modelContours, ModelID, 1);
-                        if (modelContours.CountObj() > 0)
-                        {
-                            HOperatorSet.VectorAngleToRigid(0, 0, 0, ModelOriginPos[0], ModelOriginPos[1], ModelOriginPos[2], out HTuple homMat2D);
-                            HOperatorSet.AffineTransContourXld(modelContours, out HObject contoursAffinTrans, homMat2D);
-                            HOperatorSet.DispObj(contoursAffinTrans, it.Value);
-                            contoursAffinTrans.Dispose();
-                        }
-
-                        modelContours.Dispose();
-                    }
-                }
-
-                return true;
-            }
-            return false;
-        }
-
+       
         /// <summary>
         /// 保存图片
         /// </summary>
@@ -357,22 +287,29 @@ namespace VisionLib
                 return false;
             }
         }
-        public bool OpenImageInWindow(int nCamID, string imageFilePath, HTuple hwindow)
+        /// <summary>
+        /// 打开图形文件
+        /// </summary>
+        /// <param name="imageFilePath">图形文件路径</param>
+        /// <param name="hwindow">用于显示图片的窗口，没有则不填</param>
+        /// <param name="OutImage">根据路径生成打开的图片</param>
+        /// <returns></returns>
+        public HObject OpenImageInWindow(string imageFilePath, HTuple hwindow)
         {
             try
             {
-                HOperatorSet.ReadImage(out HObject image, imageFilePath);
-                var Cam = CheckCamIDAvilible(nCamID);
-                Cam.Image = image.SelectObj(1);
-                HOperatorSet.GetImageSize(image, out HTuple width, out HTuple height);
-                HOperatorSet.SetPart(hwindow, 0, 0, height, width);
-                HOperatorSet.DispObj(image, hwindow);
-                image.Dispose();
-                return true;
+                HOperatorSet.ReadImage(out HObject OutImage, imageFilePath);
+                if (hwindow != null)
+                {
+                    HOperatorSet.GetImageSize(OutImage, out HTuple width, out HTuple height);
+                    HOperatorSet.SetPart(hwindow, 0, 0, height, width);
+                    HOperatorSet.DispObj(OutImage, hwindow);
+                }
+                return OutImage;
             }
             catch (Exception ex)
             {
-                return false;
+                return null;
             }
         }
         public bool CloseCamera()
@@ -566,53 +503,72 @@ namespace VisionLib
                 return false;
             }
         }
-        public bool FindTia(HObject image, List<string> LineParaList, HTuple hom_2D, HTuple ModelPos, out List<object> lineList)
-        {
-            lineList = new List<object>();
-            return true;
-        }
-        public bool DisplayLines(int nCamID, List<VisionLineData> lineList, string Color = "red")
+        public bool DisplayLines(HWindow WindowHandle, List<VisionLineData> lineList, EnumVisionColor Color)
         {
             try
             {
-                var Cam = CheckCamIDAvilible(nCamID);
-                lock (Cam.VisionLock)
+                if (lineList == null)
+                    return false;
+                HOperatorSet.SetColor(WindowHandle, Color.ToString());
+                foreach (var line in lineList)
                 {
-                    if (lineList == null)
-                        return false;
-                    foreach (var it in Cam.AttachedWindowDic)
-                    {
-                        HOperatorSet.SetColor(it.Value, Color);
-                        foreach (var line in lineList)
-                        {
-                            HOperatorSet.DispLine(it.Value, line.RowStart, line.ColStart, line.RowEnd, line.ColEnd);
-                        }
-                    }
-                    return true;
+                    HOperatorSet.DispLine(WindowHandle, line.RowStart, line.ColStart, line.RowEnd, line.ColEnd);
                 }
+                return true; 
             }
             catch
             {
                 return false;
             }
         }
-        public bool DisplayPolygonRegion(int nCamID, HTuple Row, HTuple Col, string Color = "red")
+        public bool DisplayPolygonRegion(HWindow WindowHandle, HTuple Row, HTuple Col, EnumVisionColor Color, EnumVisionDrawMode Mode)
         {
-            var Cam = CheckCamIDAvilible(nCamID);
-            lock (Cam.VisionLock)
-            {
                 HOperatorSet.GenRegionPolygonFilled(out HObject region, Row, Col);
-                foreach (var it in Cam.AttachedWindowDic)
-                {
-                    HOperatorSet.SetColor(it.Value, Color);
-                    HOperatorSet.SetDraw(it.Value, "fill");
-                    HOperatorSet.DispObj(region, it.Value);
-                }
+                HOperatorSet.SetColor(WindowHandle, Color.ToString());
+                HOperatorSet.SetDraw(WindowHandle, "fill");
+                HOperatorSet.DispObj(region, WindowHandle);
                 region.Dispose();
                 return true;
+            
+        }
+        public bool DisplayRegion(HWindow WindowHandle, EnumVisionColor Color, EnumVisionDrawMode DrawMode, params HObject[] RegionList)
+        {
+            try
+            {
+                if (RegionList == null)
+                    return false;
+                HOperatorSet.SetColor(WindowHandle, Color.ToString());
+                HOperatorSet.SetDraw(WindowHandle, DrawMode.ToString());
+                foreach (var region in RegionList)
+                {
+                    HOperatorSet.DispObj(region, WindowHandle);
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
-
+        public bool DisplayRegion(HWindow WindowHandle, EnumVisionColor Color, EnumVisionDrawMode DrawMode, List<HObject> RegionList)
+        {
+            try
+            {
+                if (RegionList == null)
+                    return false;
+                HOperatorSet.SetColor(WindowHandle, Color.ToString());
+                HOperatorSet.SetDraw(WindowHandle, DrawMode.ToString());
+                foreach (var region in RegionList)
+                {
+                    HOperatorSet.DispObj(region, WindowHandle);
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         /// <summary>
         /// 设定相机的像素对应的实际尺寸
         /// </summary>
@@ -634,68 +590,12 @@ namespace VisionLib
             Cam.KY = factor;
             return true;
         }
-        public void SetRefreshWindow(int nCamID, bool bRefresh)
+        public void UpdateWindow(bool bRefresh)
         {
             HOperatorSet.SetSystem("flush_graphic", bRefresh ? "true" : "false");
         }
         #endregion
 
-        /// <summary>
-        /// 创建模板前的预览
-        /// </summary>
-        /// <param name="nCamID"></param>
-        /// <param name="MinThre"></param>
-        /// <param name="MaxThre"></param>
-        /// <param name="modelType"></param>
-        /// <param name="regionFilePath"></param>
-        /// <param name="regionIn"></param>
-        /// <returns></returns>
-        public bool PreCreateShapeModel(int nCamID, int MinThre, int MaxThre, EnumShapeModelType modelType, string regionFilePath, object regionIn = null)
-        {
-            var Cam = CheckCamIDAvilible(nCamID);
-            if (MaxThre < MinThre)
-                return false;
-            if (Cam.AttachedWindowDic.Keys.Contains(WINDOW_DEBUG))
-            {
-                HTuple window = Cam.AttachedWindowDic[WINDOW_DEBUG];
-                switch (modelType)
-                {
-                    case EnumShapeModelType.Gray:
-                        break;
-                    case EnumShapeModelType.Shape:
-                        break;
-                    case EnumShapeModelType.XLD:
-                        HObject region = regionIn as HObject;
-                        return PreProcessShapeMode(Cam.Image, window, MinThre, MaxThre, region, regionFilePath, true);
-                    default:
-                        return false;
-                }
-            }
-            return true;
-        }
-        public bool SaveShapeModel(int nCamID, int MinThre, int MaxThre, EnumShapeModelType modelType, string regionFilePath, object regionIn = null)
-        {
-            var Cam = CheckCamIDAvilible(nCamID);
-            if (MaxThre < MinThre)
-                return false;
-            if (Cam.AttachedWindowDic.Keys.Contains(WINDOW_DEBUG))
-            {
-                HTuple window = Cam.AttachedWindowDic[WINDOW_DEBUG];
-                switch (modelType)
-                {
-                    case EnumShapeModelType.Gray:
-                        break;
-                    case EnumShapeModelType.Shape:
-                        break;
-                    case EnumShapeModelType.XLD:
-                        HObject region = regionIn as HObject;
-                        return PreProcessShapeMode(Cam.Image, window, MinThre, MaxThre, region, regionFilePath, false);
-                    default:
-                        return false;
-                }
-            }
-            return true;
-        }
         public object ReadRegion(string regionPath)
         {
             if (File.Exists(regionPath))
@@ -711,12 +611,10 @@ namespace VisionLib
                 }
             }
             return null;
-        }
+        }  
 
-       
 
-        #region Private method
-        private void FindLine(HObject ho_Image, EnumLinePolarityType Polarity, EnumSelectType selectType, HTuple hv_CaliperNum, HTuple hv_EdgeGrayValue, HTuple hv_RoiRow, HTuple hv_RoiCol, HTuple hv_RoiPhi, HTuple hv_RoiL1, HTuple hv_RoiL2, out HTuple hv_OutRowStart, out HTuple hv_OutColStart, out HTuple hv_OutRowEnd, out HTuple hv_OutColEnd)
+        public void FindLine(HObject ho_Image, EnumLinePolarityType Polarity, EnumSelectType selectType, HTuple hv_CaliperNum, HTuple hv_EdgeGrayValue, HTuple hv_RoiRow, HTuple hv_RoiCol, HTuple hv_RoiPhi, HTuple hv_RoiL1, HTuple hv_RoiL2, out HTuple hv_OutRowStart, out HTuple hv_OutColStart, out HTuple hv_OutRowEnd, out HTuple hv_OutColEnd)
         {
             // Local iconic variables 
             HObject ho_Rectangle, ho_Contour = null;
@@ -828,7 +726,7 @@ namespace VisionLib
 
             return;
         }
-        private void scale_image_range(HObject ho_Image, out HObject ho_ImageScaled, HTuple hv_Min, HTuple hv_Max)
+        public void ScaleImageRange(HObject ho_Image, out HObject ho_ImageScaled, HTuple hv_Min, HTuple hv_Max)
         {
             // Stack for temporary objects 
             HObject[] OTemp = new HObject[20];
@@ -867,7 +765,7 @@ namespace VisionLib
             //this can be achieved by passing tuples with 2 values [From, To]
             //as Min and Max.
             //Example:
-            //scale_image_range(Image:ImageScaled:[100,50],[200,250])
+            //ScaleImageRange(Image:ImageScaled:[100,50],[200,250])
             //maps the gray values of Image from the interval [100,200] to [50,250].
             //All other gray values will be clipped.
             //
@@ -968,7 +866,7 @@ namespace VisionLib
 
             return;
         }
-        public void disp_message(HTuple hv_WindowHandle, HTuple hv_String, HTuple hv_CoordSystem, HTuple hv_Row, HTuple hv_Column, HTuple hv_Color, HTuple hv_Box)
+        public void DispMessage(HTuple hv_WindowHandle, HTuple hv_String, HTuple hv_CoordSystem, HTuple hv_Row, HTuple hv_Column, HTuple hv_Color, HTuple hv_Box)
         {
             // Local control variables 
             HTuple hv_Red, hv_Green, hv_Blue, hv_Row1Part;
@@ -1109,83 +1007,88 @@ namespace VisionLib
 
             return;
         }
-        private bool PreProcessShapeMode(HObject ImageIn, HTuple window, HTuple MinThre, HTuple MaxThre, HObject RegionDomain, string strRegionPath, bool bPreView = true)
+
+        /// <summary>
+        /// 注意预览时候要及时释放HObject
+        /// </summary>
+        /// <param name="ImageIn"></param>
+        /// <param name="window"></param>
+        /// <param name="MinThre"></param>
+        /// <param name="MaxThre"></param>
+        /// <param name="RegionDomain"></param>
+        /// <returns></returns>
+        public HObject PreViewShapeModel(HObject ImageIn, HTuple window, HTuple MinThre, HTuple MaxThre, HObject RegionDomain)
         {
-            try
-            {
-                if (RegionDomain == null)
-                    HOperatorSet.GetDomain(ImageIn, out RegionDomain);
+            if (RegionDomain == null)
+                HOperatorSet.GetDomain(ImageIn, out RegionDomain);
 
-                // Local iconic variables 
-                HObject ho_ImageReduced, ho_Regions2, ho_RegionFillUp1;
-                HObject ho_Contours1;
-                HObject emptObject = null;
-                // Local control variables 
-                HTuple hv_Width, hv_Height, hv_ModelID;
+            // Local iconic variables 
+            HObject ho_ImageReduced, ho_Regions2, ho_RegionFillUp1;
+            HObject ho_Contours1;
+            HObject emptObject = null;
+            // Local control variables 
+            HTuple hv_Width, hv_Height;
 
-                // Initialize local and output iconic variables 
-                HOperatorSet.GenEmptyObj(out ho_ImageReduced);
-                HOperatorSet.GenEmptyObj(out ho_Regions2);
-                HOperatorSet.GenEmptyObj(out ho_RegionFillUp1);
-                HOperatorSet.GenEmptyObj(out ho_Contours1);
+            // Initialize local and output iconic variables 
+            HOperatorSet.GenEmptyObj(out ho_ImageReduced);
+            HOperatorSet.GenEmptyObj(out ho_Regions2);
+            HOperatorSet.GenEmptyObj(out ho_RegionFillUp1);
+            HOperatorSet.GenEmptyObj(out ho_Contours1);
 
 
-                HOperatorSet.GetImageSize(ImageIn, out hv_Width, out hv_Height);
-                ho_ImageReduced.Dispose();
-                HOperatorSet.ReduceDomain(ImageIn, RegionDomain, out ho_ImageReduced);
+            HOperatorSet.GetImageSize(ImageIn, out hv_Width, out hv_Height);
+            ho_ImageReduced.Dispose();
+            HOperatorSet.ReduceDomain(ImageIn, RegionDomain, out ho_ImageReduced);
 
-                ho_Regions2.Dispose();
-                HOperatorSet.Threshold(ho_ImageReduced, out ho_Regions2, MinThre, MaxThre);
-                ho_RegionFillUp1.Dispose();
-                HOperatorSet.FillUpShape(ho_Regions2, out ho_RegionFillUp1, "area", 1, 500);
-                ho_Contours1.Dispose();
-                HOperatorSet.GenContourRegionXld(ho_RegionFillUp1, out ho_Contours1, "border");
-                if (bPreView == false)
-                {
-                    HOperatorSet.CreateShapeModelXld(ho_Contours1, "auto", (new HTuple(0)).TupleRad(), (new HTuple(360)).TupleRad(), "auto", "auto", "ignore_local_polarity", 5, out hv_ModelID);
-                    HOperatorSet.FindShapeModel(ImageIn, hv_ModelID, (new HTuple(0)).TupleRad(), (new HTuple(360)).TupleRad(), 0.5, 1, 0.5, "least_squares", 0, 0.9, out HTuple hv_Row, out HTuple hv_Column, out HTuple hv_Angle, out HTuple hv_Score);
+            ho_Regions2.Dispose();
+            HOperatorSet.Threshold(ho_ImageReduced, out ho_Regions2, MinThre, MaxThre);
+            HOperatorSet.GenContourRegionXld(ho_Regions2, out ho_Contours1, "border");
 
-                    HTuple hv_ModelPos = new HTuple();
-                    hv_ModelPos[0] = hv_Row;
-                    hv_ModelPos[1] = hv_Column;
-                    hv_ModelPos[2] = hv_Angle;
-                    string[] strList = strRegionPath.Split('.');
-                    HOperatorSet.WriteShapeModel(hv_ModelID, $"{strList[0]}.shm");
-                    HOperatorSet.WriteTuple(hv_ModelPos, $"{strList[0]}.tup");
-                    HOperatorSet.WriteRegion(RegionDomain, $"{strList[0]}.reg");
-                }
+            HOperatorSet.SetDraw(window, "fill");
+            HOperatorSet.SetColor(window, "red");
+            HOperatorSet.SetLineWidth(window, 1);
 
-                HOperatorSet.SetDraw(window, "fill");
-                HOperatorSet.SetColor(window, "red");
-                HOperatorSet.SetSystem("flush_graphic", "false");
-                HOperatorSet.ClearWindow(window);
-                HOperatorSet.DispObj(ImageIn, window);
-                HOperatorSet.DispObj(ho_Contours1, window); //显示模板轮廓
-                HOperatorSet.SetSystem("flush_graphic", "true");
-                HOperatorSet.GenEmptyObj(out emptObject);
-                HOperatorSet.DispObj(emptObject, window);
+            HOperatorSet.SetSystem("flush_graphic", "false");
+            HOperatorSet.ClearWindow(window);
+            HOperatorSet.DispObj(ImageIn, window);
+            HOperatorSet.DispObj(ho_Contours1, window); //显示模板轮廓
+            HOperatorSet.SetSystem("flush_graphic", "true");
+
+            HOperatorSet.GenEmptyObj(out emptObject);
+            HOperatorSet.DispObj(emptObject, window);
 
 
-                emptObject.Dispose();
-                RegionDomain.Dispose();
-                ho_ImageReduced.Dispose();
-                ho_Regions2.Dispose();
-                ho_RegionFillUp1.Dispose();
-                ho_Contours1.Dispose();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
+            emptObject.Dispose();
+            RegionDomain.Dispose();
+            ho_ImageReduced.Dispose();
+            ho_Regions2.Dispose();
+            ho_RegionFillUp1.Dispose();
+            
+            
+            return ho_Contours1;
         }
-        private void Debug_DrawRectangle2(HTuple WindowHandle, out HTuple Row, out HTuple Col, out HTuple Phi, out HTuple L1, out HTuple L2)
+
+        public bool SaveShapeMode(HObject ImageIn, HObject ModelObject, string FullPathName)
+        {
+            HOperatorSet.CreateShapeModelXld(ModelObject, "auto", (new HTuple(0)).TupleRad(), (new HTuple(360)).TupleRad(), "auto", "auto", "ignore_local_polarity", 5, out HTuple hv_ModelID);
+            HOperatorSet.FindShapeModel(ImageIn, hv_ModelID, (new HTuple(0)).TupleRad(), (new HTuple(360)).TupleRad(), 0.5, 1, 0.5, "least_squares", 0, 0.9, out HTuple hv_Row, out HTuple hv_Column, out HTuple hv_Angle, out HTuple hv_Score);
+            HOperatorSet.VectorAngleToRigid(0, 0, 0, hv_Row, hv_Column, hv_Angle, out HTuple homMat2D);
+            HOperatorSet.SetShapeModelMetric(ImageIn, hv_ModelID, homMat2D, "use_polarity");
+            HOperatorSet.SetShapeModelOrigin(hv_ModelID, hv_Row, hv_Column);
+            HOperatorSet.WriteShapeModel(hv_ModelID, FullPathName);
+            HOperatorSet.ClearShapeModel(hv_ModelID);
+            ModelObject.Dispose();
+            return true;
+        }
+
+
+        public void Debug_DrawRectangle2(HTuple WindowHandle, out HTuple Row, out HTuple Col, out HTuple Phi, out HTuple L1, out HTuple L2)
         {
             Row = Col = Phi = L1 = L2 = 0;
             HOperatorSet.GetPart(WindowHandle, out HTuple oldRow1, out HTuple oldCol1, out HTuple oldRow2, out HTuple oldCol2);
             HOperatorSet.DrawRectangle2Mod(WindowHandle, (oldRow1 + oldRow2) / 2, (oldCol1 + oldCol2) / 2, 0, 100, 100, out Row, out Col, out Phi, out L1, out L2);
         }
-        private void FindPair(HObject ho_Image, HTuple ExpectPairNum, EnumPairPolarityType Polarity, EnumSelectType selectType, HTuple hv_CaliperNum, HTuple hv_EdgeGrayValue, HTuple hv_RoiRow, HTuple hv_RoiCol, HTuple hv_RoiPhi, HTuple hv_RoiL1, HTuple hv_RoiL2,
+        public void FindPair(HObject ho_Image, HTuple ExpectPairNum, EnumPairPolarityType Polarity, EnumSelectType selectType, HTuple hv_CaliperNum, HTuple hv_EdgeGrayValue, HTuple hv_RoiRow, HTuple hv_RoiCol, HTuple hv_RoiPhi, HTuple hv_RoiL1, HTuple hv_RoiL2,
                               out HTuple hv_OutFirstRowStart, out HTuple hv_OutFirstColStart, out HTuple hv_OutFirstRowEnd, out HTuple hv_OutFirstColEnd,
                               out HTuple hv_OutSecondRowStart, out HTuple hv_OutSecondColStart, out HTuple hv_OutSecondRowEnd, out HTuple hv_OutSecondColEnd)
         {
@@ -1680,7 +1583,6 @@ namespace VisionLib
             PoseOfRegion[2] = angle;
 
         }
-
         /// <summary>
         /// 根据之前保存的模板位姿和两条直线，恢复所画的几何图形
         /// </summary>
@@ -1714,7 +1616,6 @@ namespace VisionLib
             HOperatorSet.AffineTransRegion(region, out regionOut, homMat2D, "false");
 
         }
-
         public CameraInfoModel CheckCamIDAvilible(int nCamID,[CallerMemberName] string CallerName="")
         {
             if (nCamID < 0)
@@ -1724,7 +1625,6 @@ namespace VisionLib
                 throw new Exception($"Wrong CamID:{nCamID} when {CallerName}");
             return Cams.First();
         }
-        #endregion
     }
 
     public class VisionDataHelper

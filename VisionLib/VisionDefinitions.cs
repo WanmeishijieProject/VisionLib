@@ -39,9 +39,10 @@ namespace VisionLib
         public enum EnumShapeModelType
         {
             Gray,
-            Shape,
-            XLD
-        };     
+            ShapeModel,
+            ShapeModelXLD
+        };  
+        
         public enum EnumLinePolarityType
         {
             DarkToLight,
@@ -68,6 +69,19 @@ namespace VisionLib
             RECTANGLE1,
             RECTANGLE2,
         }
-
+        public enum EnumVisionColor
+        {
+            red,
+            green,
+            yellow,
+            white,
+            black,
+            blue,
+        }
+        public enum EnumVisionDrawMode
+        {
+            margin,
+            fill,
+        }
     }
 }

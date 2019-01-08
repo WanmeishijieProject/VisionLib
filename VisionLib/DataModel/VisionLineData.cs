@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VisionLib.CommonVisionStep
+namespace VisionLib.DataModel
 {
     public class VisionLineData
     {
@@ -20,8 +20,9 @@ namespace VisionLib.CommonVisionStep
         public HTuple ColStart { get; set; }
         public HTuple RowEnd { get; set; }
         public HTuple ColEnd { get; set; }
-        public HTuple K {
+        public HTuple K
+        {
             get { return (ColEnd - ColStart).D / (RowEnd - RowStart).D; }
-        }   
+        }
     }
 }

@@ -45,13 +45,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CameraInfoModel.cs" />
-    <Compile Include="CommonVisionStep\StepCalibImage.cs" />
-    <Compile Include="CommonVisionStep\StepDrawFlag.cs" />
-    <Compile Include="CommonVisionStep\StepFindeLineByModel.cs" />
-    <Compile Include="CommonVisionStep\StepFindModel.cs" />
-    <Compile Include="CommonVisionStep\StepShowFlag.cs" />
-    <Compile Include="CommonVisionStep\VisionLineData.cs" />
-    <Compile Include="CommonVisionStep\VisionProcessStepBase.cs" />
+    <Compile Include="DataModel\VisionLineData.cs" />
+    <Compile Include="DataModel\VisionRectangle1Data.cs" />
+    <Compile Include="DataModel\VisionRectangle2Data.cs" />
     <Compile Include="HalconVision.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VisionDefinitions.cs" />
